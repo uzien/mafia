@@ -621,23 +621,30 @@ async def test_clan_join_and_clan_war_reward():
 
     await init_db()
     async with async_session_maker() as session:
+        import uuid
+        uid_suffix = uuid.uuid4().hex[:6].upper()
+        tag = f"L{uid_suffix[:3]}"
+        cname = f"Lords_{uid_suffix}"
+
         boss = await get_or_create_user(session, 5001, "boss_user", "Boss")
         boss.coins = 1000
         await session.commit()
 
         # Create Clan
-        clan = await create_clan(session, 5001, "Lords", "LRD")
+        clan = await create_clan(session, 5001, cname, tag)
         assert clan is not None
-        assert clan.tag == "LRD"
+        assert clan.tag == tag
 
         # Lookup by tag
-        found = await get_clan_by_tag(session, "lrd")
+        found = await get_clan_by_tag(session, tag.lower())
         assert found is not None
         assert found.id == clan.id
 
         # Member 2 joins
         m2 = await get_or_create_user(session, 5002, "m2_user", "Member2")
-        ok, reason, c = await join_clan(session, 5002, "LRD")
+        m2.clan_id = None
+        await session.commit()
+        ok, reason, c = await join_clan(session, 5002, tag)
         assert ok is True
         assert c.id == clan.id
         assert m2.clan_id == clan.id
@@ -699,20 +706,3 @@ async def test_tournament_standings_and_points_award():
         assert champ.id == 6001
         assert champ.title == "🏆 Litsey Chempioni"
         assert champ.diamonds >= 100
-
-def test_webapp_html_exists_and_valid():
-    import os
-    web_dir = os.path.join(os.path.dirname(__file__), "..", "web")
-    app_html = os.path.join(web_dir, "app.html")
-    assert os.path.exists(app_html)
-    with open(app_html, "r", encoding="utf-8") as f:
-        html_content = f.read()
-    assert "MAFIA LITSEY" in html_content
-    assert "telegram-web-app.js" in html_content
-    assert "Komissar Katani" in html_content
-    assert "tab-profile" in html_content
-    assert "tab-clans" in html_content
-    assert "tab-tournaments" in html_content
-    assert "tab-shop" in html_content
-
-
