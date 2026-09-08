@@ -393,5 +393,90 @@ def test_updated_role_emojis():
     assert ROLE_META[Role.MISTRESS]["emoji"] == "💋"
     assert ROLE_META[Role.DON]["emoji"] == "👑"
 
+@pytest.mark.asyncio
+async def test_last_will_broadcast_night_and_lynch():
+    from game.room import GameRoom
+    from unittest.mock import AsyncMock
+
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Victim", lang="uz")
+    room.add_player(2, "Killer")
+    room.add_player(3, "Observer")
+
+    room.players[1].role = Role.CITIZEN
+    room.players[1].last_will = "Mening vasiyatim: Shaharni asrang!"
+    room.players[2].role = Role.DON
+    room.players[3].role = Role.CITIZEN
+
+    # Simulate mafia kill on player 1
+    room.phase = GamePhase.NIGHT
+    room.mafia_votes = {2: 1}
+
+    mock_bot = AsyncMock()
+    await room.resolve_night(mock_bot)
+
+    assert not room.players[1].is_alive
+    # Check that will was broadcast to chat
+    will_calls = [
+        call for call in mock_bot.send_message.call_args_list
+        if "Mening vasiyatim: Shaharni asrang!" in (call.args[1] if len(call.args) > 1 else call.kwargs.get("text", ""))
+    ]
+    assert len(will_calls) == 1
+
+@pytest.mark.asyncio
+async def test_night_random_events_and_are_all_actions_done():
+    from game.room import GameRoom
+    from unittest.mock import AsyncMock
+
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Player1", lang="uz")
+    room.add_player(2, "Player2")
+    room.add_player(3, "Player3")
+
+    room.players[1].role = Role.DON
+    room.players[2].role = Role.DOCTOR
+    room.players[3].role = Role.DETECTIVE
+
+    mock_bot = AsyncMock()
+    await room.start_night(mock_bot)
+
+    # Check that a night event was selected
+    assert room.current_event in ["event_clear", "event_fog", "event_blood_moon", "event_blackout"]
+
+    # At start of night, actions not done yet
+    assert room.are_all_night_actions_done() is False
+
+    # Submit actions
+    room.mafia_votes[1] = 3
+    room.doctor_target = 1
+    room.detective_target = 2
+
+    # Now all actions should be complete
+    assert room.are_all_night_actions_done() is True
+
+def test_three_player_distribution():
+    from game.role_models import distribute_roles
+
+    assignments = distribute_roles([10, 20, 30])
+    assert len(assignments) == 3
+    roles = set(assignments.values())
+    assert Role.DON in roles
+    assert Role.DETECTIVE in roles
+    assert Role.DOCTOR in roles
+
+def test_lobby_leave_and_creator_transfer():
+    from game.room import GameRoom
+
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host", lang="uz")
+    room.add_player(2, "Player2")
+    assert len(room.players) == 2
+
+    # Player 2 leaves
+    removed = room.remove_player(2)
+    assert removed is True
+    assert len(room.players) == 1
+    assert 2 not in room.players
+
+    # Non-player tries to leave
+    assert room.remove_player(99) is False
+
 
 

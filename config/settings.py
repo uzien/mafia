@@ -70,7 +70,7 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{remainder}"
     
     # Game Settings
-    MIN_PLAYERS: int = 4
+    MIN_PLAYERS: int = 3
     MAX_PLAYERS: int = 20
     LOBBY_TIMEOUT: int = 60         # Seconds for lobby wait
     NIGHT_DURATION: int = 45        # Seconds for night actions

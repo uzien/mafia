@@ -36,20 +36,23 @@
     "lawyer": "Conceal a chosen Mafia member from police inspection during the night."
   },
 
-  "lobby_created": "<b>Registration in progress</b>\n<i>Registered players:</i>\n\n{players_list}\n\nTotal: <b>{count} players</b>.",
-  "btn_join": "🧑‍💼 Join",
+  "lobby_created": "🏙 <b>MAFIA LITSEY — GAME REGISTRATION</b>\n━━━━━━━━━━━━━━━━━━━━\n👑 <b>Host:</b> {creator}\n⏳ <b>Time Left:</b> {seconds}s\n👥 <b>Players:</b> {count}/{max} (Min: {min} players)\n\n📋 <b>Player Roster:</b>\n{players_list}\n━━━━━━━━━━━━━━━━━━━━\n💡 <i>Press the button below to join the game!</i>",
+  "lobby_no_players": "<i>No players joined yet. Be the first to join!</i>",
+  "btn_join": "➕ Join Game",
   "btn_leave": "🚪 Leave",
   "btn_start_now": "🚀 Start",
   "btn_extend_time": "⏳ +30s",
-  "btn_check_role": "Your role",
+  "btn_open_bot_pm": "🤖 Bot (PM)",
+  "btn_check_role": "🎭 Your Role",
   "btn_open_bot": "Go to bot",
+  "btn_set_will": "📜 Last Will",
   "time_extended": "⏳ Registration time extended by 30 seconds! Remaining: <b>{seconds}</b>s.",
   "already_in_game": "⚠️ You are already in this game!",
   "not_in_game": "⚠️ You are not part of this game!",
   "player_joined": "✅ <b>{name}</b> joined the game! ({count}/{min})",
   "player_left": "❌ <b>{name}</b> left the game!",
   "game_cancelled": "🛑 Game cancelled due to insufficient players.",
-  "game_starting": "<b>Game started!</b>",
+  "game_starting": "🎬 <b>GAME STARTED!</b>\n━━━━━━━━━━━━━━━━━━━━\n🎭 Roles have been delivered to each player in bot PM.\n\n👇 Tap below to inspect your role:",
 
   "night_started": "🌚 🌃 <b>Night</b>\n<i>Only the brave and fearless took to the streets. In the morning we will count the survivors...</i>",
   "living_players_title": "<b>Living players:</b>",
@@ -125,5 +128,14 @@
   "btn_get_diamonds": "💎 Get Diamonds (@mx767)",
   "clan_deposit_success": "✅ <b>+{amount} Coins</b> deposited into clan vault!",
   "clan_deposit_fail": "❌ Not enough coins or you are not in a clan!",
-  "don_promoted": "👑 <b>{old_role} {name}</b> has risen to become the new <b>Don (Boss of Mafia)</b>!"
+  "don_promoted": "👑 <b>{old_role} {name}</b> has risen to become the new <b>Don (Boss of Mafia)</b>!",
+  "night_prompt_citizen": "🌙 <b>Night falls...</b>\n\nYou are an innocent Citizen. The city sleeps while mafia and authorities lurk in the shadows. Await the morning light!",
+  "will_saved": "📜 <b>Your Last Will has been recorded:</b>\n<i>\"{will}\"</i>\n\n(Should you perish, your final words will be broadcast to the entire city)",
+  "will_prompt": "📜 <b>Last Will & Testament:</b>\nType: <code>/will your final message</code>",
+  "will_reveal": "📜 <b>{name}'s Post-Mortem Last Will:</b>\n<i>\"{will}\"</i>",
+  "event_clear": "🌌 <b>Clear Night:</b> Serene starlight blankets the town. All is quiet.",
+  "event_fog": "🌫 <b>Dense Fog:</b> A heavy mist rolls through the alleys! Detective clarity may be obscured.",
+  "event_blood_moon": "🩸 <b>Blood Moon:</b> The moon burns crimson! Killers strike with relentless ferocity.",
+  "event_blackout": "⚡️ <b>City Blackout:</b> Power grids collapse! Darkness swallows every corner.",
+  "fog_investigation_obscured": "🌫 <b>Due to dense fog, {target}'s records could not be clearly verified! Result remains unknown.</b>"
 }

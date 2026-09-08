@@ -36,20 +36,23 @@
     "lawyer": "Tunda tanlagan mafiyangizni Komissar tekshiruvidan yashirib, begunoh qilib ko'rsatasiz."
   },
 
-  "lobby_created": "<b>Ro'yxatdan o'tish davom etmoqda</b>\n<i>Ro'yxatdan o'tganlar:</i>\n\n{players_list}\n\nJami <b>{count}ta odam</b>.",
+  "lobby_created": "🏙 <b>MAFIA LITSEY — Ro'yxatdan o'tish davom etmoqda</b>\n━━━━━━━━━━━━━━━━━━━━\n👑 <b>Tashkilotchi:</b> {creator}\n⏳ <b>Qolgan vaqt:</b> {seconds} soniya\n👥 Jami <b>{count}ta odam</b>. (Kamida: {min} kishi)\n\n📋 <b>Ro'yxatdan o'tganlar:</b>\n{players_list}\n━━━━━━━━━━━━━━━━━━━━\n💡 <i>O'yinga qo'shilish uchun pastdagi tugmani bosing!</i>",
+  "lobby_no_players": "<i>Hozircha hech kim qo'shilmadi. Birinchi bo'lib qo'shiling!</i>",
   "btn_join": "🧑‍💼 Qo'shilish",
   "btn_leave": "🚪 Chiqish",
   "btn_start_now": "🚀 Boshlash",
   "btn_extend_time": "⏳ +30s",
-  "btn_check_role": "Sizning rolingiz",
+  "btn_open_bot_pm": "🤖 Bot (PM)",
+  "btn_check_role": "🎭 Sizning rolingiz",
   "btn_open_bot": "Bot-ga o'tish",
+  "btn_set_will": "📜 Vasiyatnoma",
   "time_extended": "⏳ Ro'yxatdan o'tish vaqti 30 soniyaga uzaytirildi! Qolgan vaqt: <b>{seconds}</b> soniya.",
   "already_in_game": "⚠️ Siz allaqachon bu o'yindasiz!",
   "not_in_game": "⚠️ Siz bu o'yinda emassiz!",
   "player_joined": "✅ <b>{name}</b> o'yinga qo'shildi! ({count}/{min})",
   "player_left": "❌ <b>{name}</b> o'yindan chiqdi!",
   "game_cancelled": "🛑 Yetarli o'yinchi yig'ilmaganligi sababli o'yin bekor qilindi.",
-  "game_starting": "<b>O'yin boshlandi!</b>",
+  "game_starting": "🎬 <b>O'YIN BOSHLANDI!</b>\n━━━━━━━━━━━━━━━━━━━━\n🎭 Barcha o'yinchilarga rollar shaxsiy xabarda (PM) tarqatildi.\n\n👇 Rolingizni bilish uchun quyidagi tugmani bosing:",
 
   "night_started": "🌚 🌃 <b>Tun</b>\n<i>Ko'chaga faqat jasur va qo'rqmas odamlar chiqishdi. Ertalab tirik qolganlarni sanaymiz...</i>",
   "living_players_title": "<b>Tirik o'yinchilar:</b>",
@@ -125,5 +128,14 @@
   "btn_get_diamonds": "💎 Olmos olish (@mx767)",
   "clan_deposit_success": "✅ <b>+{amount} Tanga</b> klan xazinasiga kiritildi!",
   "clan_deposit_fail": "❌ Yetarli mablag'ingiz yo'q yoki klanda emassiz!",
-  "don_promoted": "👑 <b>{old_role} {name}</b> yangi <b>Don (Mafiya Boshlig'i)</b> bo'ldi!"
+  "don_promoted": "👑 <b>{old_role} {name}</b> yangi <b>Don (Mafiya Boshlig'i)</b> bo'ldi!",
+  "night_prompt_citizen": "🌙 <b>Tun tushdi...</b>\n\nSiz tinch fuqarosiz. Shahar uxlamoqda, mafiya va maxsus kuchlar harakatda. Tong otishini kuting!",
+  "will_saved": "📜 <b>Vasiyatnomangiz saqlandi:</b>\n<i>\"{will}\"</i>\n\n(Agar halok bo'lsangiz, so'nggi so'zlaringiz butun shaharga e'lon qilinadi)",
+  "will_prompt": "📜 <b>O'limdan oldingi vasiyatnoma:</b>\nVasiyatingizni quyidagicha yozing:\n<code>/will sizning so'nggi so'zlaringiz</code>",
+  "will_reveal": "📜 <b>{name}ning O'limidan Oldingi Vasiyatnomasi:</b>\n<i>\"{will}\"</i>",
+  "event_clear": "🌌 <b>Sokin Tun:</b> Shahar uzra moviy yulduzli osmon. Barchasi odatdagidek tinch.",
+  "event_fog": "🌫 <b>Quyuq Tuman:</b> Shaharni quyuq tuman qopladi! Komissar ko'rish qobiliyati pasayishi mumkin.",
+  "event_blood_moon": "🩸 <b>Qonli Oy:</b> Osmon qip-qizil tus oldi! Qotilliklar yanada shafqatsiz tus olmoqda.",
+  "event_blackout": "⚡️ <b>Elektr Uzilishi:</b> Butun shaharda elektr o'chdi! Ko'chalar qorong'i zulmatga burkandi.",
+  "fog_investigation_obscured": "🌫 <b>Quyuq tuman tufayli {target}ning hujjatlarini ko'rib bo'lmadi! Natija noaniq qoldi.</b>"
 }

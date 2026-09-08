@@ -48,15 +48,28 @@ async def cmd_game(message: Message):
 async def cb_game_join(callback: CallbackQuery):
     room = game_manager.get_room(callback.message.chat.id)
     if not room or room.phase != GamePhase.LOBBY:
-        return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
+        return await callback.answer("⚠️ Hozirda faol ro'yxatdan o'tish mavjud emas.", show_alert=True)
 
     user = callback.from_user
+    if user.id in room.players:
+        return await callback.answer("⚠️ Siz allaqachon o'yindasiz!", show_alert=True)
+
+    # Check if bot can message player in PM
+    try:
+        await callback.bot.send_chat_action(user.id, "typing")
+    except Exception:
+        # Player hasn't opened bot PM yet
+        return await callback.answer(
+            f"⚠️ Bot sizga maxfiy rolingizni yuborishi uchun avval botga kiring va START bosing:\n@{settings.BOT_USERNAME}",
+            show_alert=True
+        )
+
     async with async_session_maker() as session:
         await get_or_create_user(session, user.id, user.username, user.first_name)
 
     success = room.add_player(user.id, user.first_name, user.username)
     if not success:
-        return await callback.answer(i18n.get("already_in_game", room.lang), show_alert=True)
+        return await callback.answer("⚠️ O'yinga qo'shilish imkoni bo'lmadi (xona to'lgan).", show_alert=True)
 
     try:
         await callback.message.edit_text(
@@ -66,18 +79,39 @@ async def cb_game_join(callback: CallbackQuery):
         )
     except Exception:
         pass
-    await callback.answer(i18n.get("player_joined", room.lang, name=user.first_name, count=len(room.players), min=settings.MIN_PLAYERS))
+    await callback.answer(f"✅ O'yinga qo'shildingiz! ({len(room.players)}/{settings.MIN_PLAYERS})")
 
 @game_group_router.callback_query(F.data == "game_leave")
 async def cb_game_leave(callback: CallbackQuery):
     room = game_manager.get_room(callback.message.chat.id)
     if not room or room.phase != GamePhase.LOBBY:
-        return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
+        return await callback.answer("⚠️ Faol o'yin xonasi mavjud emas.", show_alert=True)
 
     user = callback.from_user
+    if user.id not in room.players:
+        return await callback.answer("⚠️ Siz bu o'yinda emassiz!", show_alert=True)
+
     success = room.remove_player(user.id)
     if not success:
-        return await callback.answer(i18n.get("not_in_game", room.lang), show_alert=True)
+        return await callback.answer("⚠️ O'yindan chiqishda xatolik yuz berdi.", show_alert=True)
+
+    # If creator left, transfer to someone else
+    if user.id == room.creator_id and room.players:
+        next_id = next(iter(room.players.keys()))
+        room.creator_id = next_id
+        room.creator_name = room.players[next_id].name
+
+    # If no players left, cancel room
+    if not room.players:
+        game_manager.remove_room(room.chat_id)
+        try:
+            await callback.message.edit_text(
+                "🛑 <b>Barcha o'yinchilar chiqib ketganligi sababli o'yin bekor qilindi.</b>",
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+        return await callback.answer("🚪 Siz o'yindan chiqdingiz.")
 
     try:
         await callback.message.edit_text(
@@ -87,22 +121,55 @@ async def cb_game_leave(callback: CallbackQuery):
         )
     except Exception:
         pass
-    await callback.answer(i18n.get("player_left", room.lang, name=user.first_name))
+    await callback.answer("🚪 Siz o'yindan chiqdingiz.")
 
 @game_group_router.callback_query(F.data == "game_start_early")
 async def cb_game_start_early(callback: CallbackQuery):
     room = game_manager.get_room(callback.message.chat.id)
     if not room or room.phase != GamePhase.LOBBY:
-        return await callback.answer("No active lobby.", show_alert=True)
+        return await callback.answer("⚠️ Faol o'yin xonasi mavjud emas.", show_alert=True)
 
-    if callback.from_user.id != room.creator_id:
-        return await callback.answer("Only the game creator can force start!", show_alert=True)
+    user_id = callback.from_user.id
+    is_allowed = (user_id in room.players) or (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
+    if not is_allowed:
+        return await callback.answer("⚠️ O'yinni boshlash uchun avval o'yinga qo'shiling!", show_alert=True)
 
     if len(room.players) < settings.MIN_PLAYERS:
-        return await callback.answer(f"Need at least {settings.MIN_PLAYERS} players!", show_alert=True)
+        return await callback.answer(
+            f"⚠️ Kamida {settings.MIN_PLAYERS} ta o'yinchi kerak! (Hozir: {len(room.players)}/{settings.MIN_PLAYERS})",
+            show_alert=True
+        )
 
-    await callback.answer("🚀 Starting game now!")
-    await room.start_game(callback.bot)
+    await callback.answer("🚀 O'yin boshlanmoqda...")
+    try:
+        await room.start_game(callback.bot)
+    except Exception as e:
+        logger.error(f"Error starting game: {e}")
+        await callback.message.answer(f"⚠️ O'yinni boshlashda xatolik yuz berdi: {e}")
+
+@game_group_router.message(Command("startgame", "boshlash"))
+async def cmd_start_game_group(message: Message):
+    if message.chat.type == "private":
+        return
+    room = game_manager.get_room(message.chat.id)
+    if not room or room.phase != GamePhase.LOBBY:
+        return
+
+    user_id = message.from_user.id
+    is_allowed = (user_id in room.players) or (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
+    if not is_allowed:
+        await message.reply("⚠️ O'yinni boshlash uchun avval o'yinga qo'shiling!")
+        return
+
+    if len(room.players) < settings.MIN_PLAYERS:
+        await message.reply(f"⚠️ Kamida {settings.MIN_PLAYERS} ta o'yinchi kerak! (Hozir: {len(room.players)}/{settings.MIN_PLAYERS})")
+        return
+
+    await message.reply("🚀 O'yin boshlanmoqda...")
+    try:
+        await room.start_game(message.bot)
+    except Exception as e:
+        logger.error(f"Error starting game via command: {e}")
 
 @game_group_router.callback_query(F.data == "game_extend_time")
 async def cb_game_extend_time(callback: CallbackQuery):

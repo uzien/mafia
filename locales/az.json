@@ -36,20 +36,23 @@
     "lawyer": "Gecə seçdiyiniz mafiyanı Komissarın yoxlamasından gizlədirsiniz."
   },
 
-  "lobby_created": "<b>Qeydiyyat davam edir</b>\n<i>Qeydiyyatdan keçənlər:</i>\n\n{players_list}\n\nCəmi <b>{count} nəfər</b>.",
-  "btn_join": "🧑‍💼 Qoşulmaq",
+  "lobby_created": "🏙 <b>MAFIA LITSEY — OYUNA QEYDİYYAT</b>\n━━━━━━━━━━━━━━━━━━━━\n👑 <b>Təşkilatçı:</b> {creator}\n⏳ <b>Qalan vaxt:</b> {seconds} saniyə\n👥 <b>Oyunçular:</b> {count}/{max} (Ən az: {min} nəfər)\n\n📋 <b>İştirakçılar:</b>\n{players_list}\n━━━━━━━━━━━━━━━━━━━━\n💡 <i>Oyuna qoşulmaq üçün aşağıdakı düyməyə basın!</i>",
+  "lobby_no_players": "<i>Hələ heç kim qoşulmayıb. İlk qoşulan siz olun!</i>",
+  "btn_join": "➕ Qoşulmaq",
   "btn_leave": "🚪 Çıxış",
   "btn_start_now": "🚀 Başlat",
   "btn_extend_time": "⏳ +30s",
-  "btn_check_role": "Sizin rolunuz",
+  "btn_open_bot_pm": "🤖 Bot (PM)",
+  "btn_check_role": "🎭 Sizin rolunuz",
   "btn_open_bot": "Bota keç",
+  "btn_set_will": "📜 Vəsiyyətnamə",
   "time_extended": "⏳ Qeydiyyat vaxtı 30 saniyə uzadıldı! Qalan vaxt: <b>{seconds}</b> saniyə.",
   "already_in_game": "⚠️ Siz artıq bu oyundasınız!",
   "not_in_game": "⚠️ Siz bu oyunda deyilsiniz!",
   "player_joined": "✅ <b>{name}</b> oyuna qoşuldu! ({count}/{min})",
   "player_left": "❌ <b>{name}</b> oyundan ayrıldı!",
   "game_cancelled": "🛑 Kifayət qədər oyunçu toplanmadığı üçün oyun ləğv edildi.",
-  "game_starting": "<b>Oyun başladı!</b>",
+  "game_starting": "🎬 <b>OYUN BAŞLADI!</b>\n━━━━━━━━━━━━━━━━━━━━\n🎭 Rollar bütün oyunçulara botun şəxsi mesajında göndərildi.\n\n👇 Rolunuzu görmək üçün aşağıdakı düyməyə basın:",
 
   "night_started": "🌚 🌃 <b>Gecə</b>\n<i>Küçəyə yalnız cəsarətli və qorxmaz insanlar çıxdı. Səhər sağ qalanları sayacağıq...</i>",
   "living_players_title": "<b>Tirik o'yinchilar:</b>",
@@ -125,5 +128,14 @@
   "btn_get_diamonds": "💎 Almaz əldə et (@mx767)",
   "clan_deposit_success": "✅ <b>+{amount} Sikkə</b> klan xəzinəsinə yatırıldı!",
   "clan_deposit_fail": "❌ Kifayət qədər balansınız yoxdur və ya klanda deyilsiniz!",
-  "don_promoted": "👑 <b>{old_role} {name}</b> yeni <b>Don (Mafiya Başçısı)</b> oldu!"
+  "don_promoted": "👑 <b>{old_role} {name}</b> yeni <b>Don (Mafiya Başçısı)</b> oldu!",
+  "night_prompt_citizen": "🌙 <b>Gecə düşdü...</b>\n\nSiz dinc vətəndaşsınız. Şəhər yatır, mafiya ovdadır. Səhərin açılmasını gözləyin!",
+  "will_saved": "📜 <b>Vəsiyyətnaməniz qeydə alındı:</b>\n<i>\"{will}\"</i>\n\n(Həlak olsanız, son sözləriniz bütün şəhərə oxunacaq)",
+  "will_prompt": "📜 <b>Ölümdən öncə vəsiyyətnamə:</b>\nYazın: <code>/will son sözləriniz</code>",
+  "will_reveal": "📜 <b>{name} tərəfindən Vəsiyyətnamə:</b>\n<i>\"{will}\"</i>",
+  "event_clear": "🌌 <b>Sakit Gecə:</b> Şəhərin üzərində aydın ulduzlu səma. Hər şey adi qaydasındadır.",
+  "event_fog": "🌫 <b>Qatı Duman:</b> Şəhəri qatı duman bürüdü! Komissarın görmə qabiliyyəti zəifləyə bilər.",
+  "event_blood_moon": "🩸 <b>Qanlı Ay:</b> Səma qan rənginə boyanıb! Qatillər daha amansız ov edir.",
+  "event_blackout": "⚡️ <b>İşıqların Sönməsi:</b> Şəhərdə işıqlar söndü! Qaranlıq hər yeri bürüdü.",
+  "fog_investigation_obscured": "🌫 <b>Qatı duman səbəbindən {target} sənədləri aydın görünmədi! Nəticə qaranlıq qaldı.</b>"
 }

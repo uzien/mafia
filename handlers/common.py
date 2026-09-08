@@ -186,6 +186,17 @@ async def cmd_start(message: Message, command: CommandObject = None):
                 pass
         else:
             group = await get_or_create_group(session, message.chat.id, message.chat.title or "Group", default_lang=settings.DEFAULT_LANGUAGE)
+            room = game_manager.get_room(message.chat.id)
+            if room and room.phase == GamePhase.LOBBY:
+                user_id = message.from_user.id
+                is_allowed = (user_id in room.players) or (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
+                if not is_allowed:
+                    return await message.reply("⚠️ O'yinni boshlash uchun avval o'yinga qo'shiling!")
+                if len(room.players) < settings.MIN_PLAYERS:
+                    return await message.reply(f"⚠️ Kamida {settings.MIN_PLAYERS} ta o'yinchi kerak! (Hozir: {len(room.players)}/{settings.MIN_PLAYERS})")
+                await message.reply("🚀 O'yin boshlanmoqda...")
+                return await room.start_game(message.bot)
+
             await message.answer(
                 f"👋 <b>{settings.BOT_NAME}</b> faol!\nO'yinni boshlash uchun <code>/game</code> buyrug'ini yuboring.",
                 parse_mode="HTML"

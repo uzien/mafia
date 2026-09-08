@@ -1,5 +1,7 @@
 import asyncio
+import html
 import logging
+import random
 from typing import Dict, List, Optional
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -27,6 +29,7 @@ class GameRoom:
         self.phase: GamePhase = GamePhase.LOBBY
         self.round: int = 1
         self.lobby_message_id: Optional[int] = None
+        self.current_event: Optional[str] = None
         
         self.players: Dict[int, Player] = {}
         self.timer_task: Optional[asyncio.Task] = None
@@ -75,20 +78,24 @@ class GameRoom:
                     text=i18n.get("btn_join", self.lang),
                     url=f"https://t.me/{settings.BOT_USERNAME}?start=game_{self.chat_id}"
                 )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=i18n.get("btn_start_now", self.lang),
+                    callback_data="game_start_early"
+                ),
+                InlineKeyboardButton(
+                    text=i18n.get("btn_leave", self.lang),
+                    callback_data="game_leave"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=i18n.get("btn_extend_time", self.lang),
+                    callback_data="game_extend_time"
+                )
             ]
         ]
-        action_row = []
-        if len(self.players) >= settings.MIN_PLAYERS:
-            action_row.append(
-                InlineKeyboardButton(text=i18n.get("btn_start_now", self.lang), callback_data="game_start_early")
-            )
-        action_row.append(
-            InlineKeyboardButton(text=i18n.get("btn_extend_time", self.lang), callback_data="game_extend_time")
-        )
-        action_row.append(
-            InlineKeyboardButton(text=i18n.get("btn_leave", self.lang), callback_data="game_leave")
-        )
-        buttons.append(action_row)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
     def extend_lobby_time(self, seconds: int = 30) -> int:
@@ -97,26 +104,37 @@ class GameRoom:
         return self.seconds_left
 
     def get_lobby_text(self) -> str:
-        players_links = ", ".join([f'<a href="tg://user?id={p.user_id}">{p.name}</a>' for p in self.players.values()])
+        if self.players:
+            player_rows = []
+            for idx, p in enumerate(self.players.values()):
+                clean_name = html.escape(p.name or "O'yinchi", quote=False)
+                player_rows.append(f"{idx+1}. 👤 <a href=\"tg://user?id={p.user_id}\">{clean_name}</a>")
+            players_str = "\n".join(player_rows)
+        else:
+            players_str = i18n.get("lobby_no_players", self.lang)
+
+        clean_creator = html.escape(self.creator_name or "Tashkilotchi", quote=False)
         return i18n.get(
             "lobby_created",
             self.lang,
-            players_list=players_links if players_links else "...",
+            players_list=players_str,
             count=len(self.players),
-            creator=self.creator_name,
+            creator=clean_creator,
+            min=settings.MIN_PLAYERS,
             max=settings.MAX_PLAYERS,
             seconds=self.seconds_left
         )
 
     def get_living_players_text(self) -> str:
         living = self.alive_players
-        lines = [f"{idx+1}. <a href=\"tg://user?id={p.user_id}\">{p.name}</a>" for idx, p in enumerate(living)]
+        lines = [f"{idx+1}. 👤 <a href=\"tg://user?id={p.user_id}\">{html.escape(p.name or 'O`yinchi')}</a>" for idx, p in enumerate(living)]
         players_block = "\n".join(lines) if lines else "..."
 
         role_counts: Dict[str, int] = {}
         for p in living:
-            r_name = i18n.get(f"roles.{p.role.value}", self.lang)
-            role_counts[r_name] = role_counts.get(r_name, 0) + 1
+            if p.role:
+                r_name = i18n.get(f"roles.{p.role.value}", self.lang)
+                role_counts[r_name] = role_counts.get(r_name, 0) + 1
 
         breakdown_parts = []
         # Sort so Citizen (Fuqaro) comes first, then sorted by count descending
@@ -139,7 +157,7 @@ class GameRoom:
         from_them = i18n.get("living_roles_label", self.lang)
         total = i18n.get("living_total_label", self.lang, count=len(living))
 
-        return f"{title}\n{players_block}\n\n{from_them}  {breakdown_str}\n{total}"
+        return f"{title}\n\n{players_block}\n\n{from_them}  {breakdown_str}\n{total}"
 
     async def announce_night_action(self, bot: Bot, role_str: str):
         if role_str in self.night_announced_roles:
@@ -190,13 +208,22 @@ class GameRoom:
             try:
                 desc = i18n.get(f"role_desc.{role.value}", self.lang)
                 role_title = i18n.get(f"roles.{role.value}", self.lang)
+                pm_markup = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text=i18n.get("btn_set_will", self.lang), callback_data=f"set_will_{self.chat_id}")]
+                ])
                 await bot.send_message(
                     p_id,
                     i18n.get("pm_role_assigned", self.lang, role=role_title, description=desc),
+                    reply_markup=pm_markup,
                     parse_mode="HTML"
                 )
             except Exception as e:
                 logger.warning(f"Could not send PM to player {p_id}: {e}")
+
+        # Ensure no player was left without a role
+        for p in self.players.values():
+            if not p.role:
+                p.role = Role.CITIZEN
 
         # Check if any player has fake documents in DB
         try:
@@ -210,14 +237,20 @@ class GameRoom:
 
         # Send group message: O'yin boshlandi! with "Sizning rolingiz" button
         role_markup = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=i18n.get("btn_check_role", self.lang), callback_data=f"check_role_{self.chat_id}")]
+            [
+                InlineKeyboardButton(text=i18n.get("btn_check_role", self.lang), callback_data=f"check_role_{self.chat_id}"),
+                InlineKeyboardButton(text=i18n.get("btn_open_bot_pm", self.lang), url=f"https://t.me/{settings.BOT_USERNAME}")
+            ]
         ])
-        await bot.send_message(
-            self.chat_id,
-            i18n.get("game_starting", self.lang),
-            reply_markup=role_markup,
-            parse_mode="HTML"
-        )
+        try:
+            await bot.send_message(
+                self.chat_id,
+                i18n.get("game_starting", self.lang),
+                reply_markup=role_markup,
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.error(f"Error sending game_starting message: {e}")
 
         await asyncio.sleep(3)
         await self.start_night(bot)
@@ -231,7 +264,7 @@ class GameRoom:
             return False
 
         role_title = i18n.get(f"roles.{sender.role.value}", self.lang)
-        msg = f"🩸 <b>[Mafiya Maxfiy Chati]</b> <b>{sender_name}</b> ({role_title}):\n<i>\"{text}\"</i>"
+        msg = f"🩸 <b>[Mafiya Maxfiy Chati]</b> <b>{html.escape(sender_name, quote=False)}</b> ({role_title}):\n<i>\"{html.escape(text, quote=False)}\"</i>"
 
         mafia_teammates = [
             p for p in self.alive_players
@@ -264,26 +297,41 @@ class GameRoom:
             p.protected_by_bodyguard = False
             p.protected_by_lawyer = False
 
-        # Mute group chat
-        await mute_chat_night(bot, self.chat_id)
+        # Mute group chat safely
+        try:
+            await mute_chat_night(bot, self.chat_id)
+        except Exception as e:
+            logger.warning(f"Error muting chat {self.chat_id}: {e}")
 
-        # Message 1: Night banner with 'Bot-ga o'tish' button
+        # Roll random night event
+        events = ["event_clear", "event_fog", "event_blood_moon", "event_blackout"]
+        self.current_event = random.choices(events, weights=[0.55, 0.15, 0.15, 0.15], k=1)[0]
+        event_banner = i18n.get(self.current_event, self.lang)
+
+        # Message 1: Night banner with event and 'Bot-ga o'tish' button
         night_markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=i18n.get("btn_open_bot", self.lang), url=f"https://t.me/{settings.BOT_USERNAME}")]
         ])
-        await bot.send_message(
-            self.chat_id,
-            i18n.get("night_started", self.lang, round=self.round),
-            reply_markup=night_markup,
-            parse_mode="HTML"
-        )
+        night_title = i18n.get("night_started", self.lang, round=self.round)
+        try:
+            await bot.send_message(
+                self.chat_id,
+                f"{night_title}\n\n{event_banner}",
+                reply_markup=night_markup,
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.error(f"Error sending night banner: {e}")
 
         # Message 2: Living players list
-        await bot.send_message(
-            self.chat_id,
-            self.get_living_players_text(),
-            parse_mode="HTML"
-        )
+        try:
+            await bot.send_message(
+                self.chat_id,
+                self.get_living_players_text(),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.error(f"Error sending living players text: {e}")
 
         # Prompt each night-active role in PM
         await self._send_night_prompts(bot)
@@ -294,73 +342,116 @@ class GameRoom:
     async def _send_night_prompts(self, bot: Bot):
         living = self.alive_players
         for p in living:
+            if not p.role:
+                continue
+
             target_buttons = [
-                [InlineKeyboardButton(text=f"🎯 {target.name}", callback_data=f"act_{self.chat_id}_{p.role.value}_{target.user_id}")]
+                [InlineKeyboardButton(text=f"🎯 {html.escape(target.name)}", callback_data=f"act_{self.chat_id}_{p.role.value}_{target.user_id}")]
                 for target in living
                 if target.user_id != p.user_id or (p.role == Role.DOCTOR and not p.last_healed)
             ]
-            markup = InlineKeyboardMarkup(inline_keyboard=target_buttons)
+            markup = InlineKeyboardMarkup(inline_keyboard=target_buttons) if target_buttons else None
 
             if p.role in [Role.DON, Role.MAFIA]:
-                try:
-                    await bot.send_message(
-                        p.user_id,
-                        i18n.get("night_prompt_mafia", self.lang),
-                        reply_markup=markup,
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
+                if markup:
+                    try:
+                        await bot.send_message(
+                            p.user_id,
+                            i18n.get("night_prompt_mafia", self.lang),
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
             elif p.role == Role.DOCTOR:
-                try:
-                    await bot.send_message(
-                        p.user_id,
-                        i18n.get("night_prompt_doctor", self.lang),
-                        reply_markup=markup,
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
+                if markup:
+                    try:
+                        await bot.send_message(
+                            p.user_id,
+                            i18n.get("night_prompt_doctor", self.lang),
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
             elif p.role == Role.DETECTIVE:
-                try:
-                    await bot.send_message(
-                        p.user_id,
-                        i18n.get("night_prompt_detective", self.lang),
-                        reply_markup=markup,
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
+                if markup:
+                    try:
+                        await bot.send_message(
+                            p.user_id,
+                            i18n.get("night_prompt_detective", self.lang),
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
             elif p.role == Role.MANIAC:
-                try:
-                    await bot.send_message(
-                        p.user_id,
-                        i18n.get("night_prompt_maniac", self.lang),
-                        reply_markup=markup,
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
+                if markup:
+                    try:
+                        await bot.send_message(
+                            p.user_id,
+                            i18n.get("night_prompt_maniac", self.lang),
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
             elif p.role == Role.MISTRESS:
-                try:
-                    await bot.send_message(
-                        p.user_id,
-                        i18n.get("night_prompt_mistress", self.lang),
-                        reply_markup=markup,
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
+                if markup:
+                    try:
+                        await bot.send_message(
+                            p.user_id,
+                            i18n.get("night_prompt_mistress", self.lang),
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
             elif p.role == Role.SNIPER and p.sniper_ammo > 0:
+                if markup:
+                    try:
+                        await bot.send_message(
+                            p.user_id,
+                            i18n.get("night_prompt_sniper", self.lang),
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
+            elif p.role == Role.CITIZEN:
                 try:
                     await bot.send_message(
                         p.user_id,
-                        i18n.get("night_prompt_sniper", self.lang),
-                        reply_markup=markup,
+                        i18n.get("night_prompt_citizen", self.lang),
                         parse_mode="HTML"
                     )
                 except Exception:
                     pass
+
+    def are_all_night_actions_done(self) -> bool:
+        """Check if all living roles with required night actions have submitted them."""
+        living = self.alive_players
+        mafiosi = [p for p in living if p.role in [Role.DON, Role.MAFIA]]
+        if mafiosi and not self.mafia_votes:
+            return False
+
+        has_doctor = any(p.role == Role.DOCTOR and not p.is_blocked for p in living)
+        if has_doctor and self.doctor_target is None:
+            return False
+
+        has_detective = any(p.role == Role.DETECTIVE and not p.is_blocked for p in living)
+        if has_detective and self.detective_target is None:
+            return False
+
+        has_maniac = any(p.role == Role.MANIAC and not p.is_blocked for p in living)
+        if has_maniac and self.maniac_target is None:
+            return False
+
+        has_mistress = any(p.role == Role.MISTRESS and not p.is_blocked for p in living)
+        if has_mistress and self.mistress_target is None:
+            return False
+
+        return True
 
     async def _night_timer(self, bot: Bot):
         await asyncio.sleep(settings.NIGHT_DURATION)
@@ -481,11 +572,19 @@ class GameRoom:
         if deaths:
             for d in deaths:
                 role_title = i18n.get(f"roles.{d.role.value}", self.lang)
+                victim_name = html.escape(d.name or "O'yinchi")
                 await bot.send_message(
                     self.chat_id,
-                    i18n.get("morning_killed", self.lang, victim=d.name, role=role_title),
+                    i18n.get("morning_killed", self.lang, victim=victim_name, role=role_title),
                     parse_mode="HTML"
                 )
+                if getattr(d, "last_will", None):
+                    clean_will = html.escape(d.last_will)
+                    await bot.send_message(
+                        self.chat_id,
+                        i18n.get("will_reveal", self.lang, name=victim_name, will=clean_will),
+                        parse_mode="HTML"
+                    )
         elif not doctor_saved:
             await bot.send_message(
                 self.chat_id,
@@ -496,17 +595,19 @@ class GameRoom:
         if sergeant_promoted:
             role_sergeant = i18n.get("roles.sergeant", self.lang)
             role_detective = i18n.get("roles.detective", self.lang)
+            clean_s_name = html.escape(sergeant_promoted.name or "O'yinchi")
             await bot.send_message(
                 self.chat_id,
-                f"🎖 <b>{role_sergeant} {sergeant_promoted.name}</b> {role_detective} lavozimiga ko'tarildi!",
+                f"🎖 <b>{role_sergeant} {clean_s_name}</b> {role_detective} lavozimiga ko'tarildi!",
                 parse_mode="HTML"
             )
 
         if don_promoted:
             promoted_player, old_role_title = don_promoted
+            clean_don_name = html.escape(promoted_player.name or "O'yinchi")
             await bot.send_message(
                 self.chat_id,
-                i18n.get("don_promoted", self.lang, old_role=old_role_title, name=promoted_player.name),
+                i18n.get("don_promoted", self.lang, old_role=old_role_title, name=clean_don_name),
                 parse_mode="HTML"
             )
 
@@ -639,19 +740,28 @@ class GameRoom:
         lynched.is_alive = False
         await mute_dead_player(bot, self.chat_id, lynched.user_id)
         role_title = i18n.get(f"roles.{lynched.role.value}", self.lang)
+        lynched_name = html.escape(lynched.name or "O'yinchi")
 
         await bot.send_message(
             self.chat_id,
-            i18n.get("player_lynched", self.lang, name=lynched.name, user_id=lynched.user_id, role=role_title),
+            i18n.get("player_lynched", self.lang, name=lynched_name, user_id=lynched.user_id, role=role_title),
             parse_mode="HTML"
         )
+
+        if getattr(lynched, "last_will", None):
+            clean_will = html.escape(lynched.last_will)
+            await bot.send_message(
+                self.chat_id,
+                i18n.get("will_reveal", self.lang, name=lynched_name, will=clean_will),
+                parse_mode="HTML"
+            )
 
         # Jester win check
         if lynched.role == Role.JESTER:
             self.jester_won = True
             await bot.send_message(
                 self.chat_id,
-                i18n.get("jester_lynched", self.lang, name=lynched.name),
+                i18n.get("jester_lynched", self.lang, name=lynched_name),
                 parse_mode="HTML"
             )
 
@@ -663,9 +773,10 @@ class GameRoom:
                 collateral.is_alive = False
                 await mute_dead_player(bot, self.chat_id, collateral.user_id)
                 c_role = i18n.get(f"roles.{collateral.role.value}", self.lang)
+                clean_col_name = html.escape(collateral.name or "O'yinchi")
                 await bot.send_message(
                     self.chat_id,
-                    f"💣 <b>Kamikadze portladi!</b> {collateral.name} ({c_role}) ham halok bo'ldi!",
+                    f"💣 <b>Kamikadze portladi!</b> {clean_col_name} ({c_role}) ham halok bo'ldi!",
                     parse_mode="HTML"
                 )
 
@@ -677,9 +788,10 @@ class GameRoom:
                 sergeant.role = Role.DETECTIVE
                 role_sergeant = i18n.get("roles.sergeant", self.lang)
                 role_detective = i18n.get("roles.detective", self.lang)
+                clean_sgt_name = html.escape(sergeant.name or "O'yinchi")
                 await bot.send_message(
                     self.chat_id,
-                    f"🎖 <b>{role_sergeant} {sergeant.name}</b> {role_detective} lavozimiga ko'tarildi!",
+                    f"🎖 <b>{role_sergeant} {clean_sgt_name}</b> {role_detective} lavozimiga ko'tarildi!",
                     parse_mode="HTML"
                 )
 
@@ -692,9 +804,10 @@ class GameRoom:
             if successor:
                 old_role_title = i18n.get(f"roles.{successor.role.value}", self.lang)
                 successor.role = Role.DON
+                clean_succ_name = html.escape(successor.name or "O'yinchi")
                 await bot.send_message(
                     self.chat_id,
-                    i18n.get("don_promoted", self.lang, old_role=old_role_title, name=successor.name),
+                    i18n.get("don_promoted", self.lang, old_role=old_role_title, name=clean_succ_name),
                     parse_mode="HTML"
                 )
 

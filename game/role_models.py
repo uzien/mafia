@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List
+from typing import Dict, List, Optional
 from game.enums import Role, Team
 
 ROLE_TEAMS: Dict[Role, Team] = {
@@ -36,6 +36,7 @@ class Player:
         self.missed_votes: int = 0      # AFK detection
         self.guilt_suicide: bool = False
         self.has_fake_docs: bool = False
+        self.last_will: Optional[str] = None
 
     @property
     def team(self) -> Team:
@@ -49,7 +50,11 @@ def distribute_roles(player_ids: List[int], role_boosts: Dict[int, Role] = None)
     count = len(player_ids)
     role_pool: List[Role] = []
 
-    if count == 4:
+    if count <= 2:
+        role_pool = [Role.DON, Role.DETECTIVE][:count]
+    elif count == 3:
+        role_pool = [Role.DON, Role.DETECTIVE, Role.DOCTOR]
+    elif count == 4:
         role_pool = [Role.DON, Role.DETECTIVE, Role.DOCTOR, Role.CITIZEN]
     elif count == 5:
         role_pool = [Role.DON, Role.DETECTIVE, Role.DOCTOR, Role.CITIZEN, Role.CITIZEN]
@@ -87,5 +92,10 @@ def distribute_roles(player_ids: List[int], role_boosts: Dict[int, Role] = None)
     # Distribute remaining
     for p_id, role in zip(shuffled_players, role_pool):
         assignments[p_id] = role
+
+    # Fallback to ensure no player has None role
+    for p_id in player_ids:
+        if p_id not in assignments:
+            assignments[p_id] = Role.CITIZEN
 
     return assignments
