@@ -1027,10 +1027,92 @@ class GameRoom:
         full_msg = "\n".join(lines)
         await bot.send_message(self.chat_id, full_msg, parse_mode="HTML")
 
-        # Distribute database stats and rewards
+        # Distribute database stats and rewards, and send PM profile summary
         async with async_session_maker() as session:
             for p in self.players.values():
                 is_win = (p.team == winner_team) or (winner_team == Team.NEUTRAL and p.role == Role.MANIAC) or (winner_team == Team.JESTER and p.role == Role.JESTER)
                 coins = settings.WIN_COIN_REWARD if is_win else settings.LOSE_COIN_REWARD
                 exp = settings.WIN_EXP_REWARD if is_win else settings.LOSE_EXP_REWARD
-                await add_game_stats(session, p.user_id, is_win, p.role.value, coins, exp)
+                user = await add_game_stats(session, p.user_id, is_win, p.role.value, coins, exp)
+                if user:
+                    await self._send_pm_profile_summary(bot, p, user, is_win, coins, exp)
+
+    async def _send_pm_profile_summary(
+        self,
+        bot: Bot,
+        player: Player,
+        user,
+        is_win: bool,
+        coins: int,
+        exp: int
+    ):
+        """Send personal post-game profile card and reward details to the player via PM."""
+        try:
+            lang = user.language or self.lang or "uz"
+            role_title = i18n.get(f"roles.{player.role.value}", lang)
+            win_rate = round((user.wins / user.games_played * 100), 1) if user.games_played > 0 else 0
+
+            if is_win:
+                result_banner = {
+                    "uz": "🎉 <b>Tabriklaymiz, siz g'alaba qozondingiz!</b>",
+                    "ru": "🎉 <b>Поздравляем, вы победили!</b>",
+                    "en": "🎉 <b>Victory! You won!</b>",
+                    "az": "🎉 <b>Təbriklər, qalib gəldiniz!</b>",
+                    "tr": "🎉 <b>Tebrikler, kazandınız!</b>"
+                }.get(lang, "🎉 <b>Tabriklaymiz, siz g'alaba qozondingiz!</b>")
+            else:
+                result_banner = {
+                    "uz": "💀 <b>Bu safar jamoangiz mag'lub bo'ldi.</b>",
+                    "ru": "💀 <b>В этот раз ваша команда потерпела поражение.</b>",
+                    "en": "💀 <b>Defeat this time.</b>",
+                    "az": "💀 <b>Bu dəfə komandanız məğlub oldu.</b>",
+                    "tr": "💀 <b>Bu sefer takımınız kaybetti.</b>"
+                }.get(lang, "💀 <b>Bu safar jamoangiz mag'lub bo'ldi.</b>")
+
+            reward_label = {
+                "uz": "O'yindan olingan mukofot",
+                "ru": "Награда за игру",
+                "en": "Match Reward",
+                "az": "Oyun mükafatı",
+                "tr": "Oyun ödülü"
+            }.get(lang, "O'yindan olingan mukofot")
+
+            profile_header = {
+                "uz": "Sizning Yangilangan Profilingiz",
+                "ru": "Ваш Обновленный Профиль",
+                "en": "Your Updated Profile",
+                "az": "Sizin Yenilənmiş Profiliniz",
+                "tr": "Güncellenmiş Profiliniz"
+            }.get(lang, "Sizning Yangilangan Profilingiz")
+
+            coins_earned_str = f"+{coins}" if coins > 0 else "0"
+
+            msg = (
+                f"🎮 <b>O'YIN YAKUNI VA HISOBOT</b>\n"
+                f"━━━━━━━━━━━━━━━━━━━━\n"
+                f"{result_banner}\n"
+                f"🎭 Sizning rolingiz: <b>{role_title}</b>\n\n"
+                f"💰 <b>{reward_label}:</b> <b>{coins_earned_str} Tanga</b> | <b>+{exp} EXP</b>\n"
+                f"━━━━━━━━━━━━━━━━━━━━\n"
+                f"👤 <b>{profile_header}:</b>\n"
+                f"🏷 Unvon: <b>{user.title}</b>\n"
+                f"⭐ Daraja: <b>{user.level}</b> ({user.exp} EXP)\n"
+                f"💰 Jami Tanga: <b>{user.coins}</b> | 💎 Olmos: <b>{user.diamonds}</b>\n\n"
+                f"📊 <b>Umumiy statistika:</b>\n"
+                f"• O'yinlar: <b>{user.games_played}</b> | G'alabalar: <b>{user.wins}</b> ({win_rate}%)\n"
+                f"━━━━━━━━━━━━━━━━━━━━"
+            )
+
+            markup = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="🛒 Do'kon", callback_data="nav_shop"),
+                    InlineKeyboardButton(text="🎁 Kunlik Bonus", callback_data="nav_daily")
+                ],
+                [
+                    InlineKeyboardButton(text="💎 Olmos olish (@mx767)", url="https://t.me/mx767")
+                ]
+            ])
+
+            await bot.send_message(player.user_id, msg, reply_markup=markup, parse_mode="HTML")
+        except Exception as e:
+            logger.debug(f"Could not send PM profile summary to {player.user_id}: {e}")

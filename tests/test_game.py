@@ -558,3 +558,42 @@ async def test_end_game_message_formatting():
     assert "tg://user?id=2" in text
     assert "2 minut 15 soniya" in text
     assert "Har bir g'olib" in text
+
+@pytest.mark.asyncio
+async def test_send_pm_profile_summary():
+    from unittest.mock import AsyncMock, MagicMock
+    from game.enums import Role
+    from game.role_models import Player
+    from game.room import GameRoom
+
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Winner", lang="uz")
+    player = Player(user_id=100, name="WinnerPlayer")
+    player.role = Role.DON
+
+    fake_user = MagicMock()
+    fake_user.id = 100
+    fake_user.language = "uz"
+    fake_user.title = "Buyuk Don"
+    fake_user.level = 5
+    fake_user.exp = 1200
+    fake_user.coins = 750
+    fake_user.diamonds = 12
+    fake_user.wins = 15
+    fake_user.losses = 5
+    fake_user.games_played = 20
+
+    bot = AsyncMock()
+    await room._send_pm_profile_summary(bot, player, fake_user, is_win=True, coins=150, exp=100)
+
+    assert bot.send_message.called
+    args = bot.send_message.call_args
+    assert args[0][0] == 100  # sent to player PM
+    text = args[0][1]
+    assert "O'YIN YAKUNI" in text
+    assert "Tabriklaymiz, siz g'alaba qozondingiz!" in text
+    assert "+150 Tanga" in text
+    assert "+100 EXP" in text
+    assert "750" in text
+    assert "Buyuk Don" in text
+    assert "12" in text
+

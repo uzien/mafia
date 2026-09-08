@@ -84,12 +84,12 @@ async def claim_daily_bonus(session: AsyncSession, user_id: int, amount: int) ->
     await session.commit()
     return True, 0
 
-async def add_game_stats(session: AsyncSession, user_id: int, won: bool, role: str, coins: int, exp: int):
+async def add_game_stats(session: AsyncSession, user_id: int, won: bool, role: str, coins: int, exp: int) -> Optional[User]:
     stmt = select(User).where(User.id == user_id)
     result = await session.execute(stmt)
     user = result.scalar_one_or_none()
     if not user:
-        return
+        return None
     user.games_played += 1
     if won:
         user.wins += 1
@@ -101,6 +101,8 @@ async def add_game_stats(session: AsyncSession, user_id: int, won: bool, role: s
     if user.exp >= user.level * 250:
         user.level += 1
     await session.commit()
+    await session.refresh(user)
+    return user
 
 async def get_top_players(session: AsyncSession, limit: int = 10) -> List[User]:
     stmt = select(User).order_by(desc(User.wins), desc(User.exp)).limit(limit)
