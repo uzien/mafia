@@ -43,32 +43,135 @@ async def start_web_server(port: int) -> web.AppRunner:
 
 from aiogram.types import BotCommand, BotCommandScopeAllGroupChats, BotCommandScopeDefault
 
+COMMANDS_BY_LANG = {
+    "uz": {
+        "private": [
+            BotCommand(command="profile", description="👤 Shaxsiy profil va balans"),
+            BotCommand(command="shop", description="🛒 Do'kon (Kartalar, soxta hujjat)"),
+            BotCommand(command="daily", description="🎁 Kunlik bepul tanga bonusi"),
+            BotCommand(command="roulette", description="🎰 Omad g'ildiragi (Ruletka)"),
+            BotCommand(command="tournament", description="🏆 Turnirlar va sovrinlar"),
+            BotCommand(command="clan", description="🛡 Mafiya oilasi (Klan)"),
+            BotCommand(command="top", description="📊 Eng kuchli o'yinchilar"),
+            BotCommand(command="commands", description="📋 Barcha buyruqlar ro'yxati"),
+            BotCommand(command="lang", description="🌐 Tilni o'zgartirish"),
+            BotCommand(command="help", description="📖 Yordam va o'yin qoidalari"),
+        ],
+        "group": [
+            BotCommand(command="game", description="🎮 Yangi Mafiya o'yini ochish"),
+            BotCommand(command="start", description="🚀 O'yinni tezroq boshlash"),
+            BotCommand(command="extend", description="⏳ Ro'yxatga vaqt qo'shish (+30s)"),
+            BotCommand(command="stop", description="🛑 O'yinni to'xtatish (Admin)"),
+            BotCommand(command="setlang", description="🌐 Guruh tilini tanlash"),
+            BotCommand(command="help", description="📖 Guruh buyruqlari va qoidalar"),
+        ]
+    },
+    "az": {
+        "private": [
+            BotCommand(command="profile", description="👤 Şəxsi profil və balans"),
+            BotCommand(command="shop", description="🛒 Mağaza (Kartlar, saxta sənəd)"),
+            BotCommand(command="daily", description="🎁 Gündəlik bonus"),
+            BotCommand(command="roulette", description="🎰 Bəxt çarxı (Rulet)"),
+            BotCommand(command="tournament", description="🏆 Turnirlər və kuboklar"),
+            BotCommand(command="clan", description="🛡 Mafiya klanı"),
+            BotCommand(command="top", description="📊 Liderlər cədvəli"),
+            BotCommand(command="commands", description="📋 Bütün əmrlər"),
+            BotCommand(command="lang", description="🌐 Dil seçimi"),
+            BotCommand(command="help", description="📖 Kömək və qaydalar"),
+        ],
+        "group": [
+            BotCommand(command="game", description="🎮 Yeni oyun otağı açmaq"),
+            BotCommand(command="start", description="🚀 Oyunu indi başlat"),
+            BotCommand(command="extend", description="⏳ Vaxtı uzatmaq (+30s)"),
+            BotCommand(command="stop", description="🛑 Oyunu dayandırmaq"),
+            BotCommand(command="setlang", description="🌐 Qrup dilini seçmək"),
+            BotCommand(command="help", description="📖 Əmrlər və kömək"),
+        ]
+    },
+    "ru": {
+        "private": [
+            BotCommand(command="profile", description="👤 Профиль и баланс"),
+            BotCommand(command="shop", description="🛒 Магазин (Карты, документы)"),
+            BotCommand(command="daily", description="🎁 Ежедневный бонус"),
+            BotCommand(command="roulette", description="🎰 Колесо удачи (Рулетка)"),
+            BotCommand(command="tournament", description="🏆 Турниры и кубки"),
+            BotCommand(command="clan", description="🛡 Клан Мафии"),
+            BotCommand(command="top", description="📊 Топ игроков"),
+            BotCommand(command="commands", description="📋 Список всех команд"),
+            BotCommand(command="lang", description="🌐 Сменить язык"),
+            BotCommand(command="help", description="📖 Помощь и правила"),
+        ],
+        "group": [
+            BotCommand(command="game", description="🎮 Создать игру Мафия"),
+            BotCommand(command="start", description="🚀 Начать досрочно"),
+            BotCommand(command="extend", description="⏳ Продлить набор (+30с)"),
+            BotCommand(command="stop", description="🛑 Остановить игру"),
+            BotCommand(command="setlang", description="🌐 Язык группы"),
+            BotCommand(command="help", description="📖 Команды группы"),
+        ]
+    },
+    "en": {
+        "private": [
+            BotCommand(command="profile", description="👤 Profile & balance"),
+            BotCommand(command="shop", description="🛒 Store (Cards, fake docs)"),
+            BotCommand(command="daily", description="🎁 Daily coin bonus"),
+            BotCommand(command="roulette", description="🎰 Lucky Wheel (Roulette)"),
+            BotCommand(command="tournament", description="🏆 Tournaments & prizes"),
+            BotCommand(command="clan", description="🛡 Mafia Clan"),
+            BotCommand(command="top", description="📊 Leaderboard"),
+            BotCommand(command="commands", description="📋 All commands"),
+            BotCommand(command="lang", description="🌐 Change language"),
+            BotCommand(command="help", description="📖 Help & game rules"),
+        ],
+        "group": [
+            BotCommand(command="game", description="🎮 Create new Mafia game"),
+            BotCommand(command="start", description="🚀 Start game early"),
+            BotCommand(command="extend", description="⏳ Extend lobby time (+30s)"),
+            BotCommand(command="stop", description="🛑 Cancel game (Admin)"),
+            BotCommand(command="setlang", description="🌐 Group language"),
+            BotCommand(command="help", description="📖 Group commands & help"),
+        ]
+    },
+    "tr": {
+        "private": [
+            BotCommand(command="profile", description="👤 Profil ve bakiye"),
+            BotCommand(command="shop", description="🛒 Mağaza (Kartlar, sahte kimlik)"),
+            BotCommand(command="daily", description="🎁 Günlük altın ödülü"),
+            BotCommand(command="roulette", description="🎰 Çarkıfelek (Rulet)"),
+            BotCommand(command="tournament", description="🏆 Turnuvalar ve ödüller"),
+            BotCommand(command="clan", description="🛡 Mafya Klanı"),
+            BotCommand(command="top", description="📊 Liderlik tablosu"),
+            BotCommand(command="commands", description="📋 Tüm komutlar"),
+            BotCommand(command="lang", description="🌐 Dil seçimi"),
+            BotCommand(command="help", description="📖 Yardım ve kurallar"),
+        ],
+        "group": [
+            BotCommand(command="game", description="🎮 Yeni Mafya oyunu başlat"),
+            BotCommand(command="start", description="🚀 Erken başlat"),
+            BotCommand(command="extend", description="⏳ Süreyi uzat (+30sn)"),
+            BotCommand(command="stop", description="🛑 Oyunu durdur (Yönetici)"),
+            BotCommand(command="setlang", description="🌐 Grup dilini ayarla"),
+            BotCommand(command="help", description="📖 Grup komutları"),
+        ]
+    }
+}
+
 async def setup_bot_commands(bot: Bot):
     try:
-        # Commands for Private chats
-        private_cmds = [
-            BotCommand(command="profile", description="👤 Profil və Balans / Profile"),
-            BotCommand(command="shop", description="🛒 Mağaza / Store"),
-            BotCommand(command="daily", description="🎁 Gündəlik Bonus / Daily Bonus"),
-            BotCommand(command="roulette", description="🎰 Bəxt Çarxı / Lucky Roulette"),
-            BotCommand(command="tournament", description="🏆 Turnirlər / Tournaments"),
-            BotCommand(command="clan", description="🛡 Mafiya Klanı / Clan"),
-            BotCommand(command="top", description="📊 Liderlər / Leaderboard"),
-            BotCommand(command="lang", description="🌐 Dil seçimi / Language"),
-            BotCommand(command="help", description="📖 Kömək və Qaydalar / Help"),
-        ]
-        await bot.set_my_commands(private_cmds, scope=BotCommandScopeDefault())
+        # 1. Register default commands (Uzbek)
+        uz_cmds = COMMANDS_BY_LANG["uz"]
+        await bot.set_my_commands(uz_cmds["private"], scope=BotCommandScopeDefault())
+        await bot.set_my_commands(uz_cmds["group"], scope=BotCommandScopeAllGroupChats())
 
-        # Commands for Group chats
-        group_cmds = [
-            BotCommand(command="game", description="🎮 Yeni Mafiya oyunu / New Game"),
-            BotCommand(command="start", description="🚀 İndi başlat / Start early"),
-            BotCommand(command="stop", description="🛑 Oyunu dayandır / Stop game"),
-            BotCommand(command="setlang", description="🌐 Qrup dili / Group language"),
-            BotCommand(command="help", description="📖 Əmrlər / Commands"),
-        ]
-        await bot.set_my_commands(group_cmds, scope=BotCommandScopeAllGroupChats())
-        logger.info("Telegram Bot Menu commands successfully configured!")
+        # 2. Register per-language commands for Telegram clients
+        for lang_code, cmds in COMMANDS_BY_LANG.items():
+            try:
+                await bot.set_my_commands(cmds["private"], scope=BotCommandScopeDefault(), language_code=lang_code)
+                await bot.set_my_commands(cmds["group"], scope=BotCommandScopeAllGroupChats(), language_code=lang_code)
+            except Exception as e:
+                logger.warning(f"Could not set commands for {lang_code}: {e}")
+
+        logger.info("Telegram Bot Menu commands successfully configured in all languages (Default: Uzbek)!")
     except Exception as e:
         logger.warning(f"Failed to set bot commands: {e}")
 
