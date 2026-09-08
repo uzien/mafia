@@ -35,14 +35,37 @@ class Settings(BaseSettings):
 
     @property
     def async_db_url(self) -> str:
-        url = (self.DATABASE_URL or "").strip().strip("'\"")
-        if not url:
-            url = self.DB_URL
-        if url.startswith("postgres://"):
-            return url.replace("postgres://", "postgresql+asyncpg://", 1)
-        if url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
-            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return url
+        import urllib.parse
+        raw = (self.DATABASE_URL or "").strip().strip("'\"")
+        if not raw:
+            return self.DB_URL
+        
+        prefix = ""
+        for p in ["postgresql+asyncpg://", "postgresql://", "postgres://"]:
+            if raw.startswith(p):
+                prefix = p
+                break
+        
+        if not prefix:
+            return raw
+            
+        remainder = raw[len(prefix):]
+        # Handle unencoded special characters in credentials if present
+        if "@" in remainder:
+            auth_part, host_part = remainder.rsplit("@", 1)
+            if ":" in auth_part:
+                user, password = auth_part.split(":", 1)
+                user = urllib.parse.quote(urllib.parse.unquote(user), safe="")
+                password = urllib.parse.quote(urllib.parse.unquote(password), safe="")
+                auth_part = f"{user}:{password}"
+            remainder = f"{auth_part}@{host_part}"
+        
+        # If connecting to render.com external host without ssl query, append ?ssl=require
+        if ".render.com" in remainder and "ssl" not in remainder:
+            delimiter = "&" if "?" in remainder else "?"
+            remainder = f"{remainder}{delimiter}ssl=require"
+            
+        return f"postgresql+asyncpg://{remainder}"
     
     # Game Settings
     MIN_PLAYERS: int = 4

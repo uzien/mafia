@@ -30,6 +30,13 @@ async def init_db():
     is_postgres = "postgresql" in target_url
 
     if is_postgres:
+        from sqlalchemy.engine.url import make_url
+        try:
+            parsed = make_url(target_url)
+            logger.info(f"Database target: {parsed.render_as_string(hide_password=True)}")
+        except Exception:
+            pass
+
         max_retries = 3
         for attempt in range(1, max_retries + 1):
             try:
