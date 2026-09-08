@@ -16,6 +16,26 @@ from locales.i18n import SUPPORTED_LANGUAGES, i18n
 
 common_router = Router()
 
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    Message,
+    ReplyKeyboardMarkup,
+)
+
+def get_main_menu_keyboard(lang: str = "az") -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🎮 Oyna / Play"), KeyboardButton(text="👤 Profil")],
+            [KeyboardButton(text="🛒 Mağaza"), KeyboardButton(text="🎰 Rulet")],
+            [KeyboardButton(text="🎁 Gündəlik Bonus"), KeyboardButton(text="🏆 Turnir")],
+            [KeyboardButton(text="🛡 Klan"), KeyboardButton(text="🌐 Dil / Lang")]
+        ],
+        resize_keyboard=True
+    )
+
 def get_language_markup(prefix: str = "set_lang_") -> InlineKeyboardMarkup:
     buttons = [
         [InlineKeyboardButton(text=name, callback_data=f"{prefix}{code}")]
@@ -35,7 +55,16 @@ async def cmd_start(message: Message):
                 default_lang=settings.DEFAULT_LANGUAGE
             )
             text = i18n.get("welcome", user.language, name=user.first_name)
-            await message.answer(text, parse_mode="HTML")
+            await message.answer(text, reply_markup=get_main_menu_keyboard(user.language), parse_mode="HTML")
+
+            try:
+                me = await message.bot.get_me()
+                add_markup = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="➕ Qrupa Əlavə Et / Add to Group", url=f"https://t.me/{me.username}?startgroup=true")]
+                ])
+                await message.answer("🎮 Qrupunuzda oyuna başlamaq üçün:", reply_markup=add_markup)
+            except Exception:
+                pass
         else:
             group = await get_or_create_group(session, message.chat.id, message.chat.title or "Group")
             await message.answer(
@@ -141,3 +170,47 @@ async def cmd_top(message: Message):
             lines.append(f"{medal} <b>{u.first_name}</b> — 🏆 {u.wins} Wins | ⭐ Lvl {u.level} | 💰 {u.coins}")
 
         await message.answer("\n".join(lines), parse_mode="HTML")
+
+# Reply Keyboard Text Button Handlers
+@common_router.message(F.text == "🎮 Oyna / Play")
+async def btn_play(message: Message):
+    try:
+        me = await message.bot.get_me()
+        markup = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="➕ Məni Qrupa Əlavə Et / Add to Group", url=f"https://t.me/{me.username}?startgroup=true")]
+        ])
+        await message.answer("🕶 <b>Mafiya oyunu qruplarda oynanılır!</b>\nMəni qrupunuza əlavə edib <code>/game</code> yazın:", reply_markup=markup, parse_mode="HTML")
+    except Exception:
+        pass
+
+@common_router.message(F.text == "👤 Profil")
+async def btn_profile(message: Message):
+    return await cmd_profile(message)
+
+@common_router.message(F.text == "🛒 Mağaza")
+async def btn_shop(message: Message):
+    from handlers.store import cmd_shop
+    return await cmd_shop(message)
+
+@common_router.message(F.text == "🎰 Rulet")
+async def btn_roulette(message: Message):
+    from handlers.roulette import cmd_roulette
+    return await cmd_roulette(message)
+
+@common_router.message(F.text == "🎁 Gündəlik Bonus")
+async def btn_daily(message: Message):
+    return await cmd_daily(message)
+
+@common_router.message(F.text == "🏆 Turnir")
+async def btn_tournament(message: Message):
+    from handlers.tournaments import cmd_tournament
+    return await cmd_tournament(message)
+
+@common_router.message(F.text == "🛡 Klan")
+async def btn_clan(message: Message):
+    from handlers.clans import cmd_clan
+    return await cmd_clan(message)
+
+@common_router.message(F.text == "🌐 Dil / Lang")
+async def btn_lang(message: Message):
+    return await cmd_lang(message)

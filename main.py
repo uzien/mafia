@@ -41,6 +41,37 @@ async def start_web_server(port: int) -> web.AppRunner:
     logger.info(f"Render health check server successfully listening on 0.0.0.0:{port}")
     return runner
 
+from aiogram.types import BotCommand, BotCommandScopeAllGroupChats, BotCommandScopeDefault
+
+async def setup_bot_commands(bot: Bot):
+    try:
+        # Commands for Private chats
+        private_cmds = [
+            BotCommand(command="profile", description="👤 Profil və Balans / Profile"),
+            BotCommand(command="shop", description="🛒 Mağaza / Store"),
+            BotCommand(command="daily", description="🎁 Gündəlik Bonus / Daily Bonus"),
+            BotCommand(command="roulette", description="🎰 Bəxt Çarxı / Lucky Roulette"),
+            BotCommand(command="tournament", description="🏆 Turnirlər / Tournaments"),
+            BotCommand(command="clan", description="🛡 Mafiya Klanı / Clan"),
+            BotCommand(command="top", description="📊 Liderlər / Leaderboard"),
+            BotCommand(command="lang", description="🌐 Dil seçimi / Language"),
+            BotCommand(command="help", description="📖 Kömək və Qaydalar / Help"),
+        ]
+        await bot.set_my_commands(private_cmds, scope=BotCommandScopeDefault())
+
+        # Commands for Group chats
+        group_cmds = [
+            BotCommand(command="game", description="🎮 Yeni Mafiya oyunu / New Game"),
+            BotCommand(command="start", description="🚀 İndi başlat / Start early"),
+            BotCommand(command="stop", description="🛑 Oyunu dayandır / Stop game"),
+            BotCommand(command="setlang", description="🌐 Qrup dili / Group language"),
+            BotCommand(command="help", description="📖 Əmrlər / Commands"),
+        ]
+        await bot.set_my_commands(group_cmds, scope=BotCommandScopeAllGroupChats())
+        logger.info("Telegram Bot Menu commands successfully configured!")
+    except Exception as e:
+        logger.warning(f"Failed to set bot commands: {e}")
+
 async def main():
     if not settings.BOT_TOKEN or settings.BOT_TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":
         logger.error("Please provide a valid BOT_TOKEN in your .env file or environment!")
@@ -74,6 +105,7 @@ async def main():
 
     logger.info("Starting Mafia Baku Black Telegram Bot polling...")
     try:
+        await setup_bot_commands(bot)
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)
     finally:
