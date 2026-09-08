@@ -39,6 +39,7 @@ MENU_BUTTONS = {
         "daily": "🎁 Kunlik Bonus",
         "tournament": "🏆 Turnir",
         "clan": "🛡 Klan",
+        "roles": "🎭 Rollar",
         "lang": "🌐 Tilni tanlash"
     },
     "az": {
@@ -49,6 +50,7 @@ MENU_BUTTONS = {
         "daily": "🎁 Gündəlik Bonus",
         "tournament": "🏆 Turnir",
         "clan": "🛡 Klan",
+        "roles": "🎭 Rollar",
         "lang": "🌐 Dil seçimi"
     },
     "ru": {
@@ -59,6 +61,7 @@ MENU_BUTTONS = {
         "daily": "🎁 Ежедневный Бонус",
         "tournament": "🏆 Турнир",
         "clan": "🛡 Клан",
+        "roles": "🎭 Роли",
         "lang": "🌐 Сменить язык"
     },
     "en": {
@@ -69,6 +72,7 @@ MENU_BUTTONS = {
         "daily": "🎁 Daily Bonus",
         "tournament": "🏆 Tournament",
         "clan": "🛡 Clan",
+        "roles": "🎭 Roles",
         "lang": "🌐 Language"
     },
     "tr": {
@@ -79,6 +83,7 @@ MENU_BUTTONS = {
         "daily": "🎁 Günlük Bonus",
         "tournament": "🏆 Turnuva",
         "clan": "🛡 Klan",
+        "roles": "🎭 Roller",
         "lang": "🌐 Dil seçimi"
     }
 }
@@ -90,6 +95,7 @@ ROULETTE_BUTTONS = {b["roulette"] for b in MENU_BUTTONS.values()} | {"🎰 Rulet
 DAILY_BUTTONS = {b["daily"] for b in MENU_BUTTONS.values()} | {"🎁 Kunlik Bonus", "🎁 Gündəlik Bonus", "🎁 Ежедневный Бонус", "🎁 Daily Bonus", "🎁 Günlük Bonus"}
 TOURNAMENT_BUTTONS = {b["tournament"] for b in MENU_BUTTONS.values()} | {"🏆 Turnir", "🏆 Турнир", "🏆 Tournament", "🏆 Turnuva"}
 CLAN_BUTTONS = {b["clan"] for b in MENU_BUTTONS.values()} | {"🛡 Klan", "🛡 Клан", "🛡 Clan"}
+ROLES_BUTTONS = {b["roles"] for b in MENU_BUTTONS.values()} | {"🎭 Rollar", "🎭 Роли", "🎭 Roles", "🎭 Roller"}
 LANG_BUTTONS = {b["lang"] for b in MENU_BUTTONS.values()} | {"🌐 Tilni tanlash", "🌐 Dil seçimi", "🌐 Dil / Lang", "🌐 Сменить язык", "🌐 Language"}
 
 def get_main_menu_keyboard(lang: str = "uz") -> ReplyKeyboardMarkup:
@@ -99,7 +105,8 @@ def get_main_menu_keyboard(lang: str = "uz") -> ReplyKeyboardMarkup:
             [KeyboardButton(text=btns["play"]), KeyboardButton(text=btns["profile"])],
             [KeyboardButton(text=btns["shop"]), KeyboardButton(text=btns["roulette"])],
             [KeyboardButton(text=btns["daily"]), KeyboardButton(text=btns["tournament"])],
-            [KeyboardButton(text=btns["clan"]), KeyboardButton(text=btns["lang"])]
+            [KeyboardButton(text=btns["clan"]), KeyboardButton(text=btns["roles"])],
+            [KeyboardButton(text=btns["lang"])]
         ],
         resize_keyboard=True
     )
@@ -423,6 +430,11 @@ async def btn_tournament(message: Message):
 async def btn_clan(message: Message):
     from handlers.clans import cmd_clan
     return await cmd_clan(message)
+
+@common_router.message(F.text.in_(ROLES_BUTTONS))
+async def btn_roles(message: Message):
+    from handlers.roles import cmd_roles
+    return await cmd_roles(message)
 
 @common_router.message(F.text.in_(LANG_BUTTONS))
 async def btn_lang(message: Message):

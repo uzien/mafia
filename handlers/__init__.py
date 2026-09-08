@@ -6,6 +6,7 @@ from .game_private import game_private_router
 from .roulette import roulette_router
 from .store import store_router
 from .tournaments import tournament_router
+from .roles import roles_router
 
 __all__ = [
     "common_router",
@@ -15,5 +16,6 @@ __all__ = [
     "clan_router",
     "tournament_router",
     "admin_router",
-    "roulette_router"
+    "roulette_router",
+    "roles_router"
 ]

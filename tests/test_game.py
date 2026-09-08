@@ -313,4 +313,30 @@ async def test_clan_crud_and_methods():
         assert left is True
         assert u1.clan_id is None
 
+def test_roles_catalog_and_details():
+    from handlers.roles import get_roles_catalog_text, get_role_detail_text, get_roles_catalog_markup
+    from game.enums import Role
+
+    # Test catalog text in Uzbek and Russian
+    uz_text = get_roles_catalog_text("uz")
+    assert "13 xil noyob rol" in uz_text
+    assert "Komissar Katani" in uz_text
+    assert "Don" in uz_text
+
+    ru_text = get_roles_catalog_text("ru")
+    assert "13 уникальных ролей" in ru_text
+
+    # Test detail text for Don and Detective
+    don_detail = get_role_detail_text(Role.DON, "uz")
+    assert "Don" in don_detail
+    assert "Mafiya Sindikati" in don_detail
+    assert "G'alaba sharti" in don_detail
+
+    # Test markup
+    markup = get_roles_catalog_markup("uz")
+    buttons = [b.text for row in markup.inline_keyboard for b in row]
+    assert any("Don" in b for b in buttons)
+    assert any("Komissar" in b for b in buttons)
+    assert any("@mafia_adu_litsey" in b for b in buttons)
+
 

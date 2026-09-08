@@ -12,6 +12,7 @@ from handlers import (
     common_router,
     game_group_router,
     game_private_router,
+    roles_router,
     roulette_router,
     store_router,
     tournament_router,
@@ -53,6 +54,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="tournament", description="🏆 Turnirlar va sovrinlar"),
             BotCommand(command="clan", description="🛡 Mafiya oilasi (Klan)"),
             BotCommand(command="top", description="📊 Eng kuchli o'yinchilar"),
+            BotCommand(command="roles", description="🎭 O'yindagi barcha rollar"),
             BotCommand(command="commands", description="📋 Barcha buyruqlar ro'yxati"),
             BotCommand(command="lang", description="🌐 Tilni o'zgartirish"),
             BotCommand(command="help", description="📖 Yordam va o'yin qoidalari"),
@@ -61,6 +63,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="game", description="🎮 Yangi Mafiya o'yini ochish"),
             BotCommand(command="start", description="🚀 O'yinni tezroq boshlash"),
             BotCommand(command="extend", description="⏳ Ro'yxatga vaqt qo'shish (+30s)"),
+            BotCommand(command="roles", description="🎭 Rollar ma'lumotnomasi"),
             BotCommand(command="stop", description="🛑 O'yinni to'xtatish (Admin)"),
             BotCommand(command="setlang", description="🌐 Guruh tilini tanlash"),
             BotCommand(command="help", description="📖 Guruh buyruqlari va qoidalar"),
@@ -75,6 +78,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="tournament", description="🏆 Turnirlər və kuboklar"),
             BotCommand(command="clan", description="🛡 Mafiya klanı"),
             BotCommand(command="top", description="📊 Liderlər cədvəli"),
+            BotCommand(command="roles", description="🎭 Oyundakı bütün rollar"),
             BotCommand(command="commands", description="📋 Bütün əmrlər"),
             BotCommand(command="lang", description="🌐 Dil seçimi"),
             BotCommand(command="help", description="📖 Kömək və qaydalar"),
@@ -83,6 +87,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="game", description="🎮 Yeni oyun otağı açmaq"),
             BotCommand(command="start", description="🚀 Oyunu indi başlat"),
             BotCommand(command="extend", description="⏳ Vaxtı uzatmaq (+30s)"),
+            BotCommand(command="roles", description="🎭 Rollar haqqında"),
             BotCommand(command="stop", description="🛑 Oyunu dayandırmaq"),
             BotCommand(command="setlang", description="🌐 Qrup dilini seçmək"),
             BotCommand(command="help", description="📖 Əmrlər və kömək"),
@@ -97,6 +102,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="tournament", description="🏆 Турниры и кубки"),
             BotCommand(command="clan", description="🛡 Клан Мафии"),
             BotCommand(command="top", description="📊 Топ игроков"),
+            BotCommand(command="roles", description="🎭 Все роли в игре"),
             BotCommand(command="commands", description="📋 Список всех команд"),
             BotCommand(command="lang", description="🌐 Сменить язык"),
             BotCommand(command="help", description="📖 Помощь и правила"),
@@ -105,6 +111,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="game", description="🎮 Создать игру Мафия"),
             BotCommand(command="start", description="🚀 Начать досрочно"),
             BotCommand(command="extend", description="⏳ Продлить набор (+30с)"),
+            BotCommand(command="roles", description="🎭 Описание ролей"),
             BotCommand(command="stop", description="🛑 Остановить игру"),
             BotCommand(command="setlang", description="🌐 Язык группы"),
             BotCommand(command="help", description="📖 Команды группы"),
@@ -119,6 +126,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="tournament", description="🏆 Tournaments & prizes"),
             BotCommand(command="clan", description="🛡 Mafia Clan"),
             BotCommand(command="top", description="📊 Leaderboard"),
+            BotCommand(command="roles", description="🎭 All game roles & powers"),
             BotCommand(command="commands", description="📋 All commands"),
             BotCommand(command="lang", description="🌐 Change language"),
             BotCommand(command="help", description="📖 Help & game rules"),
@@ -127,6 +135,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="game", description="🎮 Create new Mafia game"),
             BotCommand(command="start", description="🚀 Start game early"),
             BotCommand(command="extend", description="⏳ Extend lobby time (+30s)"),
+            BotCommand(command="roles", description="🎭 Role descriptions"),
             BotCommand(command="stop", description="🛑 Cancel game (Admin)"),
             BotCommand(command="setlang", description="🌐 Group language"),
             BotCommand(command="help", description="📖 Group commands & help"),
@@ -141,6 +150,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="tournament", description="🏆 Turnuvalar ve ödüller"),
             BotCommand(command="clan", description="🛡 Mafya Klanı"),
             BotCommand(command="top", description="📊 Liderlik tablosu"),
+            BotCommand(command="roles", description="🎭 Oyundaki tüm roller"),
             BotCommand(command="commands", description="📋 Tüm komutlar"),
             BotCommand(command="lang", description="🌐 Dil seçimi"),
             BotCommand(command="help", description="📖 Yardım ve kurallar"),
@@ -149,6 +159,7 @@ COMMANDS_BY_LANG = {
             BotCommand(command="game", description="🎮 Yeni Mafya oyunu başlat"),
             BotCommand(command="start", description="🚀 Erken başlat"),
             BotCommand(command="extend", description="⏳ Süreyi uzat (+30sn)"),
+            BotCommand(command="roles", description="🎭 Rol açıklamaları"),
             BotCommand(command="stop", description="🛑 Oyunu durdur (Yönetici)"),
             BotCommand(command="setlang", description="🌐 Grup dilini ayarla"),
             BotCommand(command="help", description="📖 Grup komutları"),
@@ -205,6 +216,7 @@ async def main():
     dp.include_router(tournament_router)
     dp.include_router(admin_router)
     dp.include_router(roulette_router)
+    dp.include_router(roles_router)
 
     logger.info(f"Starting {settings.BOT_NAME} (@{settings.BOT_USERNAME}) polling...")
     try:
