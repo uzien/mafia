@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     BOT_USERNAME: str = "Mafia_litsey_bot"
     MAIN_GROUP_USERNAME: str = "mafia_adu_litsey"
     MAIN_GROUP_URL: str = "https://t.me/mafia_adu_litsey"
+    WEBAPP_URL: str = "https://mafia-litsey.onrender.com/webapp"
     ADMIN_IDS_RAW: Any = Field(default=[], validation_alias="ADMIN_IDS")
 
     @property

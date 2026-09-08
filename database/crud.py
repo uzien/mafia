@@ -185,6 +185,52 @@ async def get_top_clans(session: AsyncSession, limit: int = 10) -> List[Clan]:
     res = await session.execute(stmt)
     return list(res.scalars().all())
 
+async def get_clan_by_tag(session: AsyncSession, tag: str) -> Optional[Clan]:
+    clean_tag = tag.strip().upper()
+    stmt = select(Clan).where(func.upper(Clan.tag) == clean_tag)
+    res = await session.execute(stmt)
+    return res.scalar_one_or_none()
+
+async def get_clan_members(session: AsyncSession, clan_id: int) -> List[User]:
+    stmt = select(User).where(User.clan_id == clan_id).order_by(desc(User.exp))
+    res = await session.execute(stmt)
+    return list(res.scalars().all())
+
+async def join_clan(session: AsyncSession, user_id: int, tag_or_id: Any) -> tuple[bool, str, Optional[Clan]]:
+    """Joins a user into a clan. Returns (success, reason, clan)."""
+    user = await session.get(User, user_id)
+    if not user:
+        return False, "user_not_found", None
+    if user.clan_id:
+        return False, "already_in_clan", None
+
+    if isinstance(tag_or_id, int):
+        clan = await session.get(Clan, tag_or_id)
+    else:
+        clan = await get_clan_by_tag(session, str(tag_or_id))
+
+    if not clan:
+        return False, "clan_not_found", None
+
+    member_count = await get_clan_members_count(session, clan.id)
+    if member_count >= 20:
+        return False, "clan_full", clan
+
+    user.clan_id = clan.id
+    clan.rating += 5  # +5 points for recruitment
+    await session.commit()
+    await session.refresh(clan)
+    return True, "joined", clan
+
+async def add_clan_war_reward(session: AsyncSession, clan_id: int, rating_points: int = 15, treasury_coins: int = 25) -> bool:
+    clan = await session.get(Clan, clan_id)
+    if not clan:
+        return False
+    clan.rating += rating_points
+    clan.treasury += treasury_coins
+    await session.commit()
+    return True
+
 async def get_all_user_ids(session: AsyncSession) -> List[int]:
     stmt = select(User.id)
     res = await session.execute(stmt)

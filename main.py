@@ -31,15 +31,40 @@ from aiohttp import web
 async def health_check(request):
     return web.Response(text="Mafia Litsey Telegram Bot is alive and running!", content_type="text/plain")
 
+async def serve_webapp(request):
+    web_dir = os.path.join(os.path.dirname(__file__), "web")
+    app_html = os.path.join(web_dir, "app.html")
+    if os.path.exists(app_html):
+        with open(app_html, "r", encoding="utf-8") as f:
+            content = f.read()
+        return web.Response(text=content, content_type="text/html")
+    return web.Response(text="Web App not found", status=404)
+
+async def api_top(request):
+    try:
+        from database.database import async_session_maker
+        from database.crud import get_top_players, get_top_clans
+        async with async_session_maker() as session:
+            players = await get_top_players(session, limit=10)
+            clans = await get_top_clans(session, limit=10)
+            return web.json_response({
+                "players": [{"id": p.id, "name": p.first_name, "level": p.level, "wins": p.wins, "rating": p.rating, "coins": p.coins} for p in players],
+                "clans": [{"id": c.id, "name": c.name, "tag": c.tag, "rating": c.rating, "treasury": c.treasury} for c in clans]
+            })
+    except Exception as e:
+        return web.json_response({"error": str(e), "players": [], "clans": []})
+
 async def start_web_server(port: int) -> web.AppRunner:
     app = web.Application()
     app.router.add_get("/", health_check)
     app.router.add_get("/health", health_check)
+    app.router.add_get("/webapp", serve_webapp)
+    app.router.add_get("/api/top", api_top)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-    logger.info(f"Render health check server successfully listening on 0.0.0.0:{port}")
+    logger.info(f"Render health check & WebApp server successfully listening on 0.0.0.0:{port}")
     return runner
 
 from aiogram.types import BotCommand, BotCommandScopeAllGroupChats, BotCommandScopeDefault
@@ -47,6 +72,7 @@ from aiogram.types import BotCommand, BotCommandScopeAllGroupChats, BotCommandSc
 COMMANDS_BY_LANG = {
     "uz": {
         "private": [
+            BotCommand(command="webapp", description="📱 Mafia Web App (Mini App)"),
             BotCommand(command="profile", description="👤 Shaxsiy profil va balans"),
             BotCommand(command="shop", description="🛒 Do'kon (Kartalar, soxta hujjat)"),
             BotCommand(command="daily", description="🎁 Kunlik bepul tanga bonusi"),
@@ -71,6 +97,7 @@ COMMANDS_BY_LANG = {
     },
     "az": {
         "private": [
+            BotCommand(command="webapp", description="📱 Mafia Web App (Mini App)"),
             BotCommand(command="profile", description="👤 Şəxsi profil və balans"),
             BotCommand(command="shop", description="🛒 Mağaza (Kartlar, saxta sənəd)"),
             BotCommand(command="daily", description="🎁 Gündəlik bonus"),
@@ -95,6 +122,7 @@ COMMANDS_BY_LANG = {
     },
     "ru": {
         "private": [
+            BotCommand(command="webapp", description="📱 Mafia Web App (Мини-апп)"),
             BotCommand(command="profile", description="👤 Профиль и баланс"),
             BotCommand(command="shop", description="🛒 Магазин (Карты, документы)"),
             BotCommand(command="daily", description="🎁 Ежедневный бонус"),
@@ -119,6 +147,7 @@ COMMANDS_BY_LANG = {
     },
     "en": {
         "private": [
+            BotCommand(command="webapp", description="📱 Mafia Web App (Mini App)"),
             BotCommand(command="profile", description="👤 Profile & balance"),
             BotCommand(command="shop", description="🛒 Store (Cards, fake docs)"),
             BotCommand(command="daily", description="🎁 Daily coin bonus"),
@@ -143,6 +172,7 @@ COMMANDS_BY_LANG = {
     },
     "tr": {
         "private": [
+            BotCommand(command="webapp", description="📱 Mafia Web App (Mini Uygulama)"),
             BotCommand(command="profile", description="👤 Profil ve bakiye"),
             BotCommand(command="shop", description="🛒 Mağaza (Kartlar, sahte kimlik)"),
             BotCommand(command="daily", description="🎁 Günlük altın ödülü"),
@@ -195,11 +225,13 @@ async def main():
     logger.info("Initializing database tables...")
     await init_db()
 
-    # Optional HTTP server for Render Web Service port check
+    # HTTP server for Render Web Service and Telegram Mini App
     web_runner = None
-    port = os.getenv("PORT")
-    if port:
+    port = os.getenv("PORT", "8080")
+    try:
         web_runner = await start_web_server(int(port))
+    except Exception as e:
+        logger.warning(f"Could not start web server on port {port}: {e}")
 
     bot = Bot(
         token=settings.BOT_TOKEN,

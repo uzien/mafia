@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Tuple
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Tournament, TournamentParticipant, User
 
@@ -30,7 +30,7 @@ async def register_participant(
     user_id: int
 ) -> Tuple[bool, str]:
     tournament = await session.get(Tournament, tournament_id)
-    if not tournament or tournament.status != "registration":
+    if not tournament or tournament.status not in ["registration", "active"]:
         return False, "tournament_not_open"
 
     user = await session.get(User, user_id)
@@ -63,21 +63,63 @@ async def register_participant(
     await session.commit()
     return True, "success"
 
+async def get_tournament_standings(
+    session: AsyncSession,
+    tournament_id: int
+) -> List[Tuple[User, TournamentParticipant]]:
+    """Returns participants ranked by points desc, exp desc."""
+    stmt = (
+        select(User, TournamentParticipant)
+        .join(TournamentParticipant, TournamentParticipant.user_id == User.id)
+        .where(TournamentParticipant.tournament_id == tournament_id)
+        .order_by(desc(TournamentParticipant.points), desc(User.exp))
+    )
+    res = await session.execute(stmt)
+    return list(res.all())
+
+async def add_tournament_points(
+    session: AsyncSession,
+    tournament_id: int,
+    user_id: int,
+    points: int = 3
+) -> bool:
+    stmt = select(TournamentParticipant).where(
+        TournamentParticipant.tournament_id == tournament_id,
+        TournamentParticipant.user_id == user_id
+    )
+    res = await session.execute(stmt)
+    part = res.scalar_one_or_none()
+    if not part:
+        return False
+    part.points += points
+    await session.commit()
+    return True
+
 async def conclude_tournament(
     session: AsyncSession,
     tournament_id: int,
-    winner_id: int
-) -> bool:
+    winner_id: Optional[int] = None
+) -> Tuple[bool, Optional[User], int]:
     tournament = await session.get(Tournament, tournament_id)
     if not tournament:
-        return False
+        return False, None, 0
+
+    if not winner_id:
+        standings = await get_tournament_standings(session, tournament_id)
+        if standings:
+            winner_id = standings[0][0].id
+
+    if not winner_id:
+        return False, None, 0
+
     winner = await session.get(User, winner_id)
     if not winner:
-        return False
+        return False, None, 0
 
     tournament.status = "completed"
     tournament.winner_id = winner_id
-    winner.diamonds += tournament.prize_pool
-    winner.title = f"🏆 {tournament.name} Champ"
+    prize = tournament.prize_pool
+    winner.diamonds += prize
+    winner.title = "🏆 Litsey Chempioni"
     await session.commit()
-    return True
+    return True, winner, prize

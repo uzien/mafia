@@ -230,15 +230,23 @@ class GameRoom:
             if not p.role:
                 p.role = Role.CITIZEN
 
-        # Check if any player has fake documents in DB
+        # Check if any player has fake documents or belongs to a clan
         try:
             from services.economy_service import has_fake_documents
+            from database.models import User, Clan
             async with async_session_maker() as session:
-                for p_id in self.players.keys():
+                for p_id in list(self.players.keys()):
+                    u = await session.get(User, p_id)
+                    if u and u.clan_id:
+                        clan = await session.get(Clan, u.clan_id)
+                        if clan and clan.tag:
+                            tag_prefix = f"[{clan.tag}]"
+                            if not self.players[p_id].name.startswith(tag_prefix):
+                                self.players[p_id].name = f"{tag_prefix} {self.players[p_id].name}"
                     if await has_fake_documents(session, p_id):
                         self.players[p_id].has_fake_docs = True
         except Exception as e:
-            logger.warning(f"Error checking fake documents: {e}")
+            logger.warning(f"Error checking fake documents or clan: {e}")
 
         # Send group message: O'yin boshlandi! with "Sizning rolingiz" button
         role_markup = InlineKeyboardMarkup(inline_keyboard=[
@@ -1028,14 +1036,56 @@ class GameRoom:
         await bot.send_message(self.chat_id, full_msg, parse_mode="HTML")
 
         # Distribute database stats and rewards, and send PM profile summary
+        clan_rewards_announced = []
         async with async_session_maker() as session:
+            from database.crud import add_clan_war_reward, get_clan
             for p in self.players.values():
                 is_win = (p.team == winner_team) or (winner_team == Team.NEUTRAL and p.role == Role.MANIAC) or (winner_team == Team.JESTER and p.role == Role.JESTER)
                 coins = settings.WIN_COIN_REWARD if is_win else settings.LOSE_COIN_REWARD
                 exp = settings.WIN_EXP_REWARD if is_win else settings.LOSE_EXP_REWARD
                 user = await add_game_stats(session, p.user_id, is_win, p.role.value, coins, exp)
                 if user:
+                    # Clan war reward for winning clan members
+                    if is_win and user.clan_id:
+                        await add_clan_war_reward(session, user.clan_id, rating_points=15, treasury_coins=25)
+                        clan = await get_clan(session, user.clan_id)
+                        if clan and clan.tag not in clan_rewards_announced:
+                            clan_rewards_announced.append(clan.tag)
                     await self._send_pm_profile_summary(bot, p, user, is_win, coins, exp)
+
+        # Check active tournament points
+        tourn_points_announced = []
+        async with async_session_maker() as session:
+            from database.crud import get_active_tournaments
+            from services.tournament_engine import add_tournament_points
+            active_tourns = await get_active_tournaments(session)
+            if active_tourns:
+                curr_t = active_tourns[0]
+                for p in self.players.values():
+                    is_win = (p.team == winner_team) or (winner_team == Team.NEUTRAL and p.role == Role.MANIAC) or (winner_team == Team.JESTER and p.role == Role.JESTER)
+                    pts = 3 if is_win else 1
+                    added = await add_tournament_points(session, curr_t.id, p.user_id, points=pts)
+                    if added:
+                        tourn_points_announced.append(f"{p.name} (+{pts})")
+
+        if clan_rewards_announced:
+            tags_str = ", ".join([f"<b>[{t}]</b>" for t in clan_rewards_announced])
+            await bot.send_message(
+                self.chat_id,
+                f"🛡 <b>Klan Urushi Natijasi:</b>\n"
+                f"{tags_str} klanlariga g'alaba uchun <b>+15 Reyting Ball</b> va xazinaga <b>+25 Tanga</b> qo'shildi!",
+                parse_mode="HTML"
+            )
+
+        if tourn_points_announced:
+            players_str = ", ".join(tourn_points_announced)
+            await bot.send_message(
+                self.chat_id,
+                f"🏆 <b>Turnir Natijasi:</b>\n"
+                f"Qatnashuvchilarga ballar qo'shildi: {players_str}\n"
+                f"Jadval: <code>/tournstandings</code>",
+                parse_mode="HTML"
+            )
 
     async def _send_pm_profile_summary(
         self,

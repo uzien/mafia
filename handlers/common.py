@@ -28,6 +28,7 @@ from aiogram.types import (
     KeyboardButton,
     Message,
     ReplyKeyboardMarkup,
+    WebAppInfo,
 )
 
 MENU_BUTTONS = {
@@ -178,6 +179,7 @@ async def cmd_start(message: Message, command: CommandObject = None):
                 btn_txt = "➕ Guruhga Qo'shish / Add to Group" if user.language == "uz" else "➕ Qrupa Əlavə Et / Add to Group"
                 info_txt = "🎮 Guruhingizda o'yinga boshlash uchun:" if user.language == "uz" else "🎮 Qrupunuzda oyuna başlamaq üçün:"
                 add_markup = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="📱 Mafia Web App", web_app=WebAppInfo(url=settings.WEBAPP_URL))],
                     [InlineKeyboardButton(text=btn_txt, url=f"https://t.me/{me.username}?startgroup=true")],
                     [InlineKeyboardButton(text="👥 Asosiy Guruh (@mafia_adu_litsey)", url=settings.MAIN_GROUP_URL)]
                 ])
@@ -450,3 +452,22 @@ async def btn_roles(message: Message):
 @common_router.message(F.text.in_(LANG_BUTTONS))
 async def btn_lang(message: Message):
     return await cmd_lang(message)
+
+@common_router.message(Command("webapp", "app", "miniapp"))
+async def cmd_webapp(message: Message):
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📱 Mafia Web Appni Ochish", web_app=WebAppInfo(url=settings.WEBAPP_URL))],
+        [InlineKeyboardButton(text="👥 Asosiy Guruh: @mafia_adu_litsey", url=settings.MAIN_GROUP_URL)]
+    ])
+    await message.answer(
+        "📱 <b>Mafia Litsey — Rasmiy Web App (Mini App)</b>\n\n"
+        "Quyidagi tugmani bosing va to'liq interaktiv Web App portaliga kiring:\n\n"
+        "• 👤 <b>Profil:</b> Jonli balans, EXP daraja, g'alabalar va nishonlar\n"
+        "• 🎭 <b>Rollar:</b> 13 xil rol qobiliyatlari va maxfiy maslahatlar\n"
+        "• 🛡 <b>Klanlar:</b> Top klanlar reytingi va klanlar urushi\n"
+        "• 🏆 <b>Turnir:</b> Jonli reyting jadvali va olmos sovrinlar\n"
+        "• 🛒 <b>Do'kon:</b> Soxta hujjatlar va VIP status",
+        reply_markup=markup,
+        parse_mode="HTML"
+    )
+

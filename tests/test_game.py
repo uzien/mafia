@@ -607,3 +607,112 @@ def test_all_player_counts_distribution(player_count: int):
         assert p_id in roles
         assert roles[p_id] is not None
 
+@pytest.mark.asyncio
+async def test_clan_join_and_clan_war_reward():
+    from database.database import async_session_maker, init_db
+    from database.crud import (
+        get_or_create_user,
+        create_clan,
+        join_clan,
+        get_clan_by_tag,
+        get_clan_members,
+        add_clan_war_reward
+    )
+
+    await init_db()
+    async with async_session_maker() as session:
+        boss = await get_or_create_user(session, 5001, "boss_user", "Boss")
+        boss.coins = 1000
+        await session.commit()
+
+        # Create Clan
+        clan = await create_clan(session, 5001, "Lords", "LRD")
+        assert clan is not None
+        assert clan.tag == "LRD"
+
+        # Lookup by tag
+        found = await get_clan_by_tag(session, "lrd")
+        assert found is not None
+        assert found.id == clan.id
+
+        # Member 2 joins
+        m2 = await get_or_create_user(session, 5002, "m2_user", "Member2")
+        ok, reason, c = await join_clan(session, 5002, "LRD")
+        assert ok is True
+        assert c.id == clan.id
+        assert m2.clan_id == clan.id
+
+        # Check members list
+        members = await get_clan_members(session, clan.id)
+        assert len(members) == 2
+
+        # Clan war reward
+        prev_rating = clan.rating
+        prev_treasury = clan.treasury
+        awarded = await add_clan_war_reward(session, clan.id, rating_points=15, treasury_coins=25)
+        assert awarded is True
+        assert clan.rating == prev_rating + 15
+        assert clan.treasury == prev_treasury + 25
+
+@pytest.mark.asyncio
+async def test_tournament_standings_and_points_award():
+    from database.database import async_session_maker, init_db
+    from database.crud import get_or_create_user
+    from services.tournament_engine import (
+        create_tournament,
+        register_participant,
+        add_tournament_points,
+        get_tournament_standings,
+        conclude_tournament
+    )
+
+    await init_db()
+    async with async_session_maker() as session:
+        u1 = await get_or_create_user(session, 6001, "tourn_p1", "Player1")
+        u2 = await get_or_create_user(session, 6002, "tourn_p2", "Player2")
+        u1.coins = 500
+        u2.coins = 500
+        await session.commit()
+
+        t = await create_tournament(session, "Grand Cup", entry_fee=50, prize_pool=100)
+        assert t is not None
+
+        reg1, _ = await register_participant(session, t.id, 6001)
+        reg2, _ = await register_participant(session, t.id, 6002)
+        assert reg1 is True
+        assert reg2 is True
+
+        # Award tournament points
+        await add_tournament_points(session, t.id, 6001, points=6)
+        await add_tournament_points(session, t.id, 6002, points=3)
+
+        standings = await get_tournament_standings(session, t.id)
+        assert len(standings) == 2
+        assert standings[0][0].id == 6001
+        assert standings[0][1].points == 6
+        assert standings[1][0].id == 6002
+        assert standings[1][1].points == 3
+
+        # Conclude tournament
+        success, champ, prize = await conclude_tournament(session, t.id)
+        assert success is True
+        assert champ.id == 6001
+        assert champ.title == "🏆 Litsey Chempioni"
+        assert champ.diamonds >= 100
+
+def test_webapp_html_exists_and_valid():
+    import os
+    web_dir = os.path.join(os.path.dirname(__file__), "..", "web")
+    app_html = os.path.join(web_dir, "app.html")
+    assert os.path.exists(app_html)
+    with open(app_html, "r", encoding="utf-8") as f:
+        html_content = f.read()
+    assert "MAFIA LITSEY" in html_content
+    assert "telegram-web-app.js" in html_content
+    assert "Komissar Katani" in html_content
+    assert "tab-profile" in html_content
+    assert "tab-clans" in html_content
+    assert "tab-tournaments" in html_content
+    assert "tab-shop" in html_content
+
+

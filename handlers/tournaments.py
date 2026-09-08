@@ -5,7 +5,12 @@ from config import settings
 from database.crud import get_active_tournaments, get_or_create_user, get_tournament_participant_count
 from database.database import async_session_maker
 from locales.i18n import i18n
-from services.tournament_engine import create_tournament, register_participant
+from services.tournament_engine import (
+    create_tournament,
+    register_participant,
+    get_tournament_standings,
+    conclude_tournament,
+)
 
 tournament_router = Router()
 
@@ -31,6 +36,7 @@ async def cmd_tournament(message: Message):
         group_btn_text = "👥 Asosiy Guruh: @mafia_adu_litsey" if user.language in ["uz", "az"] else "👥 Main Group: @mafia_adu_litsey"
         markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=i18n.get("btn_register_tournament", user.language), callback_data=f"reg_tourn_{t.id}")],
+            [InlineKeyboardButton(text="📊 Turnir Jadvali (Reyting)", callback_data=f"tourn_standings_{t.id}")],
             [InlineKeyboardButton(text=group_btn_text, url=settings.MAIN_GROUP_URL)]
         ])
 
@@ -45,7 +51,8 @@ async def cmd_tournament(message: Message):
         )
         text += (
             f"\n\n📢 <b>Barcha turnir o'yinlari va yangiliklar:</b>\n"
-            f"👉 <a href=\"{settings.MAIN_GROUP_URL}\">@{settings.MAIN_GROUP_USERNAME}</a> rasmiy guruhimizda o'tkaziladi!"
+            f"👉 <a href=\"{settings.MAIN_GROUP_URL}\">@{settings.MAIN_GROUP_USERNAME}</a> rasmiy guruhimizda o'tkaziladi!\n\n"
+            f"💡 Har bir o'yindagi g'alaba uchun turnir reytingiga <b>+3 Ball</b> beriladi!"
         )
         await message.answer(text, reply_markup=markup, parse_mode="HTML")
 
@@ -115,3 +122,94 @@ async def cb_register_tournament(callback: CallbackQuery):
             else:
                 msg = "⚠️ Turnir to'lgan yoki ro'yxatdan o'tish yopilgan."
             await callback.answer(msg, show_alert=True)
+
+@tournament_router.message(Command("tournstandings", "turnir_jadvali"))
+async def cmd_tourn_standings(message: Message):
+    async with async_session_maker() as session:
+        tournaments = await get_active_tournaments(session)
+        if not tournaments:
+            return await message.answer("⚠️ Hozirda faol turnir mavjud emas.", parse_mode="HTML")
+        t = tournaments[0]
+        standings = await get_tournament_standings(session, t.id)
+        if not standings:
+            return await message.answer(
+                f"🏆 <b>{t.name} — Turnir Jadvali:</b>\n\n"
+                f"<i>Hozircha birorta ham ishtirokchi ro'yxatdan o'tmagan.</i>\n"
+                f"Ro'yxatdan o'tish uchun: <code>/tournament</code>",
+                parse_mode="HTML"
+            )
+
+        lines = [
+            f"🏆 <b>{t.name} — Ishtirokchilar Reytingi:</b>",
+            f"💎 Jamg'arma: <b>{t.prize_pool} Olmos</b>\n"
+        ]
+        medals = ["🥇", "🥈", "🥉"]
+        import html
+        for idx, (user, part) in enumerate(standings):
+            medal = medals[idx] if idx < 3 else f"{idx+1}."
+            clean_name = html.escape(user.first_name or f"ID {user.id}")
+            lines.append(f"{medal} <a href=\"tg://user?id={user.id}\">{clean_name}</a> — 🎯 <b>{part.points} Ball</b> | Lvl {user.level}")
+
+        lines.append(f"\n📢 Turnir o'yinlari: @{settings.MAIN_GROUP_USERNAME}")
+        await message.answer("\n".join(lines), parse_mode="HTML")
+
+@tournament_router.callback_query(F.data.startswith("tourn_standings_"))
+async def cb_tourn_standings(callback: CallbackQuery):
+    t_id = int(callback.data.replace("tourn_standings_", ""))
+    async with async_session_maker() as session:
+        from database.models import Tournament
+        t = await session.get(Tournament, t_id)
+        if not t:
+            return await callback.answer("Turnir topilmadi.", show_alert=True)
+        standings = await get_tournament_standings(session, t_id)
+        if not standings:
+            await callback.answer()
+            return await callback.message.answer(
+                f"🏆 <b>{t.name} — Turnir Jadvali:</b>\n\n"
+                f"<i>Hozircha birorta ham ishtirokchi ro'yxatdan o'tmagan.</i>",
+                parse_mode="HTML"
+            )
+
+        lines = [
+            f"🏆 <b>{t.name} — Ishtirokchilar Reytingi:</b>",
+            f"💎 Jamg'arma: <b>{t.prize_pool} Olmos</b>\n"
+        ]
+        medals = ["🥇", "🥈", "🥉"]
+        import html
+        for idx, (user, part) in enumerate(standings):
+            medal = medals[idx] if idx < 3 else f"{idx+1}."
+            clean_name = html.escape(user.first_name or f"ID {user.id}")
+            lines.append(f"{medal} <a href=\"tg://user?id={user.id}\">{clean_name}</a> — 🎯 <b>{part.points} Ball</b>")
+
+        lines.append(f"\n📢 Turnir o'yinlari: @{settings.MAIN_GROUP_USERNAME}")
+        await callback.answer()
+        await callback.message.answer("\n".join(lines), parse_mode="HTML")
+
+@tournament_router.message(Command("tournfinish", "turnir_yakunlash"))
+async def cmd_tourn_finish(message: Message, command: CommandObject):
+    """Admin command to conclude tournament and crown champion: /tournfinish [tournament_id]"""
+    user = message.from_user
+    is_admin = (user.username and user.username.lower() == "mx767") or (user.id in settings.ADMIN_IDS)
+    if not is_admin:
+        return await message.reply("⚠️ Ushbu buyruq faqat bot boshqaruvchisi @mx767 uchun ruxsat etilgan!")
+
+    async with async_session_maker() as session:
+        tournaments = await get_active_tournaments(session)
+        if not tournaments:
+            return await message.reply("⚠️ Faol turnir topilmadi.")
+
+        t_id = int(command.args.strip()) if command.args and command.args.strip().isdigit() else tournaments[0].id
+        success, champ, prize = await conclude_tournament(session, t_id)
+        if not success or not champ:
+            return await message.reply("❌ Turnirni yakunlashda xatolik yuz berdi (ishtirokchilar yo'q bo'lishi mumkin).")
+
+        import html
+        champ_name = html.escape(champ.first_name or f"ID {champ.id}")
+        await message.answer(
+            f"🏆 <b>TURNIR RASMAN YAKUNLANDI!</b>\n\n"
+            f"🥇 <b>Bosh Chempion:</b> <a href=\"tg://user?id={champ.id}\">{champ_name}</a>\n"
+            f"👑 <b>Unvon:</b> <code>🏆 Litsey Chempioni</code>\n"
+            f"💎 <b>Mukofot:</b> <b>+{prize} Olmos</b> hisobiga o'tkazildi!\n\n"
+            f"Barcha ishtirokchilarga rahmat! Yangi turnir tez orada e'lon qilinadi.",
+            parse_mode="HTML"
+        )

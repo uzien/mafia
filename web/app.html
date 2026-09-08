@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mafia Litsey — Web App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --card-bg: rgba(22, 27, 44, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #ef4444;
+      --primary-glow: rgba(239, 68, 68, 0.35);
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.35);
+      --diamond: #06b6d4;
+      --green: #10b981;
+      --accent: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(239, 68, 68, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.05) 0%, transparent 60%);
+    }
+
+    /* HEADER */
+    .header {
+      padding: 20px 20px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(11, 13, 20, 0.85);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      font-size: 28px;
+      filter: drop-shadow(0 0 10px var(--primary-glow));
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #fff 30%, #ef4444 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .group-pill {
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* CONTAINER */
+    .container {
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* TAB CONTENT */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    /* PROFILE CARD */
+    .hero-card {
+      background: linear-gradient(145deg, rgba(30, 36, 58, 0.8), rgba(20, 24, 40, 0.9));
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 140px;
+      height: 140px;
+      background: var(--primary-glow);
+      border-radius: 50%;
+      filter: blur(40px);
+    }
+
+    .profile-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      padding: 3px;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #141824;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .avatar-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .clan-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--gold);
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .user-title {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .exp-container {
+      margin-top: 16px;
+    }
+
+    .exp-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .exp-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .exp-fill {
+      height: 100%;
+      width: 65%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
+      border-radius: 10px;
+      transition: width 1s ease-in-out;
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+
+    /* CURRENCY STRIP */
+    .currency-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .currency-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .currency-icon {
+      font-size: 26px;
+    }
+
+    .currency-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .currency-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* STATS GRID */
+    .stats-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .stat-boxes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-box {
+      background: rgba(15, 20, 32, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ACTION BUTTONS */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 14px;
+      border-radius: 16px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--gold-glow);
+    }
+
+    /* ROLE CODEX */
+    .role-filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .role-filters::-webkit-scrollbar { display: none; }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fff;
+    }
+
+    .roles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .role-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s;
+    }
+
+    .role-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .role-identity {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .role-emoji {
+      font-size: 26px;
+    }
+
+    .role-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .team-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .badge-mafia { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-city { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-neutral { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    .role-desc {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .role-tip {
+      font-size: 11px;
+      color: var(--gold);
+      background: rgba(245, 158, 11, 0.08);
+      padding: 6px 10px;
+      border-radius: 8px;
+      border-left: 2px solid var(--gold);
+    }
+
+    /* CLANS & TOURNAMENT LISTS */
+    .leader-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .leader-row {
+      background: rgba(22, 27, 44, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+
+    .leader-rank {
+      font-size: 16px;
+      font-weight: 800;
+      width: 28px;
+      text-align: center;
+    }
+
+    .leader-info {
+      flex: 1;
+    }
+
+    .leader-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .leader-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .leader-score {
+      text-align: right;
+    }
+
+    .score-main {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .score-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* SHOP ITEMS */
+    .shop-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .shop-icon {
+      font-size: 32px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .shop-details {
+      flex: 1;
+    }
+
+    .shop-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .shop-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .shop-buy {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    /* BOTTOM NAV */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: rgba(11, 13, 20, 0.94);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 10px;
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 600;
+      transition: all 0.2s;
+      flex: 1;
+      padding: 6px 0;
+    }
+
+    .nav-item.active {
+      color: #ef4444;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+      transition: transform 0.2s;
+    }
+
+    .nav-item.active .nav-icon {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">👑</div>
+      <div>
+        <div class="brand-title">MAFIA LITSEY</div>
+        <div class="brand-subtitle">Rasmiy Telegram Portali</div>
+      </div>
+    </div>
+    <a href="https://t.me/mafia_adu_litsey" class="group-pill" target="_blank">
+      <span>👥 Guruh</span>
+    </a>
+  </header>
+
+  <main class="container">
+
+    <!-- TAB 1: PROFILE -->
+    <section id="tab-profile" class="tab-pane active">
+      <div class="hero-card">
+        <div class="profile-top">
+          <div class="avatar-wrapper">
+            <div class="avatar-inner" id="user-avatar">🕶</div>
+          </div>
+          <div class="user-info">
+            <div class="user-name">
+              <span id="user-name">Foydalanuvchi</span>
+              <span class="clan-badge" id="user-clan">[LIT]</span>
+            </div>
+            <div class="user-title" id="user-title">🏆 Litsey Chempioni</div>
+          </div>
+        </div>
+
+        <div class="exp-container">
+          <div class="exp-header">
+            <span id="user-level">Daraja 5 (Mafioz)</span>
+            <span id="user-exp-text">650 / 1000 EXP</span>
+          </div>
+          <div class="exp-bar">
+            <div class="exp-fill" id="user-exp-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BALANCE -->
+      <div class="currency-grid">
+        <div class="currency-card">
+          <div class="currency-icon">🪙</div>
+          <div>
+            <div class="currency-val" id="user-coins">750</div>
+            <div class="currency-label">Oltin Tanga</div>
+          </div>
+        </div>
+        <div class="currency-card">
+          <div class="currency-icon">💎</div>
+          <div>
+            <div class="currency-val" id="user-diamonds">45</div>
+            <div class="currency-label">Qimmatbaho Olmos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-card">
+        <div class="section-title">📊 Jangovar Statistika</div>
+        <div class="stat-boxes">
+          <div class="stat-box">
+            <div class="stat-number" id="stat-games">34</div>
+            <div class="stat-desc">O'yinlar</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="stat-wins" style="color: #10b981;">24</div>
+            <div class="stat-desc">G'alabalar</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="stat-winrate" style="color: #f59e0b;">70.5%</div>
+            <div class="stat-desc">Win Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="openBotAction('/roulette')">
+          <span>🎰 Ruletka</span>
+        </button>
+        <button class="btn btn-gold" onclick="openBotAction('/daily')">
+          <span>🎁 Kunlik Bonus</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TAB 2: ROLES CODEX -->
+    <section id="tab-roles" class="tab-pane">
+      <div class="section-title">🎭 Barcha 13 ta Rol Ma'lumotnomasi</div>
+      
+      <div class="role-filters">
+        <button class="filter-btn active" onclick="filterRoles('all', this)">Barchasi (13)</button>
+        <button class="filter-btn" onclick="filterRoles('city', this)">Shaharliklar</button>
+        <button class="filter-btn" onclick="filterRoles('mafia', this)">Mafiya</button>
+        <button class="filter-btn" onclick="filterRoles('neutral', this)">Yolg'izlar</button>
+      </div>
+
+      <div class="roles-list" id="roles-container">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 3: CLANS HUB -->
+    <section id="tab-clans" class="tab-pane">
+      <div class="hero-card" style="margin-bottom: 16px;">
+        <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px;">🛡 Mafiya Klanlar Urushi</div>
+        <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+          Guruhdagi har bir o'yinda klan a'zosi g'alaba qozonsa, klaningizga <b>+15 Reyting Ball</b> va xazinaga <b>+25 Tanga</b> qo'shiladi!
+        </p>
+      </div>
+
+      <div class="section-title">🏆 Eng Kuchli Klanlar Reytingi</div>
+      <div id="clans-container">
+        <!-- Clan rows injected via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: TOURNAMENTS HUB -->
+    <section id="tab-tournaments" class="tab-pane">
+      <div class="hero-card" style="margin-bottom: 16px; border-color: rgba(245, 158, 11, 0.4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="background: rgba(245, 158, 11, 0.2); color: var(--gold); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">FAOL TURNIR</span>
+          <span style="font-size: 12px; color: #cbd5e1;">💎 100 Olmos</span>
+        </div>
+        <div style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Litsey Mafia Cup 2026</div>
+        <p style="font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+          Barcha turnir o'yinlari <b>@mafia_adu_litsey</b> guruhida bo'lib o'tadi. Har bir g'alaba <b>+3 Ball</b> keltiradi!
+        </p>
+        <button class="btn btn-gold" style="width: 100%; margin-top: 14px;" onclick="openBotAction('/tournament')">
+          <span>🏆 Turnirga Ro'yxatdan O'tish</span>
+        </button>
+      </div>
+
+      <div class="section-title">📊 Turnir Liderlari</div>
+      <div id="tourn-standings-container">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 5: SHOP -->
+    <section id="tab-shop" class="tab-pane">
+      <div class="section-title">🛒 Qora Bozor & Mahsulotlar</div>
+      
+      <div class="shop-card">
+        <div class="shop-icon">📜</div>
+        <div class="shop-details">
+          <div class="shop-title">Soxta Hujjat</div>
+          <div class="shop-desc">Komissar tekshirganda fuqaro bo'lib ko'rinasiz (1 o'yin).</div>
+        </div>
+        <button class="shop-buy" onclick="openBotAction('/shop')">250 🪙</button>
+      </div>
+
+      <div class="shop-card">
+        <div class="shop-icon">⭐</div>
+        <div class="shop-details">
+          <div class="shop-title">VIP Status</div>
+          <div class="shop-desc">Ism yonida maxsus oltin VIP nishoni va +20% bonus tangalar.</div>
+        </div>
+        <button class="shop-buy" onclick="openBotAction('/shop')">500 🪙</button>
+      </div>
+
+      <div class="shop-card">
+        <div class="shop-icon">🎰</div>
+        <div class="shop-details">
+          <div class="shop-title">Omad Chiptasi</div>
+          <div class="shop-desc">Ruletkani qo'shimcha bepul aylantirish imkoniyati.</div>
+        </div>
+        <button class="shop-buy" onclick="openBotAction('/shop')">50 🪙</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="nav-bar">
+    <div class="nav-item active" onclick="switchTab('profile', this)">
+      <div class="nav-icon">👤</div>
+      <span>Profil</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('roles', this)">
+      <div class="nav-icon">🎭</div>
+      <span>Rollar</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('clans', this)">
+      <div class="nav-icon">🛡</div>
+      <span>Klanlar</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('tournaments', this)">
+      <div class="nav-icon">🏆</div>
+      <span>Turnir</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('shop', this)">
+      <div class="nav-icon">🛒</div>
+      <span>Do'kon</span>
+    </div>
+  </nav>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      try { tg.enableClosingConfirmation(); } catch(e) {}
+    }
+
+    // Populate Telegram User Data
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      const u = tg.initDataUnsafe.user;
+      document.getElementById('user-name').innerText = u.first_name || 'Mafioz';
+      if (u.photo_url) {
+        document.getElementById('user-avatar').innerHTML = `<img src="${u.photo_url}" alt="Avatar">`;
+      } else {
+        document.getElementById('user-avatar').innerText = (u.first_name ? u.first_name[0].toUpperCase() : '🕶');
+      }
+    }
+
+    // Tab Switching
+    function switchTab(tabId, el) {
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      el.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openBotAction(cmd) {
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('medium');
+      }
+      if (tg) {
+        tg.close();
+      }
+    }
+
+    // 13 Roles Data
+    const ROLES = [
+      {
+        title: "Don Corleone",
+        emoji: "👑",
+        team: "mafia",
+        badge: "badge-mafia",
+        teamName: "Mafiya",
+        desc: "Mafiya yetakchisi. Tunda o'ldirish buyrug'ini beradi va Komissar Katani qidiradi.",
+        tip: "Komissarni tezroq topsangiz, shahar himoyasiz qoladi!"
+      },
+      {
+        title: "Mafioz",
+        emoji: "🤵",
+        team: "mafia",
+        badge: "badge-mafia",
+        teamName: "Mafiya",
+        desc: "Don qo'l ostidagi sodiq qotil. Agar Don o'lsa, to'g'ridan-to'g'ri yangi Don unvoniga ko'tariladi!",
+        tip: "Doningizni himoya qiling, ammo kerak bo'lsa shaharlik niqobini kiying."
+      },
+      {
+        title: "Komissar Katani",
+        emoji: "🕵️",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Shaharning bosh detektivi. Tunda gumonlanuvchining rolini tekshirishi yoki shubhasiz jinoyatchini otib tashlashi mumkin!",
+        tip: "O'zligingizni oshkor qilmang, Doktor sizni har doim himoyalay olmasligi mumkin."
+      },
+      {
+        title: "Doktor",
+        emoji: "🩺",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Tunda bir o'yinchini mafiya yoki maniak hujumidan qutqaradi. Bir kishini ketma-ket ikki marta davolay olmaydi.",
+        tip: "Komissar deb gumon qilayotgan o'yinchingizni asrab qoling!"
+      },
+      {
+        title: "Putana (Ledi)",
+        emoji: "💋",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Tunda bir o'yinchi huzuriga tashrif buyurib, uning barcha tungi harakatlarini va qurolini bloklaydi!",
+        tip: "Mafiya otishini to'xtatish uchun juda kuchli qurol."
+      },
+      {
+        title: "Maniak",
+        emoji: "🔪",
+        team: "neutral",
+        badge: "badge-neutral",
+        teamName: "Yolg'iz Qotil",
+        desc: "Hech kimga bo'ysunmaydi. Har kecha bir o'yinchini yo'q qiladi. Yakka o'zi tirik qolsa mutlaq g'olib bo'ladi!",
+        tip: "Mafiya va shaharliklarni bir-biriga urishtirib, oxirida g'alaba qiling."
+      },
+      {
+        title: "Masxaraboz (Jester)",
+        emoji: "🃏",
+        team: "neutral",
+        badge: "badge-neutral",
+        teamName: "Yolg'iz",
+        desc: "Maqsadi — kunduzgi sudda o'zini nohaq qatl qildirish! Agar shahar uni linch qilsa, yakka o'zi g'olib!",
+        tip: "O'zingizni shubhali mafiyadek tuting, lekin haddan oshmang."
+      },
+      {
+        title: "Tansoqchi",
+        emoji: "🛡",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Bir kishini o'z tanasi bilan himoya qiladi. Hujum bo'lsa, o'zi qurbon bo'ladi, himoyalangan tirik qoladi.",
+        tip: "Eng qadrli shaharlikni saqlab qolish uchun jon fido qiling."
+      },
+      {
+        title: "Advokat",
+        emoji: "⚖️",
+        team: "mafia",
+        badge: "badge-mafia",
+        teamName: "Mafiya",
+        desc: "Mafiyaga xizmat qiluvchi yurist. Tunda o'z sherigini komissar tekshiruvidan toza qilib ko'rsatadi.",
+        tip: "Doningizni komissar nigohidan yashirib turing."
+      },
+      {
+        title: "Snayper",
+        emoji: "🎯",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Shaharning yashirin mergani. Tunda bir nishonni bexato o'ldirishi mumkin, ammo xato qilsa o'zi pushaymon bo'ladi.",
+        tip: "Faqat aniq ishonch hosil qilganingizda o'q uzing."
+      },
+      {
+        title: "Terrorchi (Kamikadze)",
+        emoji: "💣",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Sudda linch qilinganda, o'zi bilan birga o'ziga qarshi ovoz bergan bir kishini portlatib o'ldiradi!",
+        tip: "Sudda sizni nohaq ayblagan mafiyani o'zingiz bilan olib keting."
+      },
+      {
+        title: "Jurnalist",
+        emoji: "📻",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Har kecha ikki o'yinchini taqqoslab, ularning bitta jamoada yoki turli jamoada ekanligini fosh qiladi.",
+        tip: "Don va qolgan o'yinchilarni taqqoslash orqali mafiyani aniqlang."
+      },
+      {
+        title: "Tinch Aholi (Fuqaro)",
+        emoji: "👨🏼‍🌾",
+        team: "city",
+        badge: "badge-city",
+        teamName: "Shaharlik",
+        desc: "Shaharning asosiy kuchi. Tunda uxlaydi, kunduzi esa o'z mantiqi va ovozi bilan mafiyani fosh qiladi!",
+        tip: "Boshqalarning gap-so'zlari va ovozlaridagi ziddiyatlarni kuzating."
+      }
+    ];
+
+    function renderRoles(filter) {
+      const container = document.getElementById('roles-container');
+      container.innerHTML = '';
+      ROLES.filter(r => filter === 'all' || r.team === filter).forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'role-card';
+        card.innerHTML = `
+          <div class="role-head">
+            <div class="role-identity">
+              <span class="role-emoji">${r.emoji}</span>
+              <span class="role-title">${r.title}</span>
+            </div>
+            <span class="team-badge ${r.badge}">${r.teamName}</span>
+          </div>
+          <div class="role-desc">${r.desc}</div>
+          <div class="role-tip">💡 <b>Maslahat:</b> ${r.tip}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterRoles(type, el) {
+      if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderRoles(type);
+    }
+
+    // Dynamic Standings & Clans fetch
+    async function loadData() {
+      try {
+        const res = await fetch('/api/top');
+        const data = await res.json();
+        
+        // Render Clans
+        const clansContainer = document.getElementById('clans-container');
+        if (data.clans && data.clans.length > 0) {
+          clansContainer.innerHTML = '';
+          const medals = ['🥇', '🥈', '🥉'];
+          data.clans.forEach((c, idx) => {
+            const medal = medals[idx] || (idx + 1) + '.';
+            const row = document.createElement('div');
+            row.className = 'leader-row';
+            row.innerHTML = `
+              <div class="leader-rank">${medal}</div>
+              <div class="leader-info">
+                <div class="leader-name">[${c.tag}] ${c.name}</div>
+                <div class="leader-sub">🏦 Xazina: ${c.treasury} Tanga</div>
+              </div>
+              <div class="leader-score">
+                <div class="score-main">${c.rating} Ball</div>
+                <div class="score-sub">Reyting</div>
+              </div>
+            `;
+            clansContainer.appendChild(row);
+          });
+        }
+
+        // Render Tournament Standings
+        const tournContainer = document.getElementById('tourn-standings-container');
+        if (data.players && data.players.length > 0) {
+          tournContainer.innerHTML = '';
+          const medals = ['🥇', '🥈', '🥉'];
+          data.players.slice(0, 5).forEach((p, idx) => {
+            const medal = medals[idx] || (idx + 1) + '.';
+            const row = document.createElement('div');
+            row.className = 'leader-row';
+            row.innerHTML = `
+              <div class="leader-rank">${medal}</div>
+              <div class="leader-info">
+                <div class="leader-name">${p.name || 'Oyinchi'}</div>
+                <div class="leader-sub">Lvl ${p.level} • ${p.wins} G'alaba</div>
+              </div>
+              <div class="leader-score">
+                <div class="score-main">${p.rating} Ball</div>
+                <div class="score-sub">Ochko</div>
+              </div>
+            `;
+            tournContainer.appendChild(row);
+          });
+        }
+      } catch(e) {
+        console.log("Could not load /api/top:", e);
+      }
+    }
+
+    renderRoles('all');
+    loadData();
+  </script>
+</body>
+</html>
