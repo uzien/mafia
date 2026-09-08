@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple, Union
 from sqlalchemy import desc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Clan, GroupChat, InventoryItem, Tournament, TournamentParticipant, User
@@ -196,7 +196,7 @@ async def get_clan_members(session: AsyncSession, clan_id: int) -> List[User]:
     res = await session.execute(stmt)
     return list(res.scalars().all())
 
-async def join_clan(session: AsyncSession, user_id: int, tag_or_id: Any) -> tuple[bool, str, Optional[Clan]]:
+async def join_clan(session: AsyncSession, user_id: int, tag_or_id: Union[str, int]) -> Tuple[bool, str, Optional[Clan]]:
     """Joins a user into a clan. Returns (success, reason, clan)."""
     user = await session.get(User, user_id)
     if not user:
