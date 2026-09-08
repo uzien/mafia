@@ -86,3 +86,11 @@ def test_distribute_roles_11_players():
     assert Role.SNIPER in role_values
     assert Role.JESTER in role_values
     assert Role.DOCTOR in role_values
+
+@pytest.mark.asyncio
+async def test_db_resilient_fallback():
+    from database.database import session_manager, init_db
+    # Point to an unreachable host
+    session_manager.switch_engine("postgresql+asyncpg://invalid:invalid@unreachable-db-host-9999.xyz:5432/test")
+    await init_db()
+    assert "sqlite" in session_manager.url

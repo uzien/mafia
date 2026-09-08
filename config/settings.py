@@ -35,7 +35,9 @@ class Settings(BaseSettings):
 
     @property
     def async_db_url(self) -> str:
-        url = self.DATABASE_URL or self.DB_URL
+        url = (self.DATABASE_URL or "").strip().strip("'\"")
+        if not url:
+            url = self.DB_URL
         if url.startswith("postgres://"):
             return url.replace("postgres://", "postgresql+asyncpg://", 1)
         if url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
