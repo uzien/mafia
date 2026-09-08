@@ -137,3 +137,19 @@ def test_living_players_text_format():
     assert "Don" in living_text
     assert "Jami:" in living_text
 
+def test_extend_lobby_time():
+    room = GameRoom(chat_id=-1001, creator_id=101, creator_name="Host", lang="uz")
+    initial = room.seconds_left
+    new_time = room.extend_lobby_time(30)
+    assert new_time == initial + 30
+    assert room.seconds_left == initial + 30
+    # Test capping at 300
+    room.seconds_left = 290
+    capped = room.extend_lobby_time(30)
+    assert capped == 300
+    # Check button presence in markup
+    markup = room.get_lobby_markup()
+    button_texts = [b.text for row in markup.inline_keyboard for b in row]
+    assert any("+30s" in t for t in button_texts)
+
+

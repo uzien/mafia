@@ -81,10 +81,18 @@ class GameRoom:
                 InlineKeyboardButton(text=i18n.get("btn_start_now", self.lang), callback_data="game_start_early")
             )
         action_row.append(
+            InlineKeyboardButton(text=i18n.get("btn_extend_time", self.lang), callback_data="game_extend_time")
+        )
+        action_row.append(
             InlineKeyboardButton(text=i18n.get("btn_leave", self.lang), callback_data="game_leave")
         )
         buttons.append(action_row)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    def extend_lobby_time(self, seconds: int = 30) -> int:
+        """Extend lobby countdown, capped at 300 seconds (5 minutes)."""
+        self.seconds_left = min(self.seconds_left + seconds, 300)
+        return self.seconds_left
 
     def get_lobby_text(self) -> str:
         players_links = ", ".join([f'<a href="tg://user?id={p.user_id}">{p.name}</a>' for p in self.players.values()])

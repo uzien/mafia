@@ -104,6 +104,50 @@ async def cb_game_start_early(callback: CallbackQuery):
     await callback.answer("🚀 Starting game now!")
     await room.start_game(callback.bot)
 
+@game_group_router.callback_query(F.data == "game_extend_time")
+async def cb_game_extend_time(callback: CallbackQuery):
+    room = game_manager.get_room(callback.message.chat.id)
+    if not room or room.phase != GamePhase.LOBBY:
+        return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
+
+    if room.seconds_left >= 300:
+        return await callback.answer("⚠️ Maksimal vaqt (5 daqiqa) ga yetdi!", show_alert=True)
+
+    new_time = room.extend_lobby_time(30)
+    try:
+        await callback.message.edit_text(
+            room.get_lobby_text(),
+            reply_markup=room.get_lobby_markup(),
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
+    await callback.answer(f"⏳ +30s ({new_time}s)", show_alert=False)
+
+@game_group_router.message(Command("extend", "vaqt", "time", "plus30"))
+async def cmd_extend_time(message: Message):
+    room = game_manager.get_room(message.chat.id)
+    if not room or room.phase != GamePhase.LOBBY:
+        return
+
+    if room.seconds_left >= 300:
+        await message.reply("⚠️ Maksimal vaqt chegarasiga (5 daqiqa) yetilgan.", parse_mode="HTML")
+        return
+
+    new_time = room.extend_lobby_time(30)
+    if room.lobby_message_id:
+        try:
+            await message.bot.edit_message_text(
+                chat_id=room.chat_id,
+                message_id=room.lobby_message_id,
+                text=room.get_lobby_text(),
+                reply_markup=room.get_lobby_markup(),
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+    await message.reply(i18n.get("time_extended", room.lang, seconds=new_time), parse_mode="HTML")
+
 @game_group_router.callback_query(F.data.startswith("check_role_"))
 async def cb_check_role(callback: CallbackQuery):
     chat_id = int(callback.data.split("_")[-1])
