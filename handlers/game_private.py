@@ -80,7 +80,7 @@ async def cb_night_action(callback: CallbackQuery):
     target_player = room.players[target_id]
     target_name = html.escape(target_player.name)
 
-    if role_str in [Role.DON.value, Role.MAFIA.value]:
+    if role_str in [Role.DON.value, Role.MAFIA.value, Role.LAWYER.value]:
         room.mafia_votes[user_id] = target_id
         await callback.message.edit_text(
             i18n.get("action_recorded", room.lang, target=target_name),
@@ -205,7 +205,7 @@ async def pm_chat_handler(message: Message):
                 return await message.reply("⚠️ <i>Siz o'yinda halok bo'lgansiz. O'liklar gapira olmaydi!</i>", parse_mode="HTML")
 
         # Living player handling (Mafia night chat)
-        if player.is_alive and room.phase == GamePhase.NIGHT and player.role in [Role.DON, Role.MAFIA]:
+        if player.is_alive and room.phase == GamePhase.NIGHT and player.team == Team.MAFIA:
             relayed_text = text if text else "[Ovozli xabar / Media]"
             relayed = await room.broadcast_mafia_chat(
                 bot=message.bot,

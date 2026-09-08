@@ -265,7 +265,7 @@ class GameRoom:
         if self.phase != GamePhase.NIGHT:
             return False
         sender = self.players.get(sender_id)
-        if not sender or not sender.is_alive or sender.role not in [Role.DON, Role.MAFIA]:
+        if not sender or not sender.is_alive or sender.team != Team.MAFIA:
             return False
 
         role_title = i18n.get(f"roles.{sender.role.value}", self.lang)
@@ -273,7 +273,7 @@ class GameRoom:
 
         mafia_teammates = [
             p for p in self.alive_players
-            if p.role in [Role.DON, Role.MAFIA] and p.user_id != sender_id
+            if p.team == Team.MAFIA and p.user_id != sender_id
         ]
         for mate in mafia_teammates:
             try:
@@ -358,7 +358,7 @@ class GameRoom:
             ]
             markup = InlineKeyboardMarkup(inline_keyboard=target_buttons) if target_buttons else None
 
-            if p.role in [Role.DON, Role.MAFIA]:
+            if p.team == Team.MAFIA:
                 if markup:
                     try:
                         await bot.send_message(
@@ -451,7 +451,7 @@ class GameRoom:
     def are_all_night_actions_done(self) -> bool:
         """Check if all living roles with required night actions have submitted them."""
         living = self.alive_players
-        mafiosi = [p for p in living if p.role in [Role.DON, Role.MAFIA]]
+        mafiosi = [p for p in living if p.team == Team.MAFIA]
         if mafiosi and not self.mafia_votes:
             return False
 

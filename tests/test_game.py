@@ -597,3 +597,13 @@ async def test_send_pm_profile_summary():
     assert "Buyuk Don" in text
     assert "12" in text
 
+@pytest.mark.parametrize("player_count", list(range(3, 21)))
+def test_all_player_counts_distribution(player_count: int):
+    from game.role_models import distribute_roles
+    ids = list(range(1, player_count + 1))
+    roles = distribute_roles(ids)
+    assert len(roles) == player_count
+    for p_id in ids:
+        assert p_id in roles
+        assert roles[p_id] is not None
+

@@ -67,13 +67,13 @@ def distribute_roles(player_ids: List[int], role_boosts: Dict[int, Role] = None)
     elif count == 8:
         role_pool = [Role.DON, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.JESTER, Role.CITIZEN]
     elif count <= 10:
-        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.SERGEANT, Role.MANIAC, Role.MISTRESS, Role.JESTER, Role.BODYGUARD]
+        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.SERGEANT, Role.MANIAC, Role.MISTRESS, Role.JESTER, Role.BODYGUARD][:count]
         while len(role_pool) < count:
             role_pool.append(Role.CITIZEN)
     elif count == 11:
-        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.SERGEANT, Role.SNIPER, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.JESTER]
+        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.SERGEANT, Role.SNIPER, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.JESTER][:count]
     else:  # 12+
-        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.LAWYER, Role.DETECTIVE, Role.SERGEANT, Role.SNIPER, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.KAMIKAZE, Role.JESTER]
+        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.LAWYER, Role.DETECTIVE, Role.SERGEANT, Role.SNIPER, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.KAMIKAZE, Role.JESTER][:count]
         while len(role_pool) < count:
             role_pool.append(Role.CITIZEN)
 
