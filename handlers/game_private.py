@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from game.enums import GamePhase, Role, Team
 from game.manager import game_manager
 from locales.i18n import i18n
