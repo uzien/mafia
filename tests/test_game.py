@@ -94,3 +94,46 @@ async def test_db_resilient_fallback():
     session_manager.switch_engine("postgresql+asyncpg://invalid:invalid@unreachable-db-host-9999.xyz:5432/test")
     await init_db()
     assert "sqlite" in session_manager.url
+
+def test_lobby_text_and_markup_uz():
+    room = GameRoom(chat_id=-1001, creator_id=101, creator_name="mydnva'", lang="uz")
+    room.add_player(102, "Tolibjonov")
+    room.add_player(103, "boburjon 🫀")
+    room.add_player(104, "dkxolmaxammadov 🫀")
+
+    text = room.get_lobby_text()
+    assert "Ro'yxatdan o'tish davom etmoqda" in text
+    assert "Ro'yxatdan o'tganlar:" in text
+    assert "mydnva'" in text
+    assert "Tolibjonov" in text
+    assert "boburjon 🫀" in text
+    assert "dkxolmaxammadov 🫀" in text
+    assert "Jami <b>4ta odam</b>." in text
+
+    markup = room.get_lobby_markup()
+    # Check that join button has deep link url
+    join_btn = markup.inline_keyboard[0][0]
+    assert "Qo'shilish" in join_btn.text
+    assert "start=game_-1001" in join_btn.url
+
+def test_living_players_text_format():
+    room = GameRoom(chat_id=-1001, creator_id=101, creator_name="dkxolmaxammadov 🫀", lang="uz")
+    room.add_player(102, "boburjon 🫀")
+    room.add_player(103, "mydnva'")
+    room.add_player(104, "Tolibjonov")
+
+    room.players[101].role = Role.CITIZEN
+    room.players[102].role = Role.CITIZEN
+    room.players[103].role = Role.DETECTIVE
+    room.players[104].role = Role.DON
+
+    living_text = room.get_living_players_text()
+    assert "Tirik o'yinchilar:" in living_text
+    assert "dkxolmaxammadov 🫀" in living_text
+    assert "Tolibjonov" in living_text
+    assert "Ulardan:" in living_text
+    assert "Tinch axoli - 2" in living_text
+    assert "Komissar katani" in living_text
+    assert "Don" in living_text
+    assert "Jami:" in living_text
+

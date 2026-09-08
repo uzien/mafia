@@ -35,6 +35,7 @@ async def cb_night_action(callback: CallbackQuery):
             parse_mode="HTML"
         )
         await callback.answer()
+        await room.announce_night_action(callback.bot, role_str)
 
     elif role_str == Role.DOCTOR.value:
         room.doctor_target = target_id
@@ -43,6 +44,7 @@ async def cb_night_action(callback: CallbackQuery):
             parse_mode="HTML"
         )
         await callback.answer()
+        await room.announce_night_action(callback.bot, role_str)
 
     elif role_str == Role.DETECTIVE.value:
         room.detective_target = target_id
@@ -55,6 +57,7 @@ async def cb_night_action(callback: CallbackQuery):
 
         await callback.message.edit_text(res_msg, parse_mode="HTML")
         await callback.answer()
+        await room.announce_night_action(callback.bot, role_str)
 
     elif role_str == Role.MANIAC.value:
         room.maniac_target = target_id
@@ -63,6 +66,7 @@ async def cb_night_action(callback: CallbackQuery):
             parse_mode="HTML"
         )
         await callback.answer()
+        await room.announce_night_action(callback.bot, role_str)
 
     elif role_str == Role.MISTRESS.value:
         room.mistress_target = target_id
@@ -71,6 +75,7 @@ async def cb_night_action(callback: CallbackQuery):
             parse_mode="HTML"
         )
         await callback.answer()
+        await room.announce_night_action(callback.bot, role_str)
 
     elif role_str == Role.SNIPER.value:
         room.sniper_target = target_id
@@ -79,3 +84,4 @@ async def cb_night_action(callback: CallbackQuery):
             parse_mode="HTML"
         )
         await callback.answer()
+        await room.announce_night_action(callback.bot, role_str)

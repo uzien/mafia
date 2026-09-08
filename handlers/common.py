@@ -1,6 +1,6 @@
 import random
 from aiogram import F, Router
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from config import settings
 from database.crud import (
@@ -12,6 +12,8 @@ from database.crud import (
     set_user_language,
 )
 from database.database import async_session_maker
+from game.enums import GamePhase
+from game.manager import game_manager
 from locales.i18n import SUPPORTED_LANGUAGES, i18n
 
 common_router = Router()
@@ -107,7 +109,7 @@ def get_language_markup(prefix: str = "set_lang_") -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 @common_router.message(Command("start"))
-async def cmd_start(message: Message):
+async def cmd_start(message: Message, command: CommandObject = None):
     async with async_session_maker() as session:
         if message.chat.type == "private":
             user = await get_or_create_user(
@@ -117,6 +119,47 @@ async def cmd_start(message: Message):
                 first_name=message.from_user.first_name or "Player",
                 default_lang=settings.DEFAULT_LANGUAGE
             )
+
+            # Check if started with a game join payload
+            if command and command.args:
+                args = command.args.strip()
+                if args.startswith("game_") or args.startswith("join_"):
+                    try:
+                        chat_id = int(args.split("_", 1)[1])
+                        room = game_manager.get_room(chat_id)
+                        if room and room.phase == GamePhase.LOBBY:
+                            added = room.add_player(user.id, user.first_name, user.username)
+                            if added:
+                                if room.lobby_message_id:
+                                    try:
+                                        await message.bot.edit_message_text(
+                                            chat_id=room.chat_id,
+                                            message_id=room.lobby_message_id,
+                                            text=room.get_lobby_text(),
+                                            reply_markup=room.get_lobby_markup(),
+                                            parse_mode="HTML"
+                                        )
+                                    except Exception:
+                                        pass
+                                return await message.answer(
+                                    f"✅ <b>Siz o'yinga muvaffaqiyatli qo'shildingiz!</b>\n\nIltimos, guruhga qayting va o'yin boshlanishini kuting.",
+                                    parse_mode="HTML"
+                                )
+                            elif user.id in room.players:
+                                return await message.answer(
+                                    f"ℹ️ Siz allaqachon ushbu o'yinga qo'shilgansiz!\n\nGuruhga qaytib o'yinni kuzatishingiz mumkin.",
+                                    parse_mode="HTML"
+                                )
+                            else:
+                                return await message.answer("⚠️ O'yinchilar soni to'lgan!", parse_mode="HTML")
+                        else:
+                            return await message.answer(
+                                "⚠️ Ushbu guruhdagi ro'yxatdan o'tish yakunlangan yoki o'yin topilmadi.",
+                                parse_mode="HTML"
+                            )
+                    except Exception:
+                        pass
+
             text = i18n.get("welcome", user.language, name=user.first_name)
             await message.answer(text, reply_markup=get_main_menu_keyboard(user.language), parse_mode="HTML")
 

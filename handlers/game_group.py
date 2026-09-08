@@ -104,6 +104,46 @@ async def cb_game_start_early(callback: CallbackQuery):
     await callback.answer("🚀 Starting game now!")
     await room.start_game(callback.bot)
 
+@game_group_router.callback_query(F.data.startswith("check_role_"))
+async def cb_check_role(callback: CallbackQuery):
+    chat_id = int(callback.data.split("_")[-1])
+    room = game_manager.get_room(chat_id)
+    if not room or room.phase in [GamePhase.LOBBY, GamePhase.GAME_OVER]:
+        return await callback.answer("O'yin hozir faol emas.", show_alert=True)
+
+    player = room.players.get(callback.from_user.id)
+    if not player:
+        return await callback.answer("Siz bu o'yinda ishtirok etmayapsiz!", show_alert=True)
+
+    role_title = i18n.get(f"roles.{player.role.value}", room.lang)
+    desc = i18n.get(f"role_desc.{player.role.value}", room.lang)
+    status = "Tirik" if player.is_alive else "Halok bo'lgan"
+    await callback.answer(
+        f"🎭 Sizning rolingiz: {role_title} ({status})\n\n{desc}",
+        show_alert=True
+    )
+
+@game_group_router.message(Command("join", "qoshilish", "qosul"))
+async def cmd_join_group(message: Message):
+    room = game_manager.get_room(message.chat.id)
+    if not room or room.phase != GamePhase.LOBBY:
+        return
+    user = message.from_user
+    async with async_session_maker() as session:
+        await get_or_create_user(session, user.id, user.username, user.first_name)
+    success = room.add_player(user.id, user.first_name, user.username)
+    if success and room.lobby_message_id:
+        try:
+            await message.bot.edit_message_text(
+                chat_id=room.chat_id,
+                message_id=room.lobby_message_id,
+                text=room.get_lobby_text(),
+                reply_markup=room.get_lobby_markup(),
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+
 @game_group_router.message(Command("stop"))
 async def cmd_stop(message: Message):
     room = game_manager.get_room(message.chat.id)
