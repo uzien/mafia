@@ -1,0 +1,91 @@
+{
+  "welcome": "👋 Salam, <b>{name}</b>!\n\n🕶 <b>Mafia Baku Black Bot</b>-a xoş gəlmisiniz!\n\nBu bot qruplarınızda məşhur Mafiya oyununu ən yüksək səviyyədə, interaktiv düymələr, gecə səssizliyi, turnirlər və zəngin rollarla təşkil edir.\n\n🎮 <b>Oyuna başlamaq üçün:</b> Məni qrupunuza əlavə edin və <code>/game</code> yazın!\n\n💡 Əmrlər haqqında ətraflı məlumat üçün: /help",
+  "help": "📖 <b>Mafia Baku Black — Əmrlər Siyahısı:</b>\n\n<b>Qrup Əmrləri:</b>\n• <code>/game</code> və ya <code>/oyun</code> — Yeni oyun otağı açmaq\n• <code>/start</code> — Oyunu vaxtından əvvəl başlatmaq (kifayət qədər oyunçu olduqda)\n• <code>/stop</code> — Oyunu ləğv etmək\n• <code>/setlang</code> — Qrupun dilini dəyişmək\n\n<b>Şəxsi Əmrlər:</b>\n• <code>/profile</code> — Şəxsi statistika və balans\n• <code>/shop</code> — Mağaza (Rol kartları, ləqəblər, biletlər)\n• <code>/daily</code> — Gündəlik pulsuz qızıl bonusu\n• <code>/top</code> — Ən yaxşı oyunçular reytinqi\n• <code>/clan</code> — Mafiya ailəsi (Klan) idarəetməsi\n• <code>/tournament</code> — Turnirlər və kuboklar\n• <code>/lang</code> — Dil seçimi",
+  "choose_lang": "🌐 Zəhmət olmasa dilinizi seçin / Please select your language / Tilni tanlang:",
+  "lang_changed": "✅ Dil uğurla dəyişdirildi: <b>{lang_name}</b>",
+  
+  "roles": {
+    "citizen": "👱‍♂️ Dinc Sakin",
+    "doctor": "💉 Həkim",
+    "detective": "🕵️‍♂️ Komissar",
+    "mafia": "🩸 Mafiöz",
+    "don": "👑 Don (Xaç Atası)",
+    "maniac": "🔪 Maniak",
+    "mistress": "💃 Məşuqə (Leva)",
+    "bodyguard": "🛡 Mühafizəçi",
+    "kamikaze": "💣 Kamikadze",
+    "lawyer": "💼 Vəkil"
+  },
+  
+  "role_desc": {
+    "citizen": "Siz dinc sakinsiniz! Gündüz müzakirələrində və məhkəmədə iştirak edərək şəhəri mafiyalardan təmizləyin.",
+    "doctor": "Hər gecə bir oyunçunu ölümdən xilas edə bilərsiniz. Eyni adamı ard-arda iki dəfə sağalda bilməzsiniz.",
+    "detective": "Gecələr bir şübhəlinin kimliyini (Dinc və ya Mafiya) öyrənə və ya güllələyə bilərsiniz.",
+    "mafia": "Gecələr digər mafiyalarla birlikdə bir qurban seçib onu aradan qaldırın.",
+    "don": "Mafiyanın rəhbərisiniz! Gecələr Komissarı axtara və qətl qərarı verə bilərsiniz.",
+    "maniac": "Təkbaşına qatilsiniz! Hər gecə istədiyiniz birini qətlə yetirirsiniz. Hamını öldürən tək qalib olarsınız.",
+    "mistress": "Gecə seçdiyiniz şəxsin yanına gedərək onun xüsusi bacarığını bloklayırsınız.",
+    "bodyguard": "Seçdiyiniz şəxsi həyatınız bahasına qoruyursunuz. Əgər ona hücum olarsa, güllə sizə dəyir.",
+    "kamikaze": "Əgər gündüz məhkəmədə linç edilsəniz, özünüzlə bərabər səs verənlərdən birini də partladırsınız.",
+    "lawyer": "Gecə seçdiyiniz mafiyanı Komissarın yoxlamasından gizlədirsiniz."
+  },
+
+  "lobby_created": "🏙 <b>YENİ MAFİYA OYUNU BAŞLAYIR!</b>\n\n👤 Yaradan: {creator}\n👥 Qoşulanlar ({count}/{max}):\n{players_list}\n\n⏱ Başlamağa qalan vaxt: <b>{seconds}</b> saniyə",
+  "btn_join": "➕ Qoşulmaq",
+  "btn_leave": "➖ Ayrılmaq",
+  "btn_start_now": "🚀 İndi Başlat",
+  "already_in_game": "⚠️ Siz artıq bu oyundasınız!",
+  "not_in_game": "⚠️ Siz bu oyunda deyilsiniz!",
+  "player_joined": "✅ <b>{name}</b> oyuna qoşuldu! ({count}/{min})",
+  "player_left": "❌ <b>{name}</b> oyundan ayrıldı!",
+  "game_cancelled": "🛑 Kifayət qədər oyunçu toplanmadığı üçün oyun ləğv edildi.",
+  "game_starting": "🎭 <b>Oyun başlayır! Rollar şəxsi mesajda (PM) paylanır...</b>\nBotdan mesaj gəlməsini təmin etmək üçün botu başlatdığınızdan əmin olun!",
+
+  "night_started": "🌙 <b>Şəhərə gecə çökür... (#Gecə {round})</b>\n\nŞəhər sakinləri dərin yuxuya gedir, qaranlıq küçələrdə isə yalnız təhlükəli şəxslər oyaqdır.\n<i>Qrup müvəqqəti olaraq səssizləşdirildi.</i>",
+  "pm_role_assigned": "🎭 Sizin rolunuz: <b>{role}</b>\n\n{description}",
+  "night_prompt_mafia": "🩸 <b>Don & Mafia Seçimi:</b>\nKimi aradan qaldırmaq istəyirsiniz? Hədəfi seçin:",
+  "night_prompt_doctor": "💉 <b>Həkim:</b>\nKimi xilas etmək istəyirsiniz?",
+  "night_prompt_detective": "🕵️‍♂️ <b>Komissar:</b>\nKimin sənədlərini yoxlamaq istəyirsiniz?",
+  "night_prompt_maniac": "🔪 <b>Maniak:</b>\nBu gecə qurbanınız kim olacaq?",
+  "night_prompt_mistress": "💃 <b>Məşuqə:</b>\nBu gecə kimin otağına getmək istəyirsiniz (bacarığını bloklayasınız)?",
+  "action_recorded": "🎯 Seçiminiz qeydə alındı: <b>{target}</b>",
+  "detective_result_mafia": "🔍 Təhqiqat nəticəsi: <b>{target}</b> bir <b>MAFİYA ÜZVÜDÜR!</b> 🩸",
+  "detective_result_innocent": "🔍 Təhqiqat nəticəsi: <b>{target}</b> dinc sakindir. 🕊",
+
+  "morning_report_title": "☀️ <b>Şəhərdə sabah açıldı! (#Gündüz {round})</b>\n\n",
+  "morning_nobody_died": "🕊 Xoş xəbər! Bu gecə heç kim öldürülmədi. Sakinlər rahat nəfəs alır.",
+  "morning_killed": "💀 Təəssüf ki, bu gecə <b>{victim}</b> qətlə yetirildi!\nRol: <b>{role}</b>",
+  "morning_doctor_saved": "💉 Həkim bu gecə yaralı sakini vaxtında xilas etdi!",
+  
+  "day_discussion": "🗣 <b>Müzakirə vaxtı başladı!</b>\nŞübhələrinizi bölüşün və şəhəri qoruyun. Müzakirə üçün: <b>{seconds}</b> saniyə.",
+  "voting_started": "⚖️ <b>MƏHKƏMƏ BAŞLADI!</b>\nŞübhələndiyiniz şəxsə səs verin. Şəhərdən kimi qovmaq (linç etmək) istəyirsiniz?\nSəsvermə müddəti: <b>{seconds}</b> saniyə.",
+  "vote_cast": "🗳 <b>{voter}</b> oyunçusu <b>{target}</b> üçün səs verdi!",
+  "player_lynched": "⚖️ Məhkəmə qərarı ilə <b>{name}</b> şəhərdən qovuldu (linç edildi)!\nOnun rolu: <b>{role}</b> idi.",
+  "vote_tie": "🤝 Səslər bərabər bölündü! Bu gün heç kim linç edilmədi.",
+  "player_eliminated": "🪦 <b>{name}</b> oyundan kənarlaşdırıldı!",
+
+  "victory_town": "🎉 <b>DİNC SAKİNLƏR QALİB GƏLDİ!</b>\nBütün cinayətkarlar şəhərdən təmizləndi! Şəhər əmin-amanlığa qovuşdu.",
+  "victory_mafia": "🩸 <b>MAFİYA QALİB GƏLDİ!</b>\nŞəhər tamamilə Mafiyanın nəzarəti altına keçdi!",
+  "victory_maniac": "🔪 <b>MANİAK QALİB GƏLDİ!</b>\nBütün şəhəri bir-bir məhv edərək tək qalan o oldu!",
+
+  "game_summary": "\n\n📋 <b>Oyunçular və Rolları:</b>\n{summary}\n\n💰 Hər bir qalib <b>+{win_coins} Qızıl</b> və <b>+{win_exp} EXP</b> qazandı!",
+  "profile_card": "👤 <b>Oyunçu Profili:</b> {name}\n🏷 Ləqəb: <b>{title}</b>\n⭐ Səviyyə: <b>{level}</b> ({exp} EXP)\n💰 Qızıl: <b>{coins}</b> | 💎 Almaz: <b>{diamonds}</b>\n\n📊 <b>Statistika:</b>\n• Oynanılan oyunlar: <b>{games_played}</b>\n• Qələbələr: <b>{wins}</b> ({win_rate}%)\n• Məğlubiyyətlər: <b>{losses}</b>\n• Ən yaxşı rol: <b>{best_role}</b>",
+  "daily_bonus_success": "🎁 Təbriklər! Gündəlik bonus olaraq <b>+{amount} Qızıl</b> qazandınız! Sabah yenə gəlin.",
+  "daily_bonus_already": "⏳ Siz artıq bugünkü bonusunuzu almısınız. Növbəti bonus üçün gözləyin: <b>{hours} saat</b>.",
+  
+  "shop_title": "🛒 <b>Mafia Baku Black Mağazası</b>\nBalansınız: <b>{coins} Qızıl</b> | <b>{diamonds} Almaz</b>\n\nAlmağınız üçün mövcud əşyalar:",
+  "item_don_card": "👑 Don Kartı (Don olma şansı +40%) — 300 Qızıl",
+  "item_det_card": "🕵️ Komissar Kartı (+40% şans) — 300 Qızıl",
+  "item_doc_card": "💉 Həkim Kartı (+40% şans) — 250 Qızıl",
+  "item_title_godfather": "🏆 'Xaç Atası' Ləqəbi — 50 Almaz",
+  "item_vip_pass": "💎 VIP Status (30 gün) — 100 Almaz",
+  "buy_success": "✅ <b>{item_name}</b> uğurla satın alındı!",
+  "not_enough_money": "❌ Təəssüf ki, balansınızda kifayət qədər vəsait yoxdur!",
+
+  "clan_info": "🛡 <b>Mafiya Klanı: {clan_name}</b>\n👑 Klan Rəhbəri: <b>{leader}</b>\n👥 Üzvlər: <b>{members_count}/20</b>\n🏦 Klan Xəzinəsi: <b>{treasury} Qızıl</b>\n🏆 Klan Reytinqi: <b>{rating} Xal</b>",
+  "clan_created": "🎉 Təbriklər! <b>{clan_name}</b> klanı uğurla yaradıldı!",
+  
+  "tournament_title": "🏆 <b>Baku Black Mafiya Turniri: {t_name}</b>\n💰 Mükafat Fondu: <b>{prize_pool} Almaz</b>\n👥 Qeydiyyatdan keçənlər: <b>{registered}/{max_participants}</b>\n🎫 İştirak haqqı: <b>{entry_fee} Qızıl</b>\n\nQeydiyyat üçün aşağıdakı düyməyə basın!",
+  "btn_register_tournament": "🎫 Qeydiyyatdan Keç",
+  "tournament_registered": "✅ Siz turnirə uğurla qeydiyyatdan keçdiniz!"
+}
