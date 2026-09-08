@@ -37,6 +37,8 @@ class Player:
         self.guilt_suicide: bool = False
         self.has_fake_docs: bool = False
         self.last_will: Optional[str] = None
+        self.awaiting_last_letter: bool = False
+        self.last_letter_deadline: float = 0.0
 
     @property
     def team(self) -> Team:

@@ -74,9 +74,9 @@ class Settings(BaseSettings):
     MAX_PLAYERS: int = 20
     LOBBY_TIMEOUT: int = 60         # Seconds for lobby wait
     NIGHT_DURATION: int = 45        # Seconds for night actions
-    DAY_DURATION: int = 60          # Seconds for open discussion
-    VOTING_DURATION: int = 45       # Seconds for daytime lynching vote
-    DEFENSE_DURATION: int = 20      # Seconds for accused player's final speech
+    DAY_DURATION: int = 30          # Seconds for open discussion
+    VOTING_DURATION: int = 30       # Seconds for daytime lynching vote
+    DEFENSE_DURATION: int = 30      # Seconds for accused player's final speech / letter
     
     # Default Language (uz, az, ru, en, tr)
     DEFAULT_LANGUAGE: str = "uz"

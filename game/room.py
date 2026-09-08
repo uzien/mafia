@@ -1,7 +1,9 @@
 import asyncio
+from datetime import datetime
 import html
 import logging
 import random
+import time
 from typing import Dict, List, Optional
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -30,6 +32,7 @@ class GameRoom:
         self.round: int = 1
         self.lobby_message_id: Optional[int] = None
         self.current_event: Optional[str] = None
+        self.start_time: Optional[datetime] = None
         
         self.players: Dict[int, Player] = {}
         self.timer_task: Optional[asyncio.Task] = None
@@ -39,6 +42,7 @@ class GameRoom:
         self.mafia_votes: Dict[int, int] = {}       # mafioso_id -> target_id
         self.doctor_target: Optional[int] = None
         self.detective_target: Optional[int] = None
+        self.detective_kill_target: Optional[int] = None
         self.maniac_target: Optional[int] = None
         self.mistress_target: Optional[int] = None
         self.bodyguard_target: Optional[int] = None
@@ -199,6 +203,7 @@ class GameRoom:
             self.timer_task.cancel()
 
         self.phase = GamePhase.STARTING
+        self.start_time = datetime.utcnow()
 
         # Assign roles
         role_assignments = distribute_roles(list(self.players.keys()))
@@ -284,6 +289,7 @@ class GameRoom:
         self.mafia_votes.clear()
         self.doctor_target = None
         self.detective_target = None
+        self.detective_kill_target = None
         self.maniac_target = None
         self.mistress_target = None
         self.bodyguard_target = None
@@ -375,16 +381,30 @@ class GameRoom:
                     except Exception as e:
                         logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
             elif p.role == Role.DETECTIVE:
-                if markup:
+                det_buttons = []
+                for target in living:
+                    if target.user_id != p.user_id:
+                        det_buttons.append([
+                            InlineKeyboardButton(
+                                text=f"🔍 {html.escape(target.name)}",
+                                callback_data=f"act_{self.chat_id}_det_check_{target.user_id}"
+                            ),
+                            InlineKeyboardButton(
+                                text="🔫 Otish",
+                                callback_data=f"act_{self.chat_id}_det_shoot_{target.user_id}"
+                            )
+                        ])
+                det_markup = InlineKeyboardMarkup(inline_keyboard=det_buttons) if det_buttons else None
+                if det_markup:
                     try:
                         await bot.send_message(
                             p.user_id,
                             i18n.get("night_prompt_detective", self.lang),
-                            reply_markup=markup,
+                            reply_markup=det_markup,
                             parse_mode="HTML"
                         )
                     except Exception as e:
-                        logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
+                        logger.warning(f"Could not send night prompt to detective {p.user_id}: {e}")
             elif p.role == Role.MANIAC:
                 if markup:
                     try:
@@ -440,7 +460,7 @@ class GameRoom:
             return False
 
         has_detective = any(p.role == Role.DETECTIVE and not p.is_blocked for p in living)
-        if has_detective and self.detective_target is None:
+        if has_detective and self.detective_target is None and self.detective_kill_target is None:
             return False
 
         has_maniac = any(p.role == Role.MANIAC and not p.is_blocked for p in living)
@@ -500,17 +520,30 @@ class GameRoom:
             if target_p and target_p.team == Team.TOWN:
                 sniper_player.guilt_suicide = True
 
+        # 5b. Determine Detective kill target
+        detective_kill_id = None
+        det_player = next((p for p in self.players.values() if p.role == Role.DETECTIVE), None)
+        if det_player and not det_player.is_blocked and self.detective_kill_target:
+            detective_kill_id = self.detective_kill_target
+
         # 6. Resolve casualties
         deaths: List[Player] = []
         doctor_saved = False
 
         targets_to_kill = set()
+        killer_map: Dict[int, str] = {}
         if mafia_kill_id:
             targets_to_kill.add(mafia_kill_id)
+            killer_map[mafia_kill_id] = "Don"
         if maniac_kill_id:
             targets_to_kill.add(maniac_kill_id)
+            killer_map[maniac_kill_id] = "Manyak"
         if sniper_kill_id:
             targets_to_kill.add(sniper_kill_id)
+            killer_map[sniper_kill_id] = "Snayper"
+        if detective_kill_id:
+            targets_to_kill.add(detective_kill_id)
+            killer_map[detective_kill_id] = "Komissar katani"
 
         for t_id in targets_to_kill:
             if t_id in self.players:
@@ -519,8 +552,27 @@ class GameRoom:
                     doctor_saved = True
                 else:
                     victim.is_alive = False
+                    victim.awaiting_last_letter = True
+                    victim.last_letter_deadline = time.time() + 30.0
                     deaths.append(victim)
                     await mute_dead_player(bot, self.chat_id, victim.user_id)
+                    try:
+                        skip_btn = InlineKeyboardMarkup(inline_keyboard=[[
+                            InlineKeyboardButton(
+                                text="⏩ O'tkazib yuborish (Skip)",
+                                callback_data=f"skip_letter_{self.chat_id}_{victim.user_id}"
+                            )
+                        ]])
+                        await bot.send_message(
+                            victim.user_id,
+                            "⚰️ <b>Siz halok bo'ldingiz!</b>\n\n"
+                            "Shaharga o'lim oldi so'nggi xatingizni (vasiyatingizni) yuborish uchun sizda <b>30 soniya</b> bor!\n"
+                            "Xabaringizni shu yerga (botga) yozib yuboring:",
+                            reply_markup=skip_btn,
+                            parse_mode="HTML"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not send last letter prompt to {victim.user_id}: {e}")
 
         # Check if detective died, promote sergeant!
         det_died = any(d.role == Role.DETECTIVE for d in deaths)
@@ -548,8 +600,27 @@ class GameRoom:
             if p.guilt_suicide:
                 p.is_alive = False
                 p.guilt_suicide = False
+                p.awaiting_last_letter = True
+                p.last_letter_deadline = time.time() + 30.0
                 deaths.append(p)
                 await mute_dead_player(bot, self.chat_id, p.user_id)
+                try:
+                    skip_btn = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(
+                            text="⏩ O'tkazib yuborish (Skip)",
+                            callback_data=f"skip_letter_{self.chat_id}_{p.user_id}"
+                        )
+                    ]])
+                    await bot.send_message(
+                        p.user_id,
+                        "⚰️ <b>Siz pushaymonlikdan halok bo'ldingiz!</b>\n\n"
+                        "Shaharga o'lim oldi so'nggi xatingizni yuborish uchun sizda <b>30 soniya</b> bor!\n"
+                        "Xabaringizni shu yerga yozib yuboring:",
+                        reply_markup=skip_btn,
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
 
         # Unmute group chat for morning
         await unmute_chat_day(bot, self.chat_id)
@@ -573,9 +644,11 @@ class GameRoom:
             for d in deaths:
                 role_title = i18n.get(f"roles.{d.role.value}", self.lang)
                 victim_name = html.escape(d.name or "O'yinchi")
+                killer_name = killer_map.get(d.user_id)
+                killer_note = f" Aytishlaricha unikiga <b>{killer_name}</b> kelgan..." if killer_name else ""
                 await bot.send_message(
                     self.chat_id,
-                    i18n.get("morning_killed", self.lang, victim=victim_name, role=role_title),
+                    f"Tunda <b>{role_title}</b> {victim_name} vaxshiylarcha o'ldirildi.{killer_note}",
                     parse_mode="HTML"
                 )
                 if getattr(d, "last_will", None):
@@ -738,7 +811,27 @@ class GameRoom:
             return await self._finish_voting_phase(bot)
 
         lynched.is_alive = False
+        lynched.awaiting_last_letter = True
+        lynched.last_letter_deadline = time.time() + 30.0
         await mute_dead_player(bot, self.chat_id, lynched.user_id)
+        try:
+            skip_btn = InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(
+                    text="⏩ O'tkazib yuborish (Skip)",
+                    callback_data=f"skip_letter_{self.chat_id}_{lynched.user_id}"
+                )
+            ]])
+            await bot.send_message(
+                lynched.user_id,
+                "⚰️ <b>Siz sudda dorga osildingiz (linch qilindingiz)!</b>\n\n"
+                "Shaharga o'lim oldi so'nggi xatingizni (vasiyatingizni) yuborish uchun sizda <b>30 soniya</b> bor!\n"
+                "Xabaringizni shu yerga (botga) yozib yuboring:",
+                reply_markup=skip_btn,
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.warning(f"Could not send last letter prompt to {lynched.user_id}: {e}")
+
         role_title = i18n.get(f"roles.{lynched.role.value}", self.lang)
         lynched_name = html.escape(lynched.name or "O'yinchi")
 
@@ -771,7 +864,26 @@ class GameRoom:
             if voters_for_lynch:
                 collateral = self.players[voters_for_lynch[0]]
                 collateral.is_alive = False
+                collateral.awaiting_last_letter = True
+                collateral.last_letter_deadline = time.time() + 30.0
                 await mute_dead_player(bot, self.chat_id, collateral.user_id)
+                try:
+                    skip_btn = InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(
+                            text="⏩ O'tkazib yuborish (Skip)",
+                            callback_data=f"skip_letter_{self.chat_id}_{collateral.user_id}"
+                        )
+                    ]])
+                    await bot.send_message(
+                        collateral.user_id,
+                        "⚰️ <b>Siz kamikadze portlashida halok bo'ldingiz!</b>\n\n"
+                        "Shaharga o'lim oldi so'nggi xatingizni yuborish uchun sizda <b>30 soniya</b> bor!\n"
+                        "Xabaringizni shu yerga yozib yuboring:",
+                        reply_markup=skip_btn,
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
                 c_role = i18n.get(f"roles.{collateral.role.value}", self.lang)
                 clean_col_name = html.escape(collateral.name or "O'yinchi")
                 await bot.send_message(
@@ -866,31 +978,53 @@ class GameRoom:
         self.phase = GamePhase.GAME_OVER
         await restore_players(bot, self.chat_id, list(self.players.keys()))
 
-        if winner_team == Team.TOWN:
-            win_msg = i18n.get("victory_town", self.lang)
-        elif winner_team == Team.MAFIA:
-            win_msg = i18n.get("victory_mafia", self.lang)
-        elif winner_team == Team.JESTER:
-            win_msg = i18n.get("victory_jester", self.lang)
+        # Calculate duration
+        if self.start_time:
+            elapsed_seconds = max(1, int((datetime.utcnow() - self.start_time).total_seconds()))
+            mins = elapsed_seconds // 60
+            secs = elapsed_seconds % 60
+            if mins > 0:
+                duration_str = f"{mins} minut {secs} soniya" if secs > 0 else f"{mins} minut"
+            else:
+                duration_str = f"{secs} soniya"
         else:
-            win_msg = i18n.get("victory_maniac", self.lang)
+            duration_str = "1 minut"
 
-        # Player roles summary
-        summary_lines = []
+        winners: List[Player] = []
+        others: List[Player] = []
         for p in self.players.values():
+            is_win = (p.team == winner_team) or (winner_team == Team.NEUTRAL and p.role == Role.MANIAC) or (winner_team == Team.JESTER and p.role == Role.JESTER)
+            if is_win:
+                winners.append(p)
+            else:
+                others.append(p)
+
+        lines = [
+            "🏆 <b>O'yin tugadi!</b>",
+            "",
+            "🎉 <b>G'oliblar:</b>"
+        ]
+        idx = 1
+        for p in winners:
             role_title = i18n.get(f"roles.{p.role.value}", self.lang)
-            status = "Alive" if p.is_alive else "Dead"
-            summary_lines.append(f"• {p.name}: {role_title} ({status})")
+            p_name = html.escape(p.name or "O'yinchi")
+            lines.append(f" {idx}. <a href=\"tg://user?id={p.user_id}\">{p_name}</a> - <b>{role_title}</b>")
+            idx += 1
 
-        summary = "\n".join(summary_lines)
-        full_msg = win_msg + i18n.get(
-            "game_summary",
-            self.lang,
-            summary=summary,
-            win_coins=settings.WIN_COIN_REWARD,
-            win_exp=settings.WIN_EXP_REWARD
-        )
+        if others:
+            lines.extend(["", "💀 <b>Qolgan o'yinchilar:</b>"])
+            for p in others:
+                role_title = i18n.get(f"roles.{p.role.value}", self.lang)
+                p_name = html.escape(p.name or "O'yinchi")
+                lines.append(f" {idx}. <a href=\"tg://user?id={p.user_id}\">{p_name}</a> - {role_title}")
+                idx += 1
 
+        lines.extend([
+            "",
+            f"⏳ O'yin: <b>{duration_str}</b> davom etdi",
+            f"💰 Har bir g'olib: <b>+{settings.WIN_COIN_REWARD} Tanga</b> | <b>+{settings.WIN_EXP_REWARD} EXP</b>"
+        ])
+        full_msg = "\n".join(lines)
         await bot.send_message(self.chat_id, full_msg, parse_mode="HTML")
 
         # Distribute database stats and rewards

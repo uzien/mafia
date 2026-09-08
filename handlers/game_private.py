@@ -37,13 +37,34 @@ async def cmd_will(message: Message, command: CommandObject):
     clean_will = html.escape(will_text)
     await message.reply(i18n.get("will_saved", room.lang, will=clean_will), parse_mode="HTML")
 
+@game_private_router.callback_query(F.data.startswith("skip_letter_"))
+async def cb_skip_letter(callback: CallbackQuery):
+    parts = callback.data.split("_")
+    chat_id = int(parts[2])
+    user_id = int(parts[3])
+    room = game_manager.get_room(chat_id)
+    if room and user_id in room.players:
+        player = room.players[user_id]
+        player.awaiting_last_letter = False
+    await callback.answer("Oxirgi xat bekor qilindi.")
+    try:
+        await callback.message.edit_text("⏩ <i>Oxirgi xat yozishni rad etdingiz.</i>", parse_mode="HTML")
+    except Exception:
+        pass
+
 @game_private_router.callback_query(F.data.startswith("act_"))
 async def cb_night_action(callback: CallbackQuery):
     parts = callback.data.split("_")
-    # act_{chat_id}_{role}_{target_id}
+    # act_{chat_id}_{role}_{target_id} or act_{chat_id}_det_{action}_{target_id}
     chat_id = int(parts[1])
     role_str = parts[2]
-    target_id = int(parts[3])
+
+    if role_str == "det":
+        action_type = parts[3]   # "check" or "shoot"
+        target_id = int(parts[4])
+    else:
+        target_id = int(parts[3])
+        action_type = "check" if role_str == Role.DETECTIVE.value else None
 
     room = game_manager.get_room(chat_id)
     if not room or room.phase != GamePhase.NIGHT:
@@ -77,31 +98,40 @@ async def cb_night_action(callback: CallbackQuery):
         await callback.answer()
         await room.announce_night_action(callback.bot, role_str)
 
-    elif role_str == Role.DETECTIVE.value:
-        room.detective_target = target_id
-        # Secret detective report (check Fog weather event)
-        if room.current_event == "event_fog" and random.random() < 0.25:
-            res_msg = i18n.get("fog_investigation_obscured", room.lang, target=target_name)
-        elif getattr(target_player, "has_fake_docs", False):
-            target_player.has_fake_docs = False
-            from database.database import async_session_maker
-            from services.economy_service import consume_fake_documents
-            try:
-                async with async_session_maker() as session:
-                    await consume_fake_documents(session, target_player.user_id)
-            except Exception:
-                pass
-            res_msg = i18n.get("detective_result_fakedocs", room.lang, target=target_name)
+    elif role_str == "det" or role_str == Role.DETECTIVE.value:
+        if action_type == "shoot":
+            room.detective_kill_target = target_id
+            await callback.message.edit_text(
+                f"🎯 Siz <b>{target_name}</b>ga qarata to'pponchadan o'q uzdingiz!",
+                parse_mode="HTML"
+            )
+            await callback.answer("Nishon mo'ljalga olindi!")
+            await room.announce_night_action(callback.bot, Role.DETECTIVE.value)
         else:
-            is_mafia = (target_player.team == Team.MAFIA and not target_player.protected_by_lawyer)
-            if is_mafia:
-                res_msg = i18n.get("detective_result_mafia", room.lang, target=target_name)
+            room.detective_target = target_id
+            # Secret detective report (check Fog weather event)
+            if room.current_event == "event_fog" and random.random() < 0.25:
+                res_msg = i18n.get("fog_investigation_obscured", room.lang, target=target_name)
+            elif getattr(target_player, "has_fake_docs", False):
+                target_player.has_fake_docs = False
+                from database.database import async_session_maker
+                from services.economy_service import consume_fake_documents
+                try:
+                    async with async_session_maker() as session:
+                        await consume_fake_documents(session, target_player.user_id)
+                except Exception:
+                    pass
+                res_msg = i18n.get("detective_result_fakedocs", room.lang, target=target_name)
             else:
-                res_msg = i18n.get("detective_result_innocent", room.lang, target=target_name)
+                is_mafia = (target_player.team == Team.MAFIA and not target_player.protected_by_lawyer)
+                if is_mafia:
+                    res_msg = i18n.get("detective_result_mafia", room.lang, target=target_name)
+                else:
+                    res_msg = i18n.get("detective_result_innocent", room.lang, target=target_name)
 
-        await callback.message.edit_text(res_msg, parse_mode="HTML")
-        await callback.answer()
-        await room.announce_night_action(callback.bot, role_str)
+            await callback.message.edit_text(res_msg, parse_mode="HTML")
+            await callback.answer()
+            await room.announce_night_action(callback.bot, Role.DETECTIVE.value)
 
     elif role_str == Role.MANIAC.value:
         room.maniac_target = target_id
@@ -137,20 +167,52 @@ async def cb_night_action(callback: CallbackQuery):
         asyncio.create_task(room.resolve_night(callback.bot))
 
 @game_private_router.message(F.chat.type == "private", ~F.text.startswith("/"))
-async def pm_mafia_chat_relay(message: Message):
-    """Allow living Mafia and Don to secretly chat with each other during the night phase."""
+async def pm_chat_handler(message: Message):
+    """Handle private messages: last letter for dead players or secret night chat for mafia."""
     user_id = message.from_user.id
-    for room in list(game_manager.rooms.values()):
-        if room.phase == GamePhase.NIGHT and user_id in room.players:
-            player = room.players[user_id]
-            if player.is_alive and player.role in [Role.DON, Role.MAFIA]:
-                text = message.text or message.caption or "[Ovozli xabar / Media]"
-                relayed = await room.broadcast_mafia_chat(
-                    bot=message.bot,
-                    sender_id=user_id,
-                    sender_name=message.from_user.first_name,
-                    text=text
-                )
-                if relayed:
-                    await message.reply("🩸 <i>Xabaringiz Mafiya a'zolariga yetkazildi.</i>", parse_mode="HTML")
-                return
+    text = (message.text or message.caption or "").strip()
+
+    # Check if user belongs to an active game room
+    room = game_manager.find_user_room(user_id)
+    if room and user_id in room.players:
+        player = room.players[user_id]
+
+        # Dead player handling (30s last letter window)
+        if not player.is_alive:
+            if getattr(player, "awaiting_last_letter", False):
+                import time
+                if time.time() > getattr(player, "last_letter_deadline", 0.0):
+                    player.awaiting_last_letter = False
+                    return await message.reply("⏳ <b>Vaqt tugadi!</b> 30 soniyalik vaqtingiz o'tib ketgan. O'liklar gapira olmaydi!", parse_mode="HTML")
+
+                player.awaiting_last_letter = False
+                if text:
+                    clean_letter = html.escape(text[:300])
+                    clean_name = html.escape(player.name or "O'yinchi")
+                    try:
+                        await message.bot.send_message(
+                            room.chat_id,
+                            f"📜 <b>{clean_name}ning O'lim Oldi Xati:</b>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━\n"
+                            f"<i>\"{clean_letter}\"</i>\n"
+                            f"━━━━━━━━━━━━━━━━━━━━",
+                            parse_mode="HTML"
+                        )
+                    except Exception:
+                        pass
+                    return await message.reply("📜 <i>Oxirgi xatingiz shaharga yetkazildi!</i>", parse_mode="HTML")
+            else:
+                return await message.reply("⚠️ <i>Siz o'yinda halok bo'lgansiz. O'liklar gapira olmaydi!</i>", parse_mode="HTML")
+
+        # Living player handling (Mafia night chat)
+        if player.is_alive and room.phase == GamePhase.NIGHT and player.role in [Role.DON, Role.MAFIA]:
+            relayed_text = text if text else "[Ovozli xabar / Media]"
+            relayed = await room.broadcast_mafia_chat(
+                bot=message.bot,
+                sender_id=user_id,
+                sender_name=message.from_user.first_name,
+                text=relayed_text
+            )
+            if relayed:
+                await message.reply("🩸 <i>Xabaringiz Mafiya a'zolariga yetkazildi.</i>", parse_mode="HTML")
+            return

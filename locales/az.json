@@ -68,7 +68,7 @@
   "pm_role_assigned": "🎭 Sizin rolunuz: <b>{role}</b>\n\n{description}",
   "night_prompt_mafia": "🩸 <b>Don & Mafia Seçimi:</b>\nKimi aradan qaldırmaq istəyirsiniz? Hədəfi seçin:",
   "night_prompt_doctor": "💉 <b>Həkim:</b>\nKimi xilas etmək istəyirsiniz?",
-  "night_prompt_detective": "🕵️‍♂️ <b>Komissar:</b>\nKimin sənədlərini yoxlamaq istəyirsiniz?",
+  "night_prompt_detective": "🕵️‍♂️ <b>Komissar:</b>\nŞəhərin təhlükəsizliyi sizin əlinizdədir. Şübhəlini yoxlayın (🔍) və ya birbaşa atəş açın (🔫):",
   "night_prompt_maniac": "🔪 <b>Maniak:</b>\nBu gecə qurbanınız kim olacaq?",
   "night_prompt_mistress": "💋 <b>Məşuqə:</b>\nBu gecə kimin otağına getmək istəyirsiniz (bacarığını bloklayasınız)?",
   "night_prompt_sniper": "🎯 <b>Snayper:</b>\nBu gecə kimi vurmaq istəyirsiniz? (Diqqət: Dinc sakini vursanız, səhər intihar edəcəksiniz!)",
@@ -83,7 +83,7 @@
   "morning_doctor_saved": "💫 <i>Kimsə müdafiəsindən istifadə etdi!</i>",
   
   "day_discussion": "🗣 <b>Müzakirə vaxtı başladı!</b>\nŞübhələrinizi bölüşün və şəhəri qoruyun. Müzakirə üçün: <b>{seconds}</b> saniyə.",
-  "voting_started": "⚖️ <b>MƏHKƏMƏ BAŞLADI!</b>\nŞübhələndiyiniz şəxsə səs verin. Şəhərdən kimi qovmaq (linç etmək) istəyirsiniz?\nSəsvermə müddəti: <b>{seconds}</b> saniyə.",
+  "voting_started": "⚖️ <b>ŞƏHƏR MƏHKƏMƏSİ BAŞLADI!</b>\n━━━━━━━━━━━━━━━━━━━━\n🏛 <i>Şəhər sakinləri ədalət bərpa etmək üçün meydana toplandı.</i>\n\n❓ <b>Kimi şəhərdən qovmaq (linç etmək) istəyirsiniz?</b>\nŞübhəlini seçin və aşağıdakı düymələr ilə səs verin.\n\n⏳ <b>Səsvermə vaxtı:</b> <b>{seconds} saniyə</b>\n━━━━━━━━━━━━━━━━━━━━",
   "vote_cast": "🗳 <b>{voter}</b> oyunçusu <b>{target}</b> üçün səs verdi!",
   "last_words_prompt": "⚖️ <b>Məhkəmə qərarı:</b> Şəhər sakinləri <a href=\"tg://user?id={user_id}\">{name}</a>ni təqsirkar bildi!\n\n🎙 <b>Ölümdən əvvəlki son söz:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, özünüzü müdafiə etmək üçün <b>{seconds} saniyə</b> vaxtınız var!",
   "btn_skip_last_words": "⚰️ Hazıram (Tezləşdir)",

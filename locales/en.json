@@ -68,7 +68,7 @@
   "pm_role_assigned": "🎭 Your role: <b>{role}</b>\n\n{description}",
   "night_prompt_mafia": "🩸 <b>Don & Mafia Target:</b>\nWho should be eliminated tonight? Choose target:",
   "night_prompt_doctor": "💉 <b>Doctor:</b>\nWho will you heal tonight?",
-  "night_prompt_detective": "🕵️‍♂️ <b>Detective:</b>\nWho would you like to investigate tonight?",
+  "night_prompt_detective": "🕵️‍♂️ <b>Detective:</b>\nCity safety is in your hands. Investigate (🔍) or shoot directly (🔫):",
   "night_prompt_maniac": "🔪 <b>Maniac:</b>\nWho will be your victim tonight?",
   "night_prompt_mistress": "💋 <b>Mistress:</b>\nWhose ability will you block tonight?",
   "night_prompt_sniper": "🎯 <b>Sniper:</b>\nWho will you shoot tonight? (Careful: If you shoot an innocent, you die of guilt next morning!)",
@@ -83,7 +83,7 @@
   "morning_doctor_saved": "💫 <i>Someone used protection!</i>",
   
   "day_discussion": "🗣 <b>Daytime discussion has begun!</b>\nShare theories and find the suspects. Discussion time: <b>{seconds}</b>s.",
-  "voting_started": "⚖️ <b>TRIAL COMMENCED!</b>\nCast your vote against the suspect. Who should be lynched?\nVoting time: <b>{seconds}</b>s.",
+  "voting_started": "⚖️ <b>TOWN COURT HAS COMMENCED!</b>\n━━━━━━━━━━━━━━━━━━━━\n🏛 <i>Citizens have gathered at the town square to seek justice.</i>\n\n❓ <b>Who should be cast out (lynched)?</b>\nSelect the suspect and cast your vote below.\n\n⏳ <b>Voting window:</b> <b>{seconds} seconds</b>\n━━━━━━━━━━━━━━━━━━━━",
   "vote_cast": "🗳 <b>{voter}</b> voted against <b>{target}</b>!",
   "last_words_prompt": "⚖️ <b>Court Verdict:</b> The city voted and found <a href=\"tg://user?id={user_id}\">{name}</a> guilty!\n\n🎙 <b>Last Words Defense:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, you have <b>{seconds} seconds</b> to defend yourself or deliver your final statement!",
   "btn_skip_last_words": "⚰️ I'm Ready (Skip wait)",

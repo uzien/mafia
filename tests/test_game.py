@@ -478,5 +478,83 @@ def test_lobby_leave_and_creator_transfer():
     # Non-player tries to leave
     assert room.remove_player(99) is False
 
+@pytest.mark.asyncio
+async def test_detective_shoot_action():
+    import time
+    from unittest.mock import AsyncMock, MagicMock
+    from game.enums import GamePhase, Role
+    from game.room import GameRoom
 
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Detective", lang="uz")
+    room.add_player(2, "Mafioso")
+    room.add_player(3, "Citizen")
 
+    room.players[1].role = Role.DETECTIVE
+    room.players[2].role = Role.MAFIA
+    room.players[3].role = Role.CITIZEN
+
+    # Detective chooses to shoot player 2
+    room.detective_kill_target = 2
+    assert room.are_all_night_actions_done() is False
+    room.mafia_votes[2] = 3
+    assert room.are_all_night_actions_done() is True
+
+    bot = AsyncMock()
+    await room.resolve_night(bot)
+
+    # Player 2 should be killed by detective
+    assert room.players[2].is_alive is False
+    assert room.players[2].awaiting_last_letter is True
+    assert room.players[2].last_letter_deadline > time.time()
+
+@pytest.mark.asyncio
+async def test_last_letter_window_and_expiration():
+    import time
+    from game.role_models import Player
+
+    p = Player(user_id=10, name="DeadPlayer")
+    p.is_alive = False
+    p.awaiting_last_letter = True
+    p.last_letter_deadline = time.time() + 30.0
+
+    # Within deadline
+    assert time.time() < p.last_letter_deadline
+    assert p.awaiting_last_letter is True
+
+    # After deadline expired
+    p.last_letter_deadline = time.time() - 1.0
+    assert time.time() > p.last_letter_deadline
+
+@pytest.mark.asyncio
+async def test_end_game_message_formatting():
+    from datetime import datetime, timedelta
+    from unittest.mock import AsyncMock
+    from game.enums import Role, Team
+    from game.room import GameRoom
+
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="DonPlayer", lang="uz")
+    room.add_player(2, "Citizen1")
+    room.add_player(3, "Citizen2")
+
+    room.players[1].role = Role.DON
+    room.players[2].role = Role.CITIZEN
+    room.players[3].role = Role.CITIZEN
+
+    room.start_time = datetime.utcnow() - timedelta(minutes=2, seconds=15)
+
+    bot = AsyncMock()
+    await room.end_game(bot, Team.MAFIA)
+
+    assert bot.send_message.called
+    sent_args = bot.send_message.call_args[0]
+    chat_id, text = sent_args[0], sent_args[1]
+
+    assert chat_id == -1001
+    assert "🏆 <b>O'yin tugadi!</b>" in text
+    assert "🎉 <b>G'oliblar:</b>" in text
+    assert "tg://user?id=1" in text
+    assert "DonPlayer" in text
+    assert "💀 <b>Qolgan o'yinchilar:</b>" in text
+    assert "tg://user?id=2" in text
+    assert "2 minut 15 soniya" in text
+    assert "Har bir g'olib" in text

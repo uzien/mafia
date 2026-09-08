@@ -134,6 +134,11 @@ async def get_active_tournaments(session: AsyncSession) -> List[Tournament]:
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
+async def get_tournament_participant_count(session: AsyncSession, tournament_id: int) -> int:
+    stmt = select(func.count(TournamentParticipant.id)).where(TournamentParticipant.tournament_id == tournament_id)
+    result = await session.execute(stmt)
+    return result.scalar() or 0
+
 async def deposit_to_clan(session: AsyncSession, user_id: int, amount: int) -> bool:
     user = await session.get(User, user_id)
     if not user or not user.clan_id or user.coins < amount:

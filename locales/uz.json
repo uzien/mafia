@@ -68,7 +68,7 @@
   "pm_role_assigned": "🎭 Sizning rolingiz: <b>{role}</b>\n\n{description}",
   "night_prompt_mafia": "🩸 <b>Don & Mafiya Tanlovi:</b>\nKimni o'ldirmoqchisiz? Nishonni tanlang:",
   "night_prompt_doctor": "💉 <b>Shifokor:</b>\nBu kecha kimni o'limdan qutqarmoqchisiz?",
-  "night_prompt_detective": "🕵️‍♂️ <b>Komissar katani:</b>\nKimning hujjatlarini tekshirmoqchisiz?",
+  "night_prompt_detective": "🕵️‍♂️ <b>Komissar katani:</b>\nShahar xavfsizligi sizning qo'lingizda. Gumonlanuvchini tekshiring (🔍) yoki to'pponchadan oting (🔫):",
   "night_prompt_maniac": "🔪 <b>Maniak:</b>\nBu kecha kim qurboningiz bo'ladi?",
   "night_prompt_mistress": "💋 <b>Ma'shuqa:</b>\nBu kecha kimning qobiliyatini bloklamoqchisiz?",
   "night_prompt_sniper": "🎯 <b>Snayper:</b>\nBu kecha kimni otmoqchisiz? (Diqqat: Fuqaroni otsangiz, ertalab pushaymonlikdan o'lasiz!)",
@@ -83,7 +83,7 @@
   "morning_doctor_saved": "💫 <i>Kimdir ximoyasini ishlatdi!</i>",
   
   "day_discussion": "🗣 <b>Muhokama vaqti boshlandi!</b>\nGumonlaringizni bildiring va shaharni asrang. Muhokama uchun: <b>{seconds}</b> soniya.",
-  "voting_started": "⚖️ <b>SUD BOSHLANDI!</b>\nGumonlanuvchiga ovoz bering. Kimni shahardan haydashingiz (linch qilishingiz) kerak?\nOvoz berish vaqti: <b>{seconds}</b> soniya.",
+  "voting_started": "⚖️ <b>SHAHAR SUDI BOSHLANDI!</b>\n━━━━━━━━━━━━━━━━━━━━\n🏛 <i>Shahar aholisi adolat va tartib o'rnatish uchun maydonga to'plandi.</i>\n\n❓ <b>Kimni shahardan haydashingiz (linch qilishingiz) kerak?</b>\nGumonlanuvchini tanlab, quyidagi tugmalar orqali ovoz bering.\n\n⏳ <b>Ovoz berish vaqti:</b> <b>{seconds} soniya</b>\n━━━━━━━━━━━━━━━━━━━━",
   "vote_cast": "🗳 <b>{voter}</b> o'yinchisi <b>{target}</b> uchun ovoz berdi!",
   "last_words_prompt": "⚖️ <b>Sud hukmi:</b> Shahar aholisi ovoz berish orqali <a href=\"tg://user?id={user_id}\">{name}</a>ni aybdor deb topdi!\n\n🎙 <b>O'limdan oldingi so'nggi so'z:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, o'zingizni oqlash yoki so'nggi vapingizni aytish uchun <b>{seconds} soniya</b> vaqtingiz bor!",
   "btn_skip_last_words": "⚰️ Tayyorman (Tezlashtirish)",
