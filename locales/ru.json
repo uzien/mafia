@@ -113,5 +113,16 @@
   
   "tournament_title": "🏆 <b>Турнир Mafia Litsey: {t_name}</b>\n💰 Призовой фонд: <b>{prize_pool} Алмазов</b>\n👥 Зарегистрировано: <b>{registered}/{max_participants}</b>\n🎫 Входной билет: <b>{entry_fee} Монет</b>\n\nНажмите кнопку ниже для регистрации!",
   "btn_register_tournament": "🎫 Зарегистрироваться",
-  "tournament_registered": "✅ Вы успешно зарегистрировались на турнир!"
+  "tournament_registered": "✅ Вы успешно зарегистрировались на турнир!",
+
+  "roulette_title": "🎰 <b>Колесо Удачи Mafia Litsey (Рулетка)</b>\n\nВаш баланс: <b>{coins} Монет</b> | <b>{diamonds} Алмазов</b>\n\n🎯 <b>Призы:</b>\n• 💰 50 – 250 Монет\n• 💎 1 – 3 Алмаза\n• 👑 <b>10 АЛМАЗОВ ДЖЕКПОТ!</b>\n\nСтоимость одного вращения: <b>50 Монет</b>",
+  "roulette_btn_spin": "🎰 Вращать колесо (50 Монет)",
+  "roulette_btn_respin": "🎰 Вращать снова (50 Монет)",
+  "roulette_frame_spinning": "🎰 <b>[ 🔴 | 🟡 | 🟢 ]</b>\n<i>Колесо быстро вращается...</i>",
+  "roulette_frame_slowing": "🎰 <b>[ 💎 | 💰 | 👑 ]</b>\n<i>Замедляется...</i>",
+  "roulette_result": "🎉 <b>ПОЗДРАВЛЯЕМ!</b>\n\nВаш выигрыш: <b>{prize}</b>!\n💰 Текущий баланс: <b>{coins} Монет</b> | <b>{diamonds} Алмазов</b>",
+  "roulette_toast": "🎉 Вы выиграли: {prize}!",
+  "btn_get_diamonds": "💎 Получить алмазы (@mx767)",
+  "clan_deposit_success": "✅ <b>+{amount} Монет</b> внесено в казну клана!",
+  "clan_deposit_fail": "❌ Недостаточно монет или вы не состоите в клане!"
 }

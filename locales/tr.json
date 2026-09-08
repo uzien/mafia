@@ -113,5 +113,16 @@
   
   "tournament_title": "🏆 <b>Mafia Litsey Turnuvası: {t_name}</b>\n💰 Ödül Havuzu: <b>{prize_pool} Elmas</b>\n👥 Kayıtlı Oyuncular: <b>{registered}/{max_participants}</b>\n🎫 Giriş Ücreti: <b>{entry_fee} Altın</b>\n\nKayıt olmak için aşağıdaki butona basın!",
   "btn_register_tournament": "🎫 Kayıt Ol",
-  "tournament_registered": "✅ Turnuvaya başarıyla kaydoldunuz!"
+  "tournament_registered": "✅ Turnuvaya başarıyla kaydoldunuz!",
+
+  "roulette_title": "🎰 <b>Mafia Litsey Çarkıfelek (Rulet)</b>\n\nBakiyeniz: <b>{coins} Altın</b> | <b>{diamonds} Elmas</b>\n\n🎯 <b>Ödüller:</b>\n• 💰 50 – 250 Altın\n• 💎 1 – 3 Elmas\n• 👑 <b>10 ELMAS BÜYÜK İKRAMİYE!</b>\n\nÇevirme ücreti: <b>50 Altın</b>",
+  "roulette_btn_spin": "🎰 Çarkı Çevir (50 Altın)",
+  "roulette_btn_respin": "🎰 Tekrar Çevir (50 Altın)",
+  "roulette_frame_spinning": "🎰 <b>[ 🔴 | 🟡 | 🟢 ]</b>\n<i>Çark hızla dönüyor...</i>",
+  "roulette_frame_slowing": "🎰 <b>[ 💎 | 💰 | 👑 ]</b>\n<i>Yavaşlıyor...</i>",
+  "roulette_result": "🎉 <b>TEBRİKLER!</b>\n\nKazancınız: <b>{prize}</b>!\n💰 Güncel bakiye: <b>{coins} Altın</b> | <b>{diamonds} Elmas</b>",
+  "roulette_toast": "🎉 Kazandınız: {prize}!",
+  "btn_get_diamonds": "💎 Elmas Al (@mx767)",
+  "clan_deposit_success": "✅ <b>+{amount} Altın</b> klan kasasına yatırıldı!",
+  "clan_deposit_fail": "❌ Yeterli altınınız yok veya bir klanda değilsiniz!"
 }

@@ -113,5 +113,16 @@
   
   "tournament_title": "🏆 <b>Mafia Litsey Tournament: {t_name}</b>\n💰 Prize Pool: <b>{prize_pool} Diamonds</b>\n👥 Registered: <b>{registered}/{max_participants}</b>\n🎫 Entry Fee: <b>{entry_fee} Coins</b>\n\nClick below to enroll!",
   "btn_register_tournament": "🎫 Enroll Now",
-  "tournament_registered": "✅ You have successfully registered for the tournament!"
+  "tournament_registered": "✅ You have successfully registered for the tournament!",
+
+  "roulette_title": "🎰 <b>Mafia Litsey Lucky Wheel (Roulette)</b>\n\nYour Balance: <b>{coins} Coins</b> | <b>{diamonds} Diamonds</b>\n\n🎯 <b>Rewards:</b>\n• 💰 50 – 250 Coins\n• 💎 1 – 3 Diamonds\n• 👑 <b>10 DIAMONDS JACKPOT!</b>\n\nCost per spin: <b>50 Coins</b>",
+  "roulette_btn_spin": "🎰 Spin the Wheel (50 Coins)",
+  "roulette_btn_respin": "🎰 Spin Again (50 Coins)",
+  "roulette_frame_spinning": "🎰 <b>[ 🔴 | 🟡 | 🟢 ]</b>\n<i>Wheel is spinning rapidly...</i>",
+  "roulette_frame_slowing": "🎰 <b>[ 💎 | 💰 | 👑 ]</b>\n<i>Slowing down...</i>",
+  "roulette_result": "🎉 <b>CONGRATULATIONS!</b>\n\nYou won: <b>{prize}</b>!\n💰 Current balance: <b>{coins} Coins</b> | <b>{diamonds} Diamonds</b>",
+  "roulette_toast": "🎉 You won: {prize}!",
+  "btn_get_diamonds": "💎 Get Diamonds (@mx767)",
+  "clan_deposit_success": "✅ <b>+{amount} Coins</b> deposited into clan treasury!",
+  "clan_deposit_fail": "❌ Not enough coins or you are not in a clan!"
 }

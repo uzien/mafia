@@ -271,9 +271,10 @@ async def cmd_profile(message: Message):
         )
         text += f"\n\n🎒 <b>Inventar:</b>\n{inv_str}\n\n💎 <i>Faol o'yinchilar uchun bepul Olmoslar: admin @mx767</i>"
 
-        shop_txt = "🛒 Do'kon" if user.language == "uz" else "🛒 Mağaza"
-        daily_txt = "🎁 Kunlik Bonus" if user.language == "uz" else "🎁 Gündəlik Bonus"
-        admin_txt = "💎 Olmos olish (@mx767)" if user.language == "uz" else "💎 Almaz əldə et (@mx767)"
+        btn_map = MENU_BUTTONS.get(user.language, MENU_BUTTONS["uz"])
+        shop_txt = btn_map["shop"]
+        daily_txt = btn_map["daily"]
+        admin_txt = i18n.get("btn_get_diamonds", user.language)
 
         markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=shop_txt, callback_data="nav_shop"), InlineKeyboardButton(text=daily_txt, callback_data="nav_daily")],
@@ -285,21 +286,13 @@ async def cmd_profile(message: Message):
 @common_router.callback_query(F.data == "nav_shop")
 async def cb_nav_shop(callback: CallbackQuery):
     from handlers.store import cmd_shop
-    await cmd_shop(callback.message)
     await callback.answer()
+    return await cmd_shop(callback.message)
 
 @common_router.callback_query(F.data == "nav_daily")
 async def cb_nav_daily(callback: CallbackQuery):
-    async with async_session_maker() as session:
-        user = await get_or_create_user(session, callback.from_user.id)
-        bonus = random.randint(settings.DAILY_BONUS_MIN, settings.DAILY_BONUS_MAX)
-        success, hours = await claim_daily_bonus(session, callback.from_user.id, bonus)
-        if success:
-            text = i18n.get("daily_bonus_success", user.language, amount=bonus)
-        else:
-            text = i18n.get("daily_bonus_already", user.language, hours=hours)
-        await callback.message.answer(text, parse_mode="HTML")
     await callback.answer()
+    return await cmd_daily(callback.message)
 
 @common_router.message(Command("commands"))
 async def cmd_commands(message: Message):
@@ -307,43 +300,7 @@ async def cmd_commands(message: Message):
         user = await get_or_create_user(session, message.from_user.id)
         lang = user.language or settings.DEFAULT_LANGUAGE
     
-    if lang == "uz":
-        text = (
-            "📖 <b>Mafia Litsey Bot — Barcha Buyruqlar:</b>\n\n"
-            "👥 <b>Guruhdagi Buyruqlar:</b>\n"
-            "• <code>/game</code> yoki <code>/oyun</code> — Yangi o'yin xonasi ochish\n"
-            "• <code>/extend</code> yoki <code>/vaqt</code> — Ro'yxatdan o'tish vaqtini +30s uzaytirish\n"
-            "• <code>/join</code> yoki <code>/qoshilish</code> — O'yinga qo'shilish\n"
-            "• <code>/stop</code> — O'yinni to'xtatish (Admin / Creator)\n"
-            "• <code>/setlang</code> — Guruh tilini o'zgartirish\n\n"
-            "👤 <b>Shaxsiy Chatdagi Buyruqlar:</b>\n"
-            "• <code>/profile</code> — Shaxsiy statistika, inventar va balans\n"
-            "• <code>/shop</code> yoki <code>/dokon</code> — Do'kon (Soxta Hujjat, Rol kartalari, VIP)\n"
-            "• <code>/daily</code> — Kunlik bepul tanga yig'ish\n"
-            "• <code>/top</code> — Eng kuchli o'yinchilar reytingi\n"
-            "• <code>/clan</code> — Mafiya oilasi (Klan) boshqaruvi\n"
-            "• <code>/tournament</code> — Turnirlar va musobaqalar\n"
-            "• <code>/lang</code> — Shaxsiy bot tilini tanlash\n"
-            "• <code>/help</code> — Yordam va qoidalar\n\n"
-            "💎 <b>Admin Buyruqlari:</b>\n"
-            "• <code>/givegems @username miqdor</code> — Faol o'yinchilarga olmos berish (@mx767)"
-        )
-    else:
-        text = (
-            "📖 <b>Mafia Litsey Bot — Bütün Əmrlər:</b>\n\n"
-            "👥 <b>Qrup Əmrləri:</b>\n"
-            "• <code>/game</code> / <code>/oyun</code> — Yeni oyun otağı açmaq\n"
-            "• <code>/extend</code> / <code>/vaqt</code> — Vaxtı +30s uzatmaq\n"
-            "• <code>/join</code> / <code>/qosul</code> — Oyuna qoşulmaq\n"
-            "• <code>/stop</code> — Oyunu dayandırmaq\n"
-            "• <code>/setlang</code> — Qrup dilini seçmək\n\n"
-            "👤 <b>Şəxsi Əmrlər:</b>\n"
-            "• <code>/profile</code> — Profil və inventar\n"
-            "• <code>/shop</code> — Mağaza (Saxta Sənəd, Kartlar)\n"
-            "• <code>/daily</code> — Gündəlik bonus\n"
-            "• <code>/top</code> — Reytinq\n"
-            "• <code>/givegems @username miqdar</code> — Almaz vermək (@mx767)"
-        )
+    text = i18n.get("help", lang)
     await message.answer(text, parse_mode="HTML")
 
 @common_router.message(Command("givegems", "grantgems"))

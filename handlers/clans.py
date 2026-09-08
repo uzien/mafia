@@ -65,6 +65,6 @@ async def cmd_clan(message: Message):
             from database.crud import deposit_to_clan
             success = await deposit_to_clan(session, message.from_user.id, amount)
             if success:
-                await message.answer(f"✅ <b>+{amount} Qızıl</b> klan xəzinəsinə yatırıldı!", parse_mode="HTML")
+                await message.answer(i18n.get("clan_deposit_success", user.language, amount=amount), parse_mode="HTML")
             else:
-                await message.answer("❌ Kifayət qədər qızılınız yoxdur və ya klanda deyilsiniz!", parse_mode="HTML")
+                await message.answer(i18n.get("clan_deposit_fail", user.language), parse_mode="HTML")

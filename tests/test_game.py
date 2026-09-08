@@ -252,4 +252,21 @@ async def test_economy_fake_docs_and_diamonds():
         assert updated_user is not None
         assert updated_user.diamonds >= 50
 
+def test_roulette_localization():
+    from handlers.roulette import get_prize_label
+    prize_coins = {"type": "coins", "amount": 100}
+    prize_jackpot = {"type": "diamonds", "amount": 10, "jackpot": True}
+    
+    assert "Tanga" in get_prize_label(prize_coins, "uz")
+    assert "Qızıl" in get_prize_label(prize_coins, "az")
+    assert "Монет" in get_prize_label(prize_coins, "ru")
+    assert "Coins" in get_prize_label(prize_coins, "en")
+    assert "Altın" in get_prize_label(prize_coins, "tr")
+
+    assert "OLMOS" in get_prize_label(prize_jackpot, "uz")
+    assert "ALMAZ" in get_prize_label(prize_jackpot, "az")
+    assert "АЛМАЗОВ" in get_prize_label(prize_jackpot, "ru")
+    assert "DIAMONDS" in get_prize_label(prize_jackpot, "en")
+    assert "ELMAS" in get_prize_label(prize_jackpot, "tr")
+
 

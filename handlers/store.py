@@ -17,7 +17,7 @@ def get_shop_markup(lang: str) -> InlineKeyboardMarkup:
         btn_text = f"{name} — {cost} {curr}"
         buttons.append([InlineKeyboardButton(text=btn_text, callback_data=f"buy_{key}")])
     # Add direct contact button to admin @mx767 for gems
-    admin_btn_text = "💎 Olmos olish (@mx767)" if lang == "uz" else "💎 Almaz əldə et (@mx767)"
+    admin_btn_text = i18n.get("btn_get_diamonds", lang)
     buttons.append([InlineKeyboardButton(text=admin_btn_text, url="https://t.me/mx767")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 

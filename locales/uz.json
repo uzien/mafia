@@ -113,5 +113,16 @@
   
   "tournament_title": "🏆 <b>Mafia Litsey Turniri: {t_name}</b>\n💰 Sovrin Jamg'armasi: <b>{prize_pool} Olmos</b>\n👥 Ro'yxatdan o'tganlar: <b>{registered}/{max_participants}</b>\n🎫 Qatnashish narxi: <b>{entry_fee} Tanga</b>\n\nQatnashish uchun quyidagi tugmani bosing!",
   "btn_register_tournament": "🎫 Ro'yxatdan O'tish",
-  "tournament_registered": "✅ Siz turnirga muvaffaqiyatli ro'yxatdan o'tdingiz!"
+  "tournament_registered": "✅ Siz turnirga muvaffaqiyatli ro'yxatdan o'tdingiz!",
+
+  "roulette_title": "🎰 <b>Mafia Litsey Omad G'ildiragi (Ruletka)</b>\n\nBalansingiz: <b>{coins} Tanga</b> | <b>{diamonds} Olmos</b>\n\n🎯 <b>Yutuqlar:</b>\n• 💰 50 – 250 Tanga\n• 💎 1 – 3 Olmos\n• 👑 <b>10 OLMOS JEKPOT!</b>\n\nBitta aylantirish narxi: <b>50 Tanga</b>",
+  "roulette_btn_spin": "🎰 G'ildirakni aylantirish (50 Tanga)",
+  "roulette_btn_respin": "🎰 Yana aylantirish (50 Tanga)",
+  "roulette_frame_spinning": "🎰 <b>[ 🔴 | 🟡 | 🟢 ]</b>\n<i>G'ildirak tez aylanmoqda...</i>",
+  "roulette_frame_slowing": "🎰 <b>[ 💎 | 💰 | 👑 ]</b>\n<i>Sekinlashmoqda...</i>",
+  "roulette_result": "🎉 <b>TABRIKLAYMIZ!</b>\n\nSizning yutug'ingiz: <b>{prize}</b>!\n💰 Hozirgi balans: <b>{coins} Tanga</b> | <b>{diamonds} Olmos</b>",
+  "roulette_toast": "🎉 Yutdingiz: {prize}!",
+  "btn_get_diamonds": "💎 Olmos olish (@mx767)",
+  "clan_deposit_success": "✅ <b>+{amount} Tanga</b> klan xazinasiga kiritildi!",
+  "clan_deposit_fail": "❌ Yetarli mablag'ingiz yo'q yoki klanda emassiz!"
 }

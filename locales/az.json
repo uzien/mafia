@@ -113,5 +113,16 @@
   
   "tournament_title": "🏆 <b>Mafia Litsey Turniri: {t_name}</b>\n💰 Mükafat Fondu: <b>{prize_pool} Almaz</b>\n👥 Qeydiyyatdan keçənlər: <b>{registered}/{max_participants}</b>\n🎫 İştirak haqqı: <b>{entry_fee} Qızıl</b>\n\nQeydiyyat üçün aşağıdakı düyməyə basın!",
   "btn_register_tournament": "🎫 Qeydiyyatdan Keç",
-  "tournament_registered": "✅ Siz turnirə uğurla qeydiyyatdan keçdiniz!"
+  "tournament_registered": "✅ Siz turnirə uğurla qeydiyyatdan keçdiniz!",
+
+  "roulette_title": "🎰 <b>Mafia Litsey Bəxt Çarxı (Rulet)</b>\n\nBalansınız: <b>{coins} Qızıl</b> | <b>{diamonds} Almaz</b>\n\n🎯 <b>Mükafatlar:</b>\n• 💰 50 – 250 Qızıl\n• 💎 1 – 3 Almaz\n• 👑 <b>10 ALMAZ CEKPOT!</b>\n\nBir fırlatma haqqı: <b>50 Qızıl</b>",
+  "roulette_btn_spin": "🎰 Çarxı Fırlat (50 Qızıl)",
+  "roulette_btn_respin": "🎰 Yenidən Fırlat (50 Qızıl)",
+  "roulette_frame_spinning": "🎰 <b>[ 🔴 | 🟡 | 🟢 ]</b>\n<i>Çarx sürətlə fırlanır...</i>",
+  "roulette_frame_slowing": "🎰 <b>[ 💎 | 💰 | 👑 ]</b>\n<i>Yavaşlayır...</i>",
+  "roulette_result": "🎉 <b>TƏBRİKLƏR!</b>\n\nSizin qazancınız: <b>{prize}</b>!\n💰 Cari balans: <b>{coins} Qızıl</b> | <b>{diamonds} Almaz</b>",
+  "roulette_toast": "🎉 Qazandınız: {prize}!",
+  "btn_get_diamonds": "💎 Almaz əldə et (@mx767)",
+  "clan_deposit_success": "✅ <b>+{amount} Qızıl</b> klan xəzinəsinə yatırıldı!",
+  "clan_deposit_fail": "❌ Kifayət qədər qızılınız yoxdur və ya klanda deyilsiniz!"
 }
