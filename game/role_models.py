@@ -35,6 +35,7 @@ class Player:
         self.sniper_ammo: int = 1
         self.missed_votes: int = 0      # AFK detection
         self.guilt_suicide: bool = False
+        self.has_fake_docs: bool = False
 
     @property
     def team(self) -> Team:

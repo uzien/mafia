@@ -72,6 +72,7 @@
   "action_recorded": "🎯 Action confirmed: <b>{target}</b>",
   "detective_result_mafia": "🔍 Investigation result: <b>{target}</b> is a <b>MAFIA MEMBER!</b> 🩸",
   "detective_result_innocent": "🔍 Investigation result: <b>{target}</b> is innocent. 🕊",
+  "detective_result_fakedocs": "🔍 <b>Investigation Result:</b> <b>{target}</b>'s documents were inspected.\n🪪 <b>Document:</b> Innocent Citizen (Suspicious forged stamps detected!)\n🔎 <b>Verdict:</b> Could be an innocent civilian or a cunning criminal... 🕊/🩸",
 
   "morning_report_title": "<b>Good morning</b> 🌝\n🌄 <b>Day: {round}</b>\n<i>The winds carry rumors of the night across the city..</i>",
   "morning_nobody_died": "🕊 <i>Nobody was harmed tonight.</i>",
@@ -81,7 +82,9 @@
   "day_discussion": "🗣 <b>Daytime discussion has begun!</b>\nShare theories and find the suspects. Discussion time: <b>{seconds}</b>s.",
   "voting_started": "⚖️ <b>TRIAL COMMENCED!</b>\nCast your vote against the suspect. Who should be lynched?\nVoting time: <b>{seconds}</b>s.",
   "vote_cast": "🗳 <b>{voter}</b> voted against <b>{target}</b>!",
-  "player_lynched": "⚖️ By public court decision, <b>{name}</b> has been lynched!\nRole was: <b>{role}</b>.",
+  "last_words_prompt": "⚖️ <b>Court Verdict:</b> The city voted and found <a href=\"tg://user?id={user_id}\">{name}</a> guilty!\n\n🎙 <b>Last Words Defense:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, you have <b>{seconds} seconds</b> to defend yourself or deliver your final statement!",
+  "btn_skip_last_words": "⚰️ I'm Ready (Skip wait)",
+  "player_lynched": "⚰️ <b>Sentence Executed!</b>\n<a href=\"tg://user?id={user_id}\">{name}</a> was lynched (hanged).\nRole was: <b>{role}</b>.",
   "jester_lynched": "🃏 <b>{name}</b> was lynched and was the JESTER! The jester fooled the entire city!",
   "vote_tie": "🤝 The votes are tied! Nobody was executed today.",
   "player_eliminated": "🪦 <b>{name}</b> was eliminated!",

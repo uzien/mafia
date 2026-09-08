@@ -46,6 +46,8 @@ class GameRoom:
         # Day trial votes
         self.day_votes: Dict[int, int] = {}         # voter_id -> target_id
         self.night_announced_roles: set = set()
+        self.condemned_player_id: Optional[int] = None
+        self.last_words_event: Optional[asyncio.Event] = None
         
         # Add creator automatically
         self.add_player(creator_id, creator_name)
@@ -196,6 +198,16 @@ class GameRoom:
             except Exception as e:
                 logger.warning(f"Could not send PM to player {p_id}: {e}")
 
+        # Check if any player has fake documents in DB
+        try:
+            from services.economy_service import has_fake_documents
+            async with async_session_maker() as session:
+                for p_id in self.players.keys():
+                    if await has_fake_documents(session, p_id):
+                        self.players[p_id].has_fake_docs = True
+        except Exception as e:
+            logger.warning(f"Error checking fake documents: {e}")
+
         # Send group message: O'yin boshlandi! with "Sizning rolingiz" button
         role_markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=i18n.get("btn_check_role", self.lang), callback_data=f"check_role_{self.chat_id}")]
@@ -209,6 +221,28 @@ class GameRoom:
 
         await asyncio.sleep(3)
         await self.start_night(bot)
+
+    async def broadcast_mafia_chat(self, bot: Bot, sender_id: int, sender_name: str, text: str) -> bool:
+        """Relay secret message to other living mafia members during night."""
+        if self.phase != GamePhase.NIGHT:
+            return False
+        sender = self.players.get(sender_id)
+        if not sender or not sender.is_alive or sender.role not in [Role.DON, Role.MAFIA]:
+            return False
+
+        role_title = i18n.get(f"roles.{sender.role.value}", self.lang)
+        msg = f"🩸 <b>[Mafiya Maxfiy Chati]</b> <b>{sender_name}</b> ({role_title}):\n<i>\"{text}\"</i>"
+
+        mafia_teammates = [
+            p for p in self.alive_players
+            if p.role in [Role.DON, Role.MAFIA] and p.user_id != sender_id
+        ]
+        for mate in mafia_teammates:
+            try:
+                await bot.send_message(mate.user_id, msg, parse_mode="HTML")
+            except Exception as e:
+                logger.warning(f"Could not send mafia chat message to {mate.user_id}: {e}")
+        return True
 
     async def start_night(self, bot: Bot):
         """Trigger the night phase and collect secret actions via PM."""
@@ -542,42 +576,82 @@ class GameRoom:
 
             if len(suspects) > 1:
                 await bot.send_message(self.chat_id, i18n.get("vote_tie", self.lang), parse_mode="HTML")
+                await self._finish_voting_phase(bot)
             else:
                 lynched_id = suspects[0]
-                lynched = self.players[lynched_id]
-                lynched.is_alive = False
-                await mute_dead_player(bot, self.chat_id, lynched.user_id)
-                role_title = i18n.get(f"roles.{lynched.role.value}", self.lang)
+                await self.start_last_words(bot, lynched_id)
 
+    async def start_last_words(self, bot: Bot, lynched_id: int):
+        """Allow the condemned suspect a final defense speech before hanging."""
+        self.phase = GamePhase.LAST_WORDS
+        self.condemned_player_id = lynched_id
+        self.last_words_event = asyncio.Event()
+        lynched = self.players.get(lynched_id)
+        if not lynched:
+            return await self._finish_voting_phase(bot)
+
+        markup = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text=i18n.get("btn_skip_last_words", self.lang),
+                callback_data=f"skip_last_words_{self.chat_id}_{lynched_id}"
+            )]
+        ])
+        await bot.send_message(
+            self.chat_id,
+            i18n.get("last_words_prompt", self.lang, name=lynched.name, user_id=lynched.user_id, seconds=settings.DEFENSE_DURATION),
+            reply_markup=markup,
+            parse_mode="HTML"
+        )
+
+        try:
+            await asyncio.wait_for(self.last_words_event.wait(), timeout=settings.DEFENSE_DURATION)
+        except asyncio.TimeoutError:
+            pass
+
+        await self.execute_lynch(bot, lynched_id)
+
+    async def execute_lynch(self, bot: Bot, lynched_id: int):
+        """Execute the condemned player and process death effects."""
+        lynched = self.players.get(lynched_id)
+        if not lynched or not lynched.is_alive:
+            return await self._finish_voting_phase(bot)
+
+        lynched.is_alive = False
+        await mute_dead_player(bot, self.chat_id, lynched.user_id)
+        role_title = i18n.get(f"roles.{lynched.role.value}", self.lang)
+
+        await bot.send_message(
+            self.chat_id,
+            i18n.get("player_lynched", self.lang, name=lynched.name, user_id=lynched.user_id, role=role_title),
+            parse_mode="HTML"
+        )
+
+        # Jester win check
+        if lynched.role == Role.JESTER:
+            self.jester_won = True
+            await bot.send_message(
+                self.chat_id,
+                i18n.get("jester_lynched", self.lang, name=lynched.name),
+                parse_mode="HTML"
+            )
+
+        # Kamikaze ability
+        if lynched.role == Role.KAMIKAZE:
+            voters_for_lynch = [v_id for v_id, target in self.day_votes.items() if target == lynched_id and self.players[v_id].is_alive]
+            if voters_for_lynch:
+                collateral = self.players[voters_for_lynch[0]]
+                collateral.is_alive = False
+                await mute_dead_player(bot, self.chat_id, collateral.user_id)
+                c_role = i18n.get(f"roles.{collateral.role.value}", self.lang)
                 await bot.send_message(
                     self.chat_id,
-                    i18n.get("player_lynched", self.lang, name=lynched.name, role=role_title),
+                    f"💣 <b>Kamikadze portladi!</b> {collateral.name} ({c_role}) ham halok bo'ldi!",
                     parse_mode="HTML"
                 )
 
-                # Jester win check
-                if lynched.role == Role.JESTER:
-                    self.jester_won = True
-                    await bot.send_message(
-                        self.chat_id,
-                        i18n.get("jester_lynched", self.lang, name=lynched.name),
-                        parse_mode="HTML"
-                    )
+        await self._finish_voting_phase(bot)
 
-                # Kamikaze ability
-                if lynched.role == Role.KAMIKAZE:
-                    voters_for_lynch = [v_id for v_id, target in self.day_votes.items() if target == lynched_id and self.players[v_id].is_alive]
-                    if voters_for_lynch:
-                        collateral = self.players[voters_for_lynch[0]]
-                        collateral.is_alive = False
-                        await mute_dead_player(bot, self.chat_id, collateral.user_id)
-                        c_role = i18n.get(f"roles.{collateral.role.value}", self.lang)
-                        await bot.send_message(
-                            self.chat_id,
-                            f"💣 <b>Kamikadze partladı!</b> {collateral.name} ({c_role}) də həlak oldu!",
-                            parse_mode="HTML"
-                        )
-
+    async def _finish_voting_phase(self, bot: Bot):
         # AFK / Inactivity check for alive players who missed voting
         for p in list(self.alive_players):
             if p.user_id not in self.day_votes:
@@ -587,7 +661,7 @@ class GameRoom:
                     await mute_dead_player(bot, self.chat_id, p.user_id)
                     await bot.send_message(
                         self.chat_id,
-                        f"💤 <b>{p.name}</b> 2 dəfə səsvermədə iştirak etmədiyi üçün AFK olaraq oyundan kənarlaşdırıldı!",
+                        f"💤 <b>{p.name}</b> 2 marta ketma-ket ovoz bermagani sababli AFK deb topilib, o'yindan chetlatildi!",
                         parse_mode="HTML"
                     )
             else:

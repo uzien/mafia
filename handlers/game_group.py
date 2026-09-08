@@ -220,3 +220,21 @@ async def cb_day_vote(callback: CallbackQuery):
         await callback.answer(f"✅ Voted for {target_name}!")
     else:
         await callback.answer("Could not cast vote (are you dead or not playing?)", show_alert=True)
+
+@game_group_router.callback_query(F.data.startswith("skip_last_words_"))
+async def cb_skip_last_words(callback: CallbackQuery):
+    parts = callback.data.split("_")
+    # skip_last_words_{chat_id}_{lynched_id}
+    chat_id = int(parts[3])
+    lynched_id = int(parts[4])
+
+    room = game_manager.get_room(chat_id)
+    if not room or room.phase != GamePhase.LAST_WORDS:
+        return await callback.answer("Hozirda so'nggi so'z bosqichi emas.", show_alert=True)
+
+    if callback.from_user.id != lynched_id:
+        return await callback.answer("Faqat hukm qilingan o'yinchi vaqtni o'tkazib yuborishi mumkin!", show_alert=True)
+
+    if room.last_words_event and not room.last_words_event.is_set():
+        room.last_words_event.set()
+        await callback.answer("⚰️ Tayyor deb belgilandi!", show_alert=False)

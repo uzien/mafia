@@ -37,6 +37,16 @@ SHOP_ITEMS: Dict[str, Dict] = {
         "currency": "coins",
         "role": Role.DOCTOR
     },
+    "fake_docs": {
+        "name_az": "🪪 Saxta Sənəd (Pasport)",
+        "name_uz": "🪪 Soxta Hujjat (Pasport)",
+        "name_ru": "🪪 Поддельные Документы",
+        "name_en": "🪪 Fake Identity Documents",
+        "name_tr": "🪪 Sahte Kimlik Belgesi",
+        "cost": 200,
+        "currency": "coins",
+        "desc": "Komissar tekshirganda rolingiz o'rniga soxta tinch fuqaro ma'lumotlarini ko'rsatadi!"
+    },
     "title_godfather": {
         "name_az": "🏆 'Xaç Atası' Ləqəbi",
         "name_uz": "🏆 'Buyuk Don' Unvoni",
@@ -86,7 +96,7 @@ async def buy_shop_item(session: AsyncSession, user_id: int, item_key: str) -> T
     elif "vip_days" in item:
         user.is_vip = True
     else:
-        # Inventory item (role card)
+        # Inventory item (role card or fake docs)
         stmt = select(InventoryItem).where(
             InventoryItem.user_id == user_id,
             InventoryItem.item_key == item_key
@@ -99,7 +109,7 @@ async def buy_shop_item(session: AsyncSession, user_id: int, item_key: str) -> T
             session.add(InventoryItem(user_id=user_id, item_key=item_key, quantity=1))
 
     await session.commit()
-    return True, item[f"name_{user.language}"] if f"name_{user.language}" in item else item["name_az"]
+    return True, item.get(f"name_{user.language}", item.get("name_uz", item["name_az"]))
 
 async def consume_role_card(session: AsyncSession, user_id: int) -> Optional[Role]:
     """Check and consume a user's role card if equipped."""
@@ -117,3 +127,49 @@ async def consume_role_card(session: AsyncSession, user_id: int) -> Optional[Rol
         await session.commit()
         return role
     return None
+
+async def has_fake_documents(session: AsyncSession, user_id: int) -> bool:
+    """Check if user has active fake documents in inventory."""
+    stmt = select(InventoryItem).where(
+        InventoryItem.user_id == user_id,
+        InventoryItem.item_key == "fake_docs",
+        InventoryItem.quantity > 0
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none() is not None
+
+async def consume_fake_documents(session: AsyncSession, user_id: int) -> bool:
+    """Consume 1 unit of fake documents upon detective inspection."""
+    stmt = select(InventoryItem).where(
+        InventoryItem.user_id == user_id,
+        InventoryItem.item_key == "fake_docs",
+        InventoryItem.quantity > 0
+    )
+    result = await session.execute(stmt)
+    inv = result.scalar_one_or_none()
+    if inv:
+        inv.quantity -= 1
+        if inv.quantity <= 0:
+            await session.delete(inv)
+        await session.commit()
+        return True
+    return False
+
+async def get_user_inventory(session: AsyncSession, user_id: int) -> Dict[str, int]:
+    """Fetch user's inventory item quantities."""
+    stmt = select(InventoryItem).where(
+        InventoryItem.user_id == user_id,
+        InventoryItem.quantity > 0
+    )
+    result = await session.execute(stmt)
+    items = result.scalars().all()
+    return {item.item_key: item.quantity for item in items}
+
+async def add_diamonds_to_user(session: AsyncSession, user_id: int, amount: int) -> Optional[User]:
+    """Admin function to grant diamonds."""
+    user = await session.get(User, user_id)
+    if not user:
+        return None
+    user.diamonds += amount
+    await session.commit()
+    return user

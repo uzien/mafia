@@ -3,6 +3,8 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from config import settings
+from sqlalchemy import select
+from database.models import User
 from database.crud import (
     claim_daily_bonus,
     get_or_create_group,
@@ -15,6 +17,7 @@ from database.database import async_session_maker
 from game.enums import GamePhase
 from game.manager import game_manager
 from locales.i18n import SUPPORTED_LANGUAGES, i18n
+from services.economy_service import SHOP_ITEMS, get_user_inventory
 
 common_router = Router()
 
@@ -242,6 +245,15 @@ async def cmd_profile(message: Message):
         win_rate = round((user.wins / user.games_played * 100), 1) if user.games_played > 0 else 0
         best_role_name = i18n.get(f"roles.{user.best_role}", user.language)
 
+        inv_items = await get_user_inventory(session, user.id)
+        inv_lines = []
+        for key, qty in inv_items.items():
+            item_info = SHOP_ITEMS.get(key, {})
+            item_name = item_info.get(f"name_{user.language}", item_info.get("name_uz", key))
+            inv_lines.append(f"• {item_name}: <b>{qty} ta</b>")
+
+        inv_str = "\n".join(inv_lines) if inv_lines else "<i>(Hozircha bo'sh)</i>"
+
         text = i18n.get(
             "profile_card",
             user.language,
@@ -257,7 +269,128 @@ async def cmd_profile(message: Message):
             win_rate=win_rate,
             best_role=best_role_name
         )
-        await message.answer(text, parse_mode="HTML")
+        text += f"\n\n🎒 <b>Inventar:</b>\n{inv_str}\n\n💎 <i>Faol o'yinchilar uchun bepul Olmoslar: admin @mx767</i>"
+
+        shop_txt = "🛒 Do'kon" if user.language == "uz" else "🛒 Mağaza"
+        daily_txt = "🎁 Kunlik Bonus" if user.language == "uz" else "🎁 Gündəlik Bonus"
+        admin_txt = "💎 Olmos olish (@mx767)" if user.language == "uz" else "💎 Almaz əldə et (@mx767)"
+
+        markup = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text=shop_txt, callback_data="nav_shop"), InlineKeyboardButton(text=daily_txt, callback_data="nav_daily")],
+            [InlineKeyboardButton(text=admin_txt, url="https://t.me/mx767")]
+        ])
+
+        await message.answer(text, reply_markup=markup, parse_mode="HTML")
+
+@common_router.callback_query(F.data == "nav_shop")
+async def cb_nav_shop(callback: CallbackQuery):
+    from handlers.store import cmd_shop
+    await cmd_shop(callback.message)
+    await callback.answer()
+
+@common_router.callback_query(F.data == "nav_daily")
+async def cb_nav_daily(callback: CallbackQuery):
+    async with async_session_maker() as session:
+        user = await get_or_create_user(session, callback.from_user.id)
+        bonus = random.randint(settings.DAILY_BONUS_MIN, settings.DAILY_BONUS_MAX)
+        success, hours = await claim_daily_bonus(session, callback.from_user.id, bonus)
+        if success:
+            text = i18n.get("daily_bonus_success", user.language, amount=bonus)
+        else:
+            text = i18n.get("daily_bonus_already", user.language, hours=hours)
+        await callback.message.answer(text, parse_mode="HTML")
+    await callback.answer()
+
+@common_router.message(Command("commands"))
+async def cmd_commands(message: Message):
+    async with async_session_maker() as session:
+        user = await get_or_create_user(session, message.from_user.id)
+        lang = user.language or settings.DEFAULT_LANGUAGE
+    
+    if lang == "uz":
+        text = (
+            "📖 <b>Mafia Litsey Bot — Barcha Buyruqlar:</b>\n\n"
+            "👥 <b>Guruhdagi Buyruqlar:</b>\n"
+            "• <code>/game</code> yoki <code>/oyun</code> — Yangi o'yin xonasi ochish\n"
+            "• <code>/extend</code> yoki <code>/vaqt</code> — Ro'yxatdan o'tish vaqtini +30s uzaytirish\n"
+            "• <code>/join</code> yoki <code>/qoshilish</code> — O'yinga qo'shilish\n"
+            "• <code>/stop</code> — O'yinni to'xtatish (Admin / Creator)\n"
+            "• <code>/setlang</code> — Guruh tilini o'zgartirish\n\n"
+            "👤 <b>Shaxsiy Chatdagi Buyruqlar:</b>\n"
+            "• <code>/profile</code> — Shaxsiy statistika, inventar va balans\n"
+            "• <code>/shop</code> yoki <code>/dokon</code> — Do'kon (Soxta Hujjat, Rol kartalari, VIP)\n"
+            "• <code>/daily</code> — Kunlik bepul tanga yig'ish\n"
+            "• <code>/top</code> — Eng kuchli o'yinchilar reytingi\n"
+            "• <code>/clan</code> — Mafiya oilasi (Klan) boshqaruvi\n"
+            "• <code>/tournament</code> — Turnirlar va musobaqalar\n"
+            "• <code>/lang</code> — Shaxsiy bot tilini tanlash\n"
+            "• <code>/help</code> — Yordam va qoidalar\n\n"
+            "💎 <b>Admin Buyruqlari:</b>\n"
+            "• <code>/givegems @username miqdor</code> — Faol o'yinchilarga olmos berish (@mx767)"
+        )
+    else:
+        text = (
+            "📖 <b>Mafia Litsey Bot — Bütün Əmrlər:</b>\n\n"
+            "👥 <b>Qrup Əmrləri:</b>\n"
+            "• <code>/game</code> / <code>/oyun</code> — Yeni oyun otağı açmaq\n"
+            "• <code>/extend</code> / <code>/vaqt</code> — Vaxtı +30s uzatmaq\n"
+            "• <code>/join</code> / <code>/qosul</code> — Oyuna qoşulmaq\n"
+            "• <code>/stop</code> — Oyunu dayandırmaq\n"
+            "• <code>/setlang</code> — Qrup dilini seçmək\n\n"
+            "👤 <b>Şəxsi Əmrlər:</b>\n"
+            "• <code>/profile</code> — Profil və inventar\n"
+            "• <code>/shop</code> — Mağaza (Saxta Sənəd, Kartlar)\n"
+            "• <code>/daily</code> — Gündəlik bonus\n"
+            "• <code>/top</code> — Reytinq\n"
+            "• <code>/givegems @username miqdar</code> — Almaz vermək (@mx767)"
+        )
+    await message.answer(text, parse_mode="HTML")
+
+@common_router.message(Command("givegems", "grantgems"))
+async def cmd_givegems(message: Message, command: CommandObject = None):
+    user = message.from_user
+    is_admin = (user.username and user.username.lower() == "mx767") or (user.id in settings.ADMIN_IDS)
+    if not is_admin:
+        return await message.reply("⚠️ Ushbu buyruq faqat bot administratori (@mx767) uchun!")
+
+    if not command or not command.args:
+        return await message.reply("Foydalanish: <code>/givegems @username 50</code> yoki <code>/givegems user_id 50</code>", parse_mode="HTML")
+
+    parts = command.args.strip().split()
+    if len(parts) < 2:
+        return await message.reply("Foydalanish: <code>/givegems @username 50</code>", parse_mode="HTML")
+
+    target_str = parts[0].lstrip("@")
+    try:
+        amount = int(parts[1])
+    except ValueError:
+        return await message.reply("⚠️ Miqdor son bo'lishi kerak!")
+
+    async with async_session_maker() as session:
+        target_user = None
+        if target_str.isdigit():
+            target_user = await session.get(User, int(target_str))
+        if not target_user:
+            stmt = select(User).where(User.username.ilike(target_str))
+            res = await session.execute(stmt)
+            target_user = res.scalar_one_or_none()
+
+        if not target_user:
+            return await message.reply(f"⚠️ Foydalanuvchi '{target_str}' topilmadi (u kamida 1 marta botni ishga tushirgan bo'lishi kerak).", parse_mode="HTML")
+
+        target_user.diamonds += amount
+        await session.commit()
+
+        await message.reply(f"✅ <b>{target_user.first_name}</b> (@{target_user.username or target_user.id}) ga <b>+{amount} Olmos</b> muvaffaqiyatli berildi! Jami olmoslari: <b>{target_user.diamonds}</b> 💎", parse_mode="HTML")
+
+        try:
+            await message.bot.send_message(
+                target_user.id,
+                f"💎 <b>Tabriklaymiz!</b>\nAdministrator @mx767 sizga faol o'yiningiz uchun <b>+{amount} Olmos</b> taqdim etdi!\n\nJami olmoslaringiz: <b>{target_user.diamonds}</b> 💎",
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
 
 @common_router.message(Command("daily"))
 async def cmd_daily(message: Message):

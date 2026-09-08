@@ -152,4 +152,104 @@ def test_extend_lobby_time():
     button_texts = [b.text for row in markup.inline_keyboard for b in row]
     assert any("+30s" in t for t in button_texts)
 
+from unittest.mock import AsyncMock
+from game.enums import GamePhase
+
+def test_player_fake_docs_model():
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Don Corleone")
+    player = room.players[1]
+    assert player.has_fake_docs is False
+    player.has_fake_docs = True
+    assert player.has_fake_docs is True
+
+@pytest.mark.asyncio
+async def test_broadcast_mafia_chat():
+    room = GameRoom(chat_id=-1001, creator_id=101, creator_name="Don")
+    room.add_player(102, "Mafia1")
+    room.add_player(103, "Citizen1")
+    room.add_player(104, "DeadMafia")
+
+    room.players[101].role = Role.DON
+    room.players[102].role = Role.MAFIA
+    room.players[103].role = Role.CITIZEN
+    room.players[104].role = Role.MAFIA
+    room.players[104].is_alive = False
+    room.phase = GamePhase.NIGHT
+
+    mock_bot = AsyncMock()
+    # Don sends a message
+    res = await room.broadcast_mafia_chat(mock_bot, sender_id=101, sender_name="Don", text="Let's kill citizen tonight")
+    assert res is True
+
+    # Only player 102 (living mafia) should receive the message
+    assert mock_bot.send_message.call_count == 1
+    call_args = mock_bot.send_message.call_args_list[0]
+    target_chat_id = call_args.args[0] if call_args.args else call_args.kwargs.get("chat_id")
+    assert target_chat_id == 102
+    msg_text = call_args.args[1] if len(call_args.args) > 1 else call_args.kwargs.get("text")
+    assert "Let's kill citizen tonight" in msg_text
+    assert "Mafiya Maxfiy Chati" in msg_text
+
+@pytest.mark.asyncio
+async def test_last_words_skip_mechanism():
+    import asyncio
+    room = GameRoom(chat_id=-1001, creator_id=101, creator_name="Accused", lang="uz")
+    room.add_player(102, "Accuser")
+    room.players[101].role = Role.CITIZEN
+    room.phase = GamePhase.VOTING
+
+    mock_bot = AsyncMock()
+    # Start last words task
+    task = asyncio.create_task(room.start_last_words(mock_bot, lynched_id=101))
+    # Give event loop a cycle so last_words_event is created
+    await asyncio.sleep(0.02)
+    assert room.last_words_event is not None
+    # Trigger skip immediately
+    room.last_words_event.set()
+
+    # Wait for completion without blocking
+    await asyncio.wait_for(task, timeout=2.0)
+    assert room.condemned_player_id == 101
+    assert room.players[101].is_alive is False  # Executed after last words
+
+@pytest.mark.asyncio
+async def test_economy_fake_docs_and_diamonds():
+    from database.database import async_session_maker, init_db
+    from database.crud import get_or_create_user
+    from services.economy_service import (
+        add_diamonds_to_user,
+        has_fake_documents,
+        consume_fake_documents,
+        buy_shop_item,
+        SHOP_ITEMS
+    )
+
+    await init_db()
+    async with async_session_maker() as session:
+        test_uid = 998877
+        user = await get_or_create_user(session, test_uid, "test_user", "Test")
+        # Give enough coins to buy fake_docs
+        user.coins = 1000
+        await session.commit()
+
+        # Buy fake_docs
+        success, msg = await buy_shop_item(session, test_uid, "fake_docs")
+        assert success is True
+
+        # Verify has_fake_documents
+        has_docs = await has_fake_documents(session, test_uid)
+        assert has_docs is True
+
+        # Consume fake documents
+        consumed = await consume_fake_documents(session, test_uid)
+        assert consumed is True
+
+        # Check again - should be False now
+        assert await has_fake_documents(session, test_uid) is False
+
+        # Add diamonds
+        updated_user = await add_diamonds_to_user(session, test_uid, 50)
+        assert updated_user is not None
+        assert updated_user.diamonds >= 50
+
 

@@ -7,6 +7,7 @@ class GamePhase(str, Enum):
     MORNING = "morning"
     DAY = "day"
     VOTING = "voting"
+    LAST_WORDS = "last_words"
     GAME_OVER = "game_over"
 
 class Role(str, Enum):

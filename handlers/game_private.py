@@ -49,11 +49,22 @@ async def cb_night_action(callback: CallbackQuery):
     elif role_str == Role.DETECTIVE.value:
         room.detective_target = target_id
         # Secret detective report
-        is_mafia = (target_player.team == Team.MAFIA and not target_player.protected_by_lawyer)
-        if is_mafia:
-            res_msg = i18n.get("detective_result_mafia", room.lang, target=target_name)
+        if getattr(target_player, "has_fake_docs", False):
+            target_player.has_fake_docs = False
+            from database.database import async_session_maker
+            from services.economy_service import consume_fake_documents
+            try:
+                async with async_session_maker() as session:
+                    await consume_fake_documents(session, target_player.user_id)
+            except Exception:
+                pass
+            res_msg = i18n.get("detective_result_fakedocs", room.lang, target=target_name)
         else:
-            res_msg = i18n.get("detective_result_innocent", room.lang, target=target_name)
+            is_mafia = (target_player.team == Team.MAFIA and not target_player.protected_by_lawyer)
+            if is_mafia:
+                res_msg = i18n.get("detective_result_mafia", room.lang, target=target_name)
+            else:
+                res_msg = i18n.get("detective_result_innocent", room.lang, target=target_name)
 
         await callback.message.edit_text(res_msg, parse_mode="HTML")
         await callback.answer()
@@ -85,3 +96,22 @@ async def cb_night_action(callback: CallbackQuery):
         )
         await callback.answer()
         await room.announce_night_action(callback.bot, role_str)
+
+@game_private_router.message(F.chat.type == "private", ~F.text.startswith("/"))
+async def pm_mafia_chat_relay(message: Message):
+    """Allow living Mafia and Don to secretly chat with each other during the night phase."""
+    user_id = message.from_user.id
+    for room in list(game_manager.rooms.values()):
+        if room.phase == GamePhase.NIGHT and user_id in room.players:
+            player = room.players[user_id]
+            if player.is_alive and player.role in [Role.DON, Role.MAFIA]:
+                text = message.text or message.caption or "[Ovozli xabar / Media]"
+                relayed = await room.broadcast_mafia_chat(
+                    bot=message.bot,
+                    sender_id=user_id,
+                    sender_name=message.from_user.first_name,
+                    text=text
+                )
+                if relayed:
+                    await message.reply("🩸 <i>Xabaringiz Mafiya a'zolariga yetkazildi.</i>", parse_mode="HTML")
+                return

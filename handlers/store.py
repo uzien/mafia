@@ -11,11 +11,14 @@ store_router = Router()
 def get_shop_markup(lang: str) -> InlineKeyboardMarkup:
     buttons = []
     for key, item in SHOP_ITEMS.items():
-        name = item.get(f"name_{lang}", item.get("name_az", key))
+        name = item.get(f"name_{lang}", item.get("name_uz", key))
         cost = item["cost"]
         curr = "💰" if item["currency"] == "coins" else "💎"
         btn_text = f"{name} — {cost} {curr}"
         buttons.append([InlineKeyboardButton(text=btn_text, callback_data=f"buy_{key}")])
+    # Add direct contact button to admin @mx767 for gems
+    admin_btn_text = "💎 Olmos olish (@mx767)" if lang == "uz" else "💎 Almaz əldə et (@mx767)"
+    buttons.append([InlineKeyboardButton(text=admin_btn_text, url="https://t.me/mx767")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 @store_router.message(Command("shop", "magaza", "dokon"))

@@ -72,6 +72,7 @@
   "action_recorded": "🎯 Seçiminiz qeydə alındı: <b>{target}</b>",
   "detective_result_mafia": "🔍 Təhqiqat nəticəsi: <b>{target}</b> bir <b>MAFİYA ÜZVÜDÜR!</b> 🩸",
   "detective_result_innocent": "🔍 Təhqiqat nəticəsi: <b>{target}</b> dinc sakindir. 🕊",
+  "detective_result_fakedocs": "🔍 <b>Təhqiqat nəticəsi:</b> <b>{target}</b> şəxsinin sənədləri yoxlanıldı.\n🪪 <b>Sənəd:</b> Dinc sakin (Şübhəli saxta möhürlər var!)\n🔎 <b>Nəticə:</b> Günahsız sakin və ya çox hiyləgər cinayətkar ola bilər... 🕊/🩸",
 
   "morning_report_title": "<b>Sabahınız xeyir</b> 🌝\n🌄 <b>Gün: {round}</b>\n<i>Küləklər gecəki şayiələri bütün şəhərə çatdırır..</i>",
   "morning_nobody_died": "🕊 <i>Bu gecə heç kim zərər görmədi.</i>",
@@ -81,7 +82,9 @@
   "day_discussion": "🗣 <b>Müzakirə vaxtı başladı!</b>\nŞübhələrinizi bölüşün və şəhəri qoruyun. Müzakirə üçün: <b>{seconds}</b> saniyə.",
   "voting_started": "⚖️ <b>MƏHKƏMƏ BAŞLADI!</b>\nŞübhələndiyiniz şəxsə səs verin. Şəhərdən kimi qovmaq (linç etmək) istəyirsiniz?\nSəsvermə müddəti: <b>{seconds}</b> saniyə.",
   "vote_cast": "🗳 <b>{voter}</b> oyunçusu <b>{target}</b> üçün səs verdi!",
-  "player_lynched": "⚖️ Məhkəmə qərarı ilə <b>{name}</b> şəhərdən qovuldu (linç edildi)!\nOnun rolu: <b>{role}</b> idi.",
+  "last_words_prompt": "⚖️ <b>Məhkəmə qərarı:</b> Şəhər sakinləri <a href=\"tg://user?id={user_id}\">{name}</a>ni təqsirkar bildi!\n\n🎙 <b>Ölümdən əvvəlki son söz:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, özünüzü müdafiə etmək üçün <b>{seconds} saniyə</b> vaxtınız var!",
+  "btn_skip_last_words": "⚰️ Hazıram (Tezləşdir)",
+  "player_lynched": "⚰️ <b>Məhkəmə hökmü icra olundu!</b>\n<a href=\"tg://user?id={user_id}\">{name}</a> edam edildi (asildi).\nRolu: <b>{role}</b> idi.",
   "jester_lynched": "🃏 <b>{name}</b> linç edildi və o bir JESTER (Özünəqəsd) idi! Hamını aldatmağı bacardı!",
   "vote_tie": "🤝 Səslər bərabər bölündü! Bu gün heç kim linç edilmədi.",
   "player_eliminated": "🪦 <b>{name}</b> oyundan kənarlaşdırıldı!",
