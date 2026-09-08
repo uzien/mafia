@@ -48,7 +48,7 @@ async def cmd_game(message: Message):
 async def cb_game_join(callback: CallbackQuery):
     room = game_manager.get_room(callback.message.chat.id)
     if not room or room.phase != GamePhase.LOBBY:
-        return await callback.answer(i18n.get("not_in_game", "az"), show_alert=True)
+        return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
 
     user = callback.from_user
     async with async_session_maker() as session:
@@ -72,7 +72,7 @@ async def cb_game_join(callback: CallbackQuery):
 async def cb_game_leave(callback: CallbackQuery):
     room = game_manager.get_room(callback.message.chat.id)
     if not room or room.phase != GamePhase.LOBBY:
-        return await callback.answer(i18n.get("not_in_game", "az"), show_alert=True)
+        return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
 
     user = callback.from_user
     success = room.remove_player(user.id)

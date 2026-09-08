@@ -25,13 +25,76 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-def get_main_menu_keyboard(lang: str = "az") -> ReplyKeyboardMarkup:
+MENU_BUTTONS = {
+    "uz": {
+        "play": "🎮 O'ynash / Play",
+        "profile": "👤 Profil",
+        "shop": "🛒 Do'kon",
+        "roulette": "🎰 Ruletka",
+        "daily": "🎁 Kunlik Bonus",
+        "tournament": "🏆 Turnir",
+        "clan": "🛡 Klan",
+        "lang": "🌐 Tilni tanlash"
+    },
+    "az": {
+        "play": "🎮 Oyna / Play",
+        "profile": "👤 Profil",
+        "shop": "🛒 Mağaza",
+        "roulette": "🎰 Rulet",
+        "daily": "🎁 Gündəlik Bonus",
+        "tournament": "🏆 Turnir",
+        "clan": "🛡 Klan",
+        "lang": "🌐 Dil seçimi"
+    },
+    "ru": {
+        "play": "🎮 Играть / Play",
+        "profile": "👤 Профиль",
+        "shop": "🛒 Магазин",
+        "roulette": "🎰 Рулетка",
+        "daily": "🎁 Ежедневный Бонус",
+        "tournament": "🏆 Турнир",
+        "clan": "🛡 Клан",
+        "lang": "🌐 Сменить язык"
+    },
+    "en": {
+        "play": "🎮 Play",
+        "profile": "👤 Profile",
+        "shop": "🛒 Store",
+        "roulette": "🎰 Roulette",
+        "daily": "🎁 Daily Bonus",
+        "tournament": "🏆 Tournament",
+        "clan": "🛡 Clan",
+        "lang": "🌐 Language"
+    },
+    "tr": {
+        "play": "🎮 Oyna / Play",
+        "profile": "👤 Profil",
+        "shop": "🛒 Mağaza",
+        "roulette": "🎰 Rulet",
+        "daily": "🎁 Günlük Bonus",
+        "tournament": "🏆 Turnuva",
+        "clan": "🛡 Klan",
+        "lang": "🌐 Dil seçimi"
+    }
+}
+
+PLAY_BUTTONS = {b["play"] for b in MENU_BUTTONS.values()} | {"🎮 Oyna / Play", "🎮 O'ynash / Play", "🎮 Играть / Play", "🎮 Play"}
+PROFILE_BUTTONS = {b["profile"] for b in MENU_BUTTONS.values()} | {"👤 Profil", "👤 Профиль", "👤 Profile"}
+SHOP_BUTTONS = {b["shop"] for b in MENU_BUTTONS.values()} | {"🛒 Do'kon", "🛒 Mağaza", "🛒 Магазин", "🛒 Store", "🛒 Shop"}
+ROULETTE_BUTTONS = {b["roulette"] for b in MENU_BUTTONS.values()} | {"🎰 Ruletka", "🎰 Rulet", "🎰 Рулетка", "🎰 Roulette"}
+DAILY_BUTTONS = {b["daily"] for b in MENU_BUTTONS.values()} | {"🎁 Kunlik Bonus", "🎁 Gündəlik Bonus", "🎁 Ежедневный Бонус", "🎁 Daily Bonus", "🎁 Günlük Bonus"}
+TOURNAMENT_BUTTONS = {b["tournament"] for b in MENU_BUTTONS.values()} | {"🏆 Turnir", "🏆 Турнир", "🏆 Tournament", "🏆 Turnuva"}
+CLAN_BUTTONS = {b["clan"] for b in MENU_BUTTONS.values()} | {"🛡 Klan", "🛡 Клан", "🛡 Clan"}
+LANG_BUTTONS = {b["lang"] for b in MENU_BUTTONS.values()} | {"🌐 Tilni tanlash", "🌐 Dil seçimi", "🌐 Dil / Lang", "🌐 Сменить язык", "🌐 Language"}
+
+def get_main_menu_keyboard(lang: str = "uz") -> ReplyKeyboardMarkup:
+    btns = MENU_BUTTONS.get(lang, MENU_BUTTONS["uz"])
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="🎮 Oyna / Play"), KeyboardButton(text="👤 Profil")],
-            [KeyboardButton(text="🛒 Mağaza"), KeyboardButton(text="🎰 Rulet")],
-            [KeyboardButton(text="🎁 Gündəlik Bonus"), KeyboardButton(text="🏆 Turnir")],
-            [KeyboardButton(text="🛡 Klan"), KeyboardButton(text="🌐 Dil / Lang")]
+            [KeyboardButton(text=btns["play"]), KeyboardButton(text=btns["profile"])],
+            [KeyboardButton(text=btns["shop"]), KeyboardButton(text=btns["roulette"])],
+            [KeyboardButton(text=btns["daily"]), KeyboardButton(text=btns["tournament"])],
+            [KeyboardButton(text=btns["clan"]), KeyboardButton(text=btns["lang"])]
         ],
         resize_keyboard=True
     )
@@ -59,16 +122,18 @@ async def cmd_start(message: Message):
 
             try:
                 me = await message.bot.get_me()
+                btn_txt = "➕ Guruhga Qo'shish / Add to Group" if user.language == "uz" else "➕ Qrupa Əlavə Et / Add to Group"
+                info_txt = "🎮 Guruhingizda o'yinga boshlash uchun:" if user.language == "uz" else "🎮 Qrupunuzda oyuna başlamaq üçün:"
                 add_markup = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="➕ Qrupa Əlavə Et / Add to Group", url=f"https://t.me/{me.username}?startgroup=true")]
+                    [InlineKeyboardButton(text=btn_txt, url=f"https://t.me/{me.username}?startgroup=true")]
                 ])
-                await message.answer("🎮 Qrupunuzda oyuna başlamaq üçün:", reply_markup=add_markup)
+                await message.answer(info_txt, reply_markup=add_markup)
             except Exception:
                 pass
         else:
-            group = await get_or_create_group(session, message.chat.id, message.chat.title or "Group")
+            group = await get_or_create_group(session, message.chat.id, message.chat.title or "Group", default_lang=settings.DEFAULT_LANGUAGE)
             await message.answer(
-                f"👋 <b>{settings.BOT_NAME}</b> is active in <b>{group.title}</b>!\nType <code>/game</code> to start a match.",
+                f"👋 <b>{settings.BOT_NAME}</b> faol!\nO'yinni boshlash uchun <code>/game</code> buyrug'ini yuboring.",
                 parse_mode="HTML"
             )
 
@@ -98,6 +163,11 @@ async def cb_user_lang(callback: CallbackQuery):
             i18n.get("lang_changed", lang_code, lang_name=lang_name),
             parse_mode="HTML"
         )
+        if callback.message.chat.type == "private":
+            await callback.message.answer(
+                f"✅ {lang_name}",
+                reply_markup=get_main_menu_keyboard(lang_code)
+            )
     await callback.answer()
 
 @common_router.message(Command("setlang"))
@@ -172,45 +242,54 @@ async def cmd_top(message: Message):
         await message.answer("\n".join(lines), parse_mode="HTML")
 
 # Reply Keyboard Text Button Handlers
-@common_router.message(F.text == "🎮 Oyna / Play")
+@common_router.message(F.text.in_(PLAY_BUTTONS))
 async def btn_play(message: Message):
+    async with async_session_maker() as session:
+        user = await get_or_create_user(session, message.from_user.id)
+        lang = user.language or settings.DEFAULT_LANGUAGE
     try:
         me = await message.bot.get_me()
+        btn_txt = "➕ Guruhga Qo'shish / Add to Group" if lang == "uz" else "➕ Qrupa Əlavə Et / Add to Group"
+        msg_txt = (
+            "🕶 <b>Mafiya o'yini guruhlarda o'ynaladi!</b>\nMeni guruhingizga qo'shib <code>/game</code> buyrug'ini yuboring:"
+            if lang == "uz" else
+            "🕶 <b>Mafiya oyunu qruplarda oynanılır!</b>\nMəni qrupunuza əlavə edib <code>/game</code> yazın:"
+        )
         markup = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="➕ Məni Qrupa Əlavə Et / Add to Group", url=f"https://t.me/{me.username}?startgroup=true")]
+            [InlineKeyboardButton(text=btn_txt, url=f"https://t.me/{me.username}?startgroup=true")]
         ])
-        await message.answer("🕶 <b>Mafiya oyunu qruplarda oynanılır!</b>\nMəni qrupunuza əlavə edib <code>/game</code> yazın:", reply_markup=markup, parse_mode="HTML")
+        await message.answer(msg_txt, reply_markup=markup, parse_mode="HTML")
     except Exception:
         pass
 
-@common_router.message(F.text == "👤 Profil")
+@common_router.message(F.text.in_(PROFILE_BUTTONS))
 async def btn_profile(message: Message):
     return await cmd_profile(message)
 
-@common_router.message(F.text == "🛒 Mağaza")
+@common_router.message(F.text.in_(SHOP_BUTTONS))
 async def btn_shop(message: Message):
     from handlers.store import cmd_shop
     return await cmd_shop(message)
 
-@common_router.message(F.text == "🎰 Rulet")
+@common_router.message(F.text.in_(ROULETTE_BUTTONS))
 async def btn_roulette(message: Message):
     from handlers.roulette import cmd_roulette
     return await cmd_roulette(message)
 
-@common_router.message(F.text == "🎁 Gündəlik Bonus")
+@common_router.message(F.text.in_(DAILY_BUTTONS))
 async def btn_daily(message: Message):
     return await cmd_daily(message)
 
-@common_router.message(F.text == "🏆 Turnir")
+@common_router.message(F.text.in_(TOURNAMENT_BUTTONS))
 async def btn_tournament(message: Message):
     from handlers.tournaments import cmd_tournament
     return await cmd_tournament(message)
 
-@common_router.message(F.text == "🛡 Klan")
+@common_router.message(F.text.in_(CLAN_BUTTONS))
 async def btn_clan(message: Message):
     from handlers.clans import cmd_clan
     return await cmd_clan(message)
 
-@common_router.message(F.text == "🌐 Dil / Lang")
+@common_router.message(F.text.in_(LANG_BUTTONS))
 async def btn_lang(message: Message):
     return await cmd_lang(message)

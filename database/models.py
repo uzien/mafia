@@ -12,7 +12,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     username: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     first_name: Mapped[str] = mapped_column(String(128), default="Player")
-    language: Mapped[str] = mapped_column(String(10), default="az")
+    language: Mapped[str] = mapped_column(String(10), default="uz")
     
     coins: Mapped[int] = mapped_column(Integer, default=150)
     diamonds: Mapped[int] = mapped_column(Integer, default=5)
@@ -39,7 +39,7 @@ class GroupChat(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     title: Mapped[str] = mapped_column(String(256), default="Chat")
-    language: Mapped[str] = mapped_column(String(10), default="az")
+    language: Mapped[str] = mapped_column(String(10), default="uz")
     games_played: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 

@@ -9,7 +9,7 @@ async def get_or_create_user(
     user_id: int,
     username: Optional[str] = None,
     first_name: str = "Player",
-    default_lang: str = "az"
+    default_lang: str = "uz"
 ) -> User:
     stmt = select(User).where(User.id == user_id)
     result = await session.execute(stmt)
@@ -47,7 +47,7 @@ async def get_or_create_group(
     session: AsyncSession,
     group_id: int,
     title: str = "Group Chat",
-    default_lang: str = "az"
+    default_lang: str = "uz"
 ) -> GroupChat:
     stmt = select(GroupChat).where(GroupChat.id == group_id)
     result = await session.execute(stmt)

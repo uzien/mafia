@@ -15,7 +15,7 @@ SUPPORTED_LANGUAGES = {
 class Localization:
     def __init__(self):
         self.translations: Dict[str, Dict[str, Any]] = {}
-        self.default_lang = "az"
+        self.default_lang = "uz"
         self._load_translations()
 
     def _load_translations(self):
@@ -31,7 +31,7 @@ class Localization:
             else:
                 self.translations[code] = {}
 
-    def get(self, key: str, lang: str = "az", **kwargs) -> str:
+    def get(self, key: str, lang: str = "uz", **kwargs) -> str:
         """Fetch localized string with fallback and string formatting."""
         if lang not in self.translations:
             lang = self.default_lang

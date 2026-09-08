@@ -76,8 +76,8 @@ class Settings(BaseSettings):
     VOTING_DURATION: int = 45       # Seconds for daytime lynching vote
     DEFENSE_DURATION: int = 20      # Seconds for accused player's final speech
     
-    # Default Language (az, uz, ru, en, tr)
-    DEFAULT_LANGUAGE: str = "az"
+    # Default Language (uz, az, ru, en, tr)
+    DEFAULT_LANGUAGE: str = "uz"
     
     # Economy Rewards
     WIN_COIN_REWARD: int = 150

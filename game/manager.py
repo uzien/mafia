@@ -9,7 +9,7 @@ class GameManager:
     def get_room(self, chat_id: int) -> Optional[GameRoom]:
         return self.rooms.get(chat_id)
 
-    def create_room(self, chat_id: int, creator_id: int, creator_name: str, lang: str = "az") -> Optional[GameRoom]:
+    def create_room(self, chat_id: int, creator_id: int, creator_name: str, lang: str = "uz") -> Optional[GameRoom]:
         existing = self.get_room(chat_id)
         if existing and existing.phase != GamePhase.GAME_OVER:
             return None

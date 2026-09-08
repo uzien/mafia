@@ -19,7 +19,7 @@ from services.auto_moderator import (
 logger = logging.getLogger(__name__)
 
 class GameRoom:
-    def __init__(self, chat_id: int, creator_id: int, creator_name: str, lang: str = "az"):
+    def __init__(self, chat_id: int, creator_id: int, creator_name: str, lang: str = "uz"):
         self.chat_id: int = chat_id
         self.creator_id: int = creator_id
         self.creator_name: str = creator_name
