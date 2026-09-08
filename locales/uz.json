@@ -5,15 +5,15 @@
   "lang_changed": "✅ Til muvaffaqiyatli o'zgartirildi: <b>{lang_name}</b>",
   
   "roles": {
-    "citizen": "Tinch axoli",
+    "citizen": "👨🏼‍🌾 Fuqaro",
     "doctor": "Shifokor",
     "detective": "Komissar katani",
     "sergeant": "Serjant",
     "sniper": "Snayper",
-    "mafia": "Mafiya",
-    "don": "Don",
+    "mafia": "🩸 Oddiy Mafiya",
+    "don": "👑 Don (Mafiya Boshlig'i)",
     "maniac": "Maniak",
-    "mistress": "Ma'shuqa",
+    "mistress": "💋 Ma'shuqa",
     "jester": "Joker",
     "bodyguard": "Tansoqchi",
     "kamikaze": "Kamikadze",
@@ -26,8 +26,8 @@
     "detective": "Tunda gumonlanuvchini tekshirib (Fuqaro yoki Mafiya) ekanini bilishingiz yoki uni otib o'ldirishingiz mumkin.",
     "sergeant": "Komissar yordamchisisiz! Agar Komissar halok bo'lsa, uning o'rnini egallab, yangi Komissar bo'lasiz.",
     "sniper": "Maxfiy shahar snayperisiz! Kechasi 1 marta o'q otish huquqingiz bor. Agar begunoh fuqaroni o'ldirsangiz, ertalab pushaymonlikdan o'lasiz.",
-    "mafia": "Tunda boshqa mafiyalar bilan birgalikda begunoh fuqarolarni yo'q qiling.",
-    "don": "Mafiya boshlig'isiz! Tunda Komissarni qidirishingiz va qotillik buyrug'ini tasdiqlashingiz mumkin.",
+    "mafia": "Oddiy mafiyasiz! Tunda boshqa mafiyalar bilan birga begunoh fuqarolarni yo'q qilasiz. Agar Don (boshliq) halok bo'lsa, siz uning o'rniga yangi Don bo'lasiz!",
+    "don": "Mafiya boshlig'isiz (The Boss)! Tunda jamoaviy qotillik buyrug'ini berasiz va Komissarni qidirasiz. Mafiya guruhining yetakchisisiz.",
     "maniac": "Yolg'iz qotilsiz! Har kecha istagan kishingizni o'ldirasiz. Hamma o'lib, faqat siz qolsangiz g'alaba qozonasiz.",
     "mistress": "Tunda tanlagan kishingiz xonasiga borib, uning maxsus qobiliyatini bloklaysiz.",
     "jester": "Yagona maqsadingiz — shahar aholisini aldab, o'zingizni kunduzgi sudda osishlariga erishish. Agar osilsangiz, yakka o'zingiz g'olib bo'lasiz!",
@@ -67,7 +67,7 @@
   "night_prompt_doctor": "💉 <b>Shifokor:</b>\nBu kecha kimni o'limdan qutqarmoqchisiz?",
   "night_prompt_detective": "🕵️‍♂️ <b>Komissar katani:</b>\nKimning hujjatlarini tekshirmoqchisiz?",
   "night_prompt_maniac": "🔪 <b>Maniak:</b>\nBu kecha kim qurboningiz bo'ladi?",
-  "night_prompt_mistress": "💃 <b>Ma'shuqa:</b>\nBu kecha kimning qobiliyatini bloklamoqchisiz?",
+  "night_prompt_mistress": "💋 <b>Ma'shuqa:</b>\nBu kecha kimning qobiliyatini bloklamoqchisiz?",
   "night_prompt_sniper": "🎯 <b>Snayper:</b>\nBu kecha kimni otmoqchisiz? (Diqqat: Fuqaroni otsangiz, ertalab pushaymonlikdan o'lasiz!)",
   "action_recorded": "🎯 Tanlovingiz qabul qilindi: <b>{target}</b>",
   "detective_result_mafia": "🔍 Tekshiruv natijasi: <b>{target}</b> — <b>MAFIYA A'ZOSI!</b> 🩸",
@@ -124,5 +124,6 @@
   "roulette_toast": "🎉 Yutdingiz: {prize}!",
   "btn_get_diamonds": "💎 Olmos olish (@mx767)",
   "clan_deposit_success": "✅ <b>+{amount} Tanga</b> klan xazinasiga kiritildi!",
-  "clan_deposit_fail": "❌ Yetarli mablag'ingiz yo'q yoki klanda emassiz!"
+  "clan_deposit_fail": "❌ Yetarli mablag'ingiz yo'q yoki klanda emassiz!",
+  "don_promoted": "👑 <b>{old_role} {name}</b> yangi <b>Don (Mafiya Boshlig'i)</b> bo'ldi!"
 }

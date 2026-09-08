@@ -5,7 +5,7 @@
   "lang_changed": "✅ Language successfully changed to: <b>{lang_name}</b>",
   
   "roles": {
-    "citizen": "👱‍♂️ Citizen",
+    "citizen": "👨🏼‍🌾 Citizen",
     "doctor": "💉 Doctor",
     "detective": "🕵️‍♂️ Detective",
     "sergeant": "🎖 Sergeant",
@@ -13,7 +13,7 @@
     "mafia": "🩸 Mafioso",
     "don": "👑 Don (Godfather)",
     "maniac": "🔪 Maniac",
-    "mistress": "💃 Mistress",
+    "mistress": "💋 Mistress",
     "jester": "🃏 Jester (Fool)",
     "bodyguard": "🛡 Bodyguard",
     "kamikaze": "💣 Kamikaze",
@@ -67,7 +67,7 @@
   "night_prompt_doctor": "💉 <b>Doctor:</b>\nWho will you heal tonight?",
   "night_prompt_detective": "🕵️‍♂️ <b>Detective:</b>\nWho would you like to investigate tonight?",
   "night_prompt_maniac": "🔪 <b>Maniac:</b>\nWho will be your victim tonight?",
-  "night_prompt_mistress": "💃 <b>Mistress:</b>\nWhose ability will you block tonight?",
+  "night_prompt_mistress": "💋 <b>Mistress:</b>\nWhose ability will you block tonight?",
   "night_prompt_sniper": "🎯 <b>Sniper:</b>\nWho will you shoot tonight? (Careful: If you shoot an innocent, you die of guilt next morning!)",
   "action_recorded": "🎯 Action confirmed: <b>{target}</b>",
   "detective_result_mafia": "🔍 Investigation result: <b>{target}</b> is a <b>MAFIA MEMBER!</b> 🩸",
@@ -123,6 +123,7 @@
   "roulette_result": "🎉 <b>CONGRATULATIONS!</b>\n\nYou won: <b>{prize}</b>!\n💰 Current balance: <b>{coins} Coins</b> | <b>{diamonds} Diamonds</b>",
   "roulette_toast": "🎉 You won: {prize}!",
   "btn_get_diamonds": "💎 Get Diamonds (@mx767)",
-  "clan_deposit_success": "✅ <b>+{amount} Coins</b> deposited into clan treasury!",
-  "clan_deposit_fail": "❌ Not enough coins or you are not in a clan!"
+  "clan_deposit_success": "✅ <b>+{amount} Coins</b> deposited into clan vault!",
+  "clan_deposit_fail": "❌ Not enough coins or you are not in a clan!",
+  "don_promoted": "👑 <b>{old_role} {name}</b> has risen to become the new <b>Don (Boss of Mafia)</b>!"
 }

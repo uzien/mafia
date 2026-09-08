@@ -119,11 +119,11 @@ class GameRoom:
             role_counts[r_name] = role_counts.get(r_name, 0) + 1
 
         breakdown_parts = []
-        # Sort so Citizen (Tinch axoli) comes first, then sorted by count descending
+        # Sort so Citizen (Fuqaro) comes first, then sorted by count descending
         sorted_roles = sorted(
             role_counts.items(),
             key=lambda x: (
-                0 if any(k in x[0].lower() for k in ["tinch", "vətəndaş", "мирн", "citiz", "sakin"]) else 1,
+                0 if any(k in x[0].lower() for k in ["fuqaro", "tinch", "vətəndaş", "мирн", "citiz", "sakin", "köylü"]) else 1,
                 -x[1],
                 x[0]
             )
@@ -440,6 +440,18 @@ class GameRoom:
                 sergeant.role = Role.DETECTIVE
                 sergeant_promoted = sergeant
 
+        # Check if Don died, promote living Mafia to Don!
+        don_died = any(d.role == Role.DON for d in deaths)
+        don_promoted = None
+        if don_died:
+            successor = next((p for p in self.alive_players if p.role == Role.MAFIA), None)
+            if not successor:
+                successor = next((p for p in self.alive_players if p.role == Role.LAWYER), None)
+            if successor:
+                old_role_title = i18n.get(f"roles.{successor.role.value}", self.lang)
+                successor.role = Role.DON
+                don_promoted = (successor, old_role_title)
+
         # Check guilt suicide
         for p in list(self.alive_players):
             if p.guilt_suicide:
@@ -487,6 +499,14 @@ class GameRoom:
             await bot.send_message(
                 self.chat_id,
                 f"🎖 <b>{role_sergeant} {sergeant_promoted.name}</b> {role_detective} lavozimiga ko'tarildi!",
+                parse_mode="HTML"
+            )
+
+        if don_promoted:
+            promoted_player, old_role_title = don_promoted
+            await bot.send_message(
+                self.chat_id,
+                i18n.get("don_promoted", self.lang, old_role=old_role_title, name=promoted_player.name),
                 parse_mode="HTML"
             )
 
@@ -646,6 +666,35 @@ class GameRoom:
                 await bot.send_message(
                     self.chat_id,
                     f"💣 <b>Kamikadze portladi!</b> {collateral.name} ({c_role}) ham halok bo'ldi!",
+                    parse_mode="HTML"
+                )
+
+        # Check if Detective died in court, promote Sergeant!
+        det_died = not any(p.role == Role.DETECTIVE and p.is_alive for p in self.players.values())
+        if det_died:
+            sergeant = next((p for p in self.alive_players if p.role == Role.SERGEANT), None)
+            if sergeant:
+                sergeant.role = Role.DETECTIVE
+                role_sergeant = i18n.get("roles.sergeant", self.lang)
+                role_detective = i18n.get("roles.detective", self.lang)
+                await bot.send_message(
+                    self.chat_id,
+                    f"🎖 <b>{role_sergeant} {sergeant.name}</b> {role_detective} lavozimiga ko'tarildi!",
+                    parse_mode="HTML"
+                )
+
+        # Check if Don died in court, promote living Mafia to Don!
+        don_died = not any(p.role == Role.DON and p.is_alive for p in self.players.values())
+        if don_died:
+            successor = next((p for p in self.alive_players if p.role == Role.MAFIA), None)
+            if not successor:
+                successor = next((p for p in self.alive_players if p.role == Role.LAWYER), None)
+            if successor:
+                old_role_title = i18n.get(f"roles.{successor.role.value}", self.lang)
+                successor.role = Role.DON
+                await bot.send_message(
+                    self.chat_id,
+                    i18n.get("don_promoted", self.lang, old_role=old_role_title, name=successor.name),
                     parse_mode="HTML"
                 )
 

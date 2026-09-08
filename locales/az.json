@@ -5,7 +5,7 @@
   "lang_changed": "✅ Dil uğurla dəyişdirildi: <b>{lang_name}</b>",
   
   "roles": {
-    "citizen": "👱‍♂️ Dinc Sakin",
+    "citizen": "👨🏼‍🌾 Dinc Sakin",
     "doctor": "💉 Həkim",
     "detective": "🕵️‍♂️ Komissar",
     "sergeant": "🎖 Çavuş (Serjant)",
@@ -13,7 +13,7 @@
     "mafia": "🩸 Mafiöz",
     "don": "👑 Don (Xaç Atası)",
     "maniac": "🔪 Maniak",
-    "mistress": "💃 Məşuqə (Leva)",
+    "mistress": "💋 Məşuqə (Leva)",
     "jester": "🃏 Özünəqəsd (Jester)",
     "bodyguard": "🛡 Mühafizəçi",
     "kamikaze": "💣 Kamikadze",
@@ -67,7 +67,7 @@
   "night_prompt_doctor": "💉 <b>Həkim:</b>\nKimi xilas etmək istəyirsiniz?",
   "night_prompt_detective": "🕵️‍♂️ <b>Komissar:</b>\nKimin sənədlərini yoxlamaq istəyirsiniz?",
   "night_prompt_maniac": "🔪 <b>Maniak:</b>\nBu gecə qurbanınız kim olacaq?",
-  "night_prompt_mistress": "💃 <b>Məşuqə:</b>\nBu gecə kimin otağına getmək istəyirsiniz (bacarığını bloklayasınız)?",
+  "night_prompt_mistress": "💋 <b>Məşuqə:</b>\nBu gecə kimin otağına getmək istəyirsiniz (bacarığını bloklayasınız)?",
   "night_prompt_sniper": "🎯 <b>Snayper:</b>\nBu gecə kimi vurmaq istəyirsiniz? (Diqqət: Dinc sakini vursanız, səhər intihar edəcəksiniz!)",
   "action_recorded": "🎯 Seçiminiz qeydə alındı: <b>{target}</b>",
   "detective_result_mafia": "🔍 Təhqiqat nəticəsi: <b>{target}</b> bir <b>MAFİYA ÜZVÜDÜR!</b> 🩸",
@@ -123,6 +123,7 @@
   "roulette_result": "🎉 <b>TƏBRİKLƏR!</b>\n\nSizin qazancınız: <b>{prize}</b>!\n💰 Cari balans: <b>{coins} Qızıl</b> | <b>{diamonds} Almaz</b>",
   "roulette_toast": "🎉 Qazandınız: {prize}!",
   "btn_get_diamonds": "💎 Almaz əldə et (@mx767)",
-  "clan_deposit_success": "✅ <b>+{amount} Qızıl</b> klan xəzinəsinə yatırıldı!",
-  "clan_deposit_fail": "❌ Kifayət qədər qızılınız yoxdur və ya klanda deyilsiniz!"
+  "clan_deposit_success": "✅ <b>+{amount} Sikkə</b> klan xəzinəsinə yatırıldı!",
+  "clan_deposit_fail": "❌ Kifayət qədər balansınız yoxdur və ya klanda deyilsiniz!",
+  "don_promoted": "👑 <b>{old_role} {name}</b> yeni <b>Don (Mafiya Başçısı)</b> oldu!"
 }

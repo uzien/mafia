@@ -11,7 +11,7 @@ roles_router = Router()
 
 ROLE_META = {
     Role.CITIZEN: {
-        "emoji": "👨‍💼",
+        "emoji": "👨🏼‍🌾",
         "phase": {"uz": "Kunduz (Ovoz berish)", "az": "Gündüz (Səsvermə)", "ru": "День (Голосование)", "en": "Day (Voting)", "tr": "Gündüz (Oylama)"},
         "win": {
             "uz": "Barcha jinoyatchilar (Mafiya va Maniak) yo'q qilinganda g'alaba qozonadi.",
@@ -132,7 +132,7 @@ ROLE_META = {
         }
     },
     Role.MISTRESS: {
-        "emoji": "💃",
+        "emoji": "💋",
         "phase": {"uz": "Tun (Qobiliyatni bloklash)", "az": "Gecə (Bacarığı bloklamaq)", "ru": "Ночь (Блокировка способности)", "en": "Night (Block ability)", "tr": "Gece (Yetenek engelleme)"},
         "win": {
             "uz": "O'yin oxirigacha omon qolish va tinch aholi bilan g'alaba qozonish.",
@@ -188,7 +188,7 @@ def get_roles_catalog_text(lang: str) -> str:
             "🎭 <b>Mafia Litsey — O'yindagi Barcha Rollar</b>\n\n"
             "O'yinda <b>13 xil noyob rol</b> mavjud bo'lib, ular 3 ta lagerga bo'lingan:\n\n"
             "🕊 <b>Tinch Aholi (Town):</b>\n"
-            "• 👨‍💼 <b>Tinch axoli</b> — Asosiy ovoz berish kuchi\n"
+            "• 👨🏼‍🌾 <b>Tinch axoli</b> — Asosiy ovoz berish kuchi\n"
             "• 🩺 <b>Shifokor</b> — Tungi najotkor\n"
             "• 🕵️ <b>Komissar Katani</b> — Tekshiruvchi va qotillarni fosh etuvchi\n"
             "• 👮 <b>Serjant</b> — Komissar o'rnini bosuvchi yordamchi\n"
@@ -196,12 +196,12 @@ def get_roles_catalog_text(lang: str) -> str:
             "• 🛡 <b>Tansoqchi</b> — Jonini fido qiluvchi himoyachi\n"
             "• 💣 <b>Kamikadze</b> — Sudda osilsa, aybdorni o'zi bilan olib ketuvchi\n\n"
             "🩸 <b>Mafiya Sindikati (Mafia):</b>\n"
-            "• 👑 <b>Don</b> — Mafiya yetakchisi, Komissar izquvari\n"
-            "• 🩸 <b>Mafiya</b> — Tungi jamoaviy qotillar\n"
+            "• 👑 <b>Don (The Boss)</b> — Mafiya yetakchisi, Komissar izquvari\n"
+            "• 🩸 <b>Oddiy Mafiya</b> — Tungi qotillar (Don o'lsa, o'rniga Don bo'ladi)\n"
             "• 💼 <b>Advokat</b> — Mafiyani tekshiruvdan qutqaruvchi\n\n"
             "🔪 <b>Neytral va Yolg'izlar (Neutral):</b>\n"
             "• 🔪 <b>Maniak</b> — Butun shaharni yakson qiluvchi qotil\n"
-            "• 💃 <b>Ma'shuqa</b> — Tunda qobiliyatlarni to'xtatuvchi\n"
+            "• 💋 <b>Ma'shuqa</b> — Tunda qobiliyatlarni to'xtatuvchi\n"
             "• 🃏 <b>Joker (Jester)</b> — O'zini osdirishni xohlovchi daho\n\n"
             "<i>Batafsil ma'lumot olish uchun quyidagi rolni tanlang:</i>"
         )
@@ -210,11 +210,11 @@ def get_roles_catalog_text(lang: str) -> str:
             "🎭 <b>Mafia Litsey — Oyundakı Bütün Rollar</b>\n\n"
             "Oyunda <b>13 müxtəlif rol</b> var və onlar 3 qrupa bölünür:\n\n"
             "🕊 <b>Dinc Sakinlər (Town):</b>\n"
-            "• 👨‍💼 <b>Dinc sakin</b>, 🩺 <b>Həkim</b>, 🕵️ <b>Komissar</b>, 👮 <b>Serjant</b>, 🎯 <b>Snayper</b>, 🛡 <b>Cangüdən</b>, 💣 <b>Kamikadze</b>\n\n"
+            "• 👨🏼‍🌾 <b>Dinc sakin</b>, 🩺 <b>Həkim</b>, 🕵️ <b>Komissar</b>, 👮 <b>Serjant</b>, 🎯 <b>Snayper</b>, 🛡 <b>Cangüdən</b>, 💣 <b>Kamikadze</b>\n\n"
             "🩸 <b>Mafiya (Mafia):</b>\n"
             "• 👑 <b>Don</b>, 🩸 <b>Mafiya</b>, 💼 <b>Vəkil</b>\n\n"
             "🔪 <b>Neytrallar:</b>\n"
-            "• 🔪 <b>Manyaq</b>, 💃 <b>Məşuqə</b>, 🃏 <b>Jester (Təlxək)</b>\n\n"
+            "• 🔪 <b>Manyaq</b>, 💋 <b>Məşuqə</b>, 🃏 <b>Jester (Təlxək)</b>\n\n"
             "<i>Ətraflı məlumat üçün rolu seçin:</i>"
         )
     elif lang == "ru":
@@ -222,11 +222,11 @@ def get_roles_catalog_text(lang: str) -> str:
             "🎭 <b>Mafia Litsey — Все роли в игре</b>\n\n"
             "В игре присутствует <b>13 уникальных ролей</b>, разделенных на 3 фракции:\n\n"
             "🕊 <b>Мирные Жители (Город):</b>\n"
-            "• 👨‍💼 <b>Мирный житель</b>, 🩺 <b>Доктор</b>, 🕵️ <b>Комиссар</b>, 👮 <b>Сержант</b>, 🎯 <b>Снайпер</b>, 🛡 <b>Телохранитель</b>, 💣 <b>Камикадзе</b>\n\n"
+            "• 👨🏼‍🌾 <b>Мирный житель</b>, 🩺 <b>Доктор</b>, 🕵️ <b>Комиссар</b>, 👮 <b>Сержант</b>, 🎯 <b>Снайпер</b>, 🛡 <b>Телохранитель</b>, 💣 <b>Камикадзе</b>\n\n"
             "🩸 <b>Мафия:</b>\n"
             "• 👑 <b>Дон</b>, 🩸 <b>Мафия</b>, 💼 <b>Адвокат</b>\n\n"
             "🔪 <b>Нейтральные роли:</b>\n"
-            "• 🔪 <b>Маньяк</b>, 💃 <b>Любовница</b>, 🃏 <b>Шут (Самоубийца)</b>\n\n"
+            "• 🔪 <b>Маньяк</b>, 💋 <b>Любовница</b>, 🃏 <b>Шут (Самоубийца)</b>\n\n"
             "<i>Нажмите на роль ниже, чтобы узнать способности:</i>"
         )
     else:

@@ -5,7 +5,7 @@
   "lang_changed": "✅ Dil başarıyla değiştirildi: <b>{lang_name}</b>",
   
   "roles": {
-    "citizen": "👱‍♂️ Masum Köylü",
+    "citizen": "👨🏼‍🌾 Masum Köylü",
     "doctor": "💉 Doktor",
     "detective": "🕵️‍♂️ Komiser (Dedektif)",
     "sergeant": "🎖 Çavuş",
@@ -13,7 +13,7 @@
     "mafia": "🩸 Mafya",
     "don": "👑 Don (Mafya Babası)",
     "maniac": "🔪 Manyak",
-    "mistress": "💃 Metres (Leva)",
+    "mistress": "💋 Metres (Leva)",
     "jester": "🃏 Soytarı (Jester)",
     "bodyguard": "🛡 Korumacı",
     "kamikaze": "💣 Kamikaze",
@@ -67,7 +67,7 @@
   "night_prompt_doctor": "💉 <b>Doktor:</b>\nBu gece kimi kurtarmak istiyorsunuz?",
   "night_prompt_detective": "🕵️‍♂️ <b>Komiser:</b>\nKimin kimliğini sorgulamak istiyorsunuz?",
   "night_prompt_maniac": "🔪 <b>Manyak:</b>\nBu gece kurbanınız kim olacak?",
-  "night_prompt_mistress": "💃 <b>Metres:</b>\nBu gece kimin yeteneğini engellemek istiyorsunuz?",
+  "night_prompt_mistress": "💋 <b>Metres:</b>\nBu gece kimin yeteneğini engellemek istiyorsunuz?",
   "night_prompt_sniper": "🎯 <b>Keskin Nişancı:</b>\nBu gece kimi vurmak istiyorsunuz? (Dikkat: Masumu vurursanız sabah vicdan azabından ölürsünüz!)",
   "action_recorded": "🎯 Seçiminiz onaylandı: <b>{target}</b>",
   "detective_result_mafia": "🔍 Soruşturma sonucu: <b>{target}</b> bir <b>MAFYA ÜYESİDİR!</b> 🩸",
@@ -124,5 +124,6 @@
   "roulette_toast": "🎉 Kazandınız: {prize}!",
   "btn_get_diamonds": "💎 Elmas Al (@mx767)",
   "clan_deposit_success": "✅ <b>+{amount} Altın</b> klan kasasına yatırıldı!",
-  "clan_deposit_fail": "❌ Yeterli altınınız yok veya bir klanda değilsiniz!"
+  "clan_deposit_fail": "❌ Yeterli altınınız yok veya bir klanda değilsiniz!",
+  "don_promoted": "👑 <b>{old_role} {name}</b> yeni <b>Don (Mafya Babası)</b> oldu!"
 }

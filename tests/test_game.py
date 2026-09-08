@@ -132,9 +132,9 @@ def test_living_players_text_format():
     assert "dkxolmaxammadov 🫀" in living_text
     assert "Tolibjonov" in living_text
     assert "Ulardan:" in living_text
-    assert "Tinch axoli - 2" in living_text
+    assert "Fuqaro - 2" in living_text
     assert "Komissar katani" in living_text
-    assert "Don" in living_text
+    assert "Don (Mafiya Boshlig'i)" in living_text
     assert "Jami:" in living_text
 
 def test_extend_lobby_time():
@@ -338,5 +338,60 @@ def test_roles_catalog_and_details():
     assert any("Don" in b for b in buttons)
     assert any("Komissar" in b for b in buttons)
     assert any("@mafia_adu_litsey" in b for b in buttons)
+
+@pytest.mark.asyncio
+async def test_don_promotion_when_don_dies_at_night():
+    from game.room import GameRoom
+    from unittest.mock import AsyncMock
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host", lang="uz")
+    room.add_player(2, "DonPlayer")
+    room.add_player(3, "MafiaPlayer")
+    room.add_player(4, "CitizenPlayer")
+
+    room.players[1].role = Role.MANIAC
+    room.players[2].role = Role.DON
+    room.players[3].role = Role.MAFIA
+    room.players[4].role = Role.CITIZEN
+
+    # Maniac targets Don at night
+    room.maniac_target = 2
+    mock_bot = AsyncMock()
+
+    await room.resolve_night(mock_bot)
+
+    # Don is dead
+    assert not room.players[2].is_alive
+    # Regular Mafia is promoted to Don!
+    assert room.players[3].role == Role.DON
+    assert room.players[3].is_alive
+
+@pytest.mark.asyncio
+async def test_don_promotion_when_don_lynched():
+    from game.room import GameRoom
+    from unittest.mock import AsyncMock
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host", lang="uz")
+    room.add_player(2, "DonPlayer")
+    room.add_player(3, "MafiaPlayer")
+    room.add_player(4, "CitizenPlayer")
+
+    room.players[1].role = Role.CITIZEN
+    room.players[2].role = Role.DON
+    room.players[3].role = Role.MAFIA
+    room.players[4].role = Role.CITIZEN
+
+    mock_bot = AsyncMock()
+    await room.execute_lynch(mock_bot, lynched_id=2)
+
+    # Don lynched
+    assert not room.players[2].is_alive
+    # Mafia promoted to Don
+    assert room.players[3].role == Role.DON
+
+def test_updated_role_emojis():
+    from handlers.roles import ROLE_META
+    assert ROLE_META[Role.CITIZEN]["emoji"] == "👨🏼‍🌾"
+    assert ROLE_META[Role.MISTRESS]["emoji"] == "💋"
+    assert ROLE_META[Role.DON]["emoji"] == "👑"
+
 
 
