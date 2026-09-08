@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     BOT_TOKEN: str = "YOUR_TELEGRAM_BOT_TOKEN_HERE"
     BOT_NAME: str = "Mafia Litsey Bot"
     BOT_USERNAME: str = "Mafia_litsey_bot"
+    MAIN_GROUP_USERNAME: str = "mafia_adu_litsey"
+    MAIN_GROUP_URL: str = "https://t.me/mafia_adu_litsey"
     ADMIN_IDS_RAW: Any = Field(default=[], validation_alias="ADMIN_IDS")
 
     @property

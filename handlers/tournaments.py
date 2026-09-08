@@ -27,8 +27,10 @@ async def cmd_tournament(message: Message):
             tournaments = [t]
 
         t = tournaments[0]
+        group_btn_text = "👥 Asosiy Guruh: @mafia_adu_litsey" if user.language in ["uz", "az"] else "👥 Main Group: @mafia_adu_litsey"
         markup = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=i18n.get("btn_register_tournament", user.language), callback_data=f"reg_tourn_{t.id}")]
+            [InlineKeyboardButton(text=i18n.get("btn_register_tournament", user.language), callback_data=f"reg_tourn_{t.id}")],
+            [InlineKeyboardButton(text=group_btn_text, url=settings.MAIN_GROUP_URL)]
         ])
 
         text = i18n.get(
@@ -40,6 +42,10 @@ async def cmd_tournament(message: Message):
             max_participants=t.max_participants,
             entry_fee=t.entry_fee
         )
+        text += (
+            f"\n\n📢 <b>Barcha turnir o'yinlari va yangiliklar:</b>\n"
+            f"👉 <a href=\"{settings.MAIN_GROUP_URL}\">@{settings.MAIN_GROUP_USERNAME}</a> rasmiy guruhimizda o'tkaziladi!"
+        )
         await message.answer(text, reply_markup=markup, parse_mode="HTML")
 
 @tournament_router.callback_query(F.data.startswith("reg_tourn_"))
@@ -49,12 +55,19 @@ async def cb_register_tournament(callback: CallbackQuery):
         user = await get_or_create_user(session, callback.from_user.id)
         success, reason = await register_participant(session, t_id, callback.from_user.id)
         if success:
-            await callback.answer(i18n.get("tournament_registered", user.language), show_alert=True)
+            msg = f"✅ Siz turnirga ro'yxatdan o'tdingiz!\nTurnir o'yinlari @{settings.MAIN_GROUP_USERNAME} guruhida o'tkaziladi."
+            await callback.answer(msg, show_alert=True)
+            await callback.message.answer(
+                f"🎉 <b>Turnirga qabul qilindingiz!</b>\n\n"
+                f"🏆 O'yinlar va e'lonlar uchun asosiy guruhga qo'shiling:\n"
+                f"👉 <a href=\"{settings.MAIN_GROUP_URL}\">@{settings.MAIN_GROUP_USERNAME}</a>",
+                parse_mode="HTML"
+            )
         else:
             if reason == "not_enough_coins":
                 msg = i18n.get("not_enough_money", user.language)
             elif reason == "already_registered":
-                msg = "⚠️ You are already enrolled in this tournament!"
+                msg = "⚠️ Siz allaqachon ushbu turnirga ro'yxatdan o'tgansiz!"
             else:
-                msg = "⚠️ Tournament is full or registration closed."
+                msg = "⚠️ Turnir to'lgan yoki ro'yxatdan o'tish yopilgan."
             await callback.answer(msg, show_alert=True)

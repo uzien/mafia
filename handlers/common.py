@@ -171,7 +171,8 @@ async def cmd_start(message: Message, command: CommandObject = None):
                 btn_txt = "➕ Guruhga Qo'shish / Add to Group" if user.language == "uz" else "➕ Qrupa Əlavə Et / Add to Group"
                 info_txt = "🎮 Guruhingizda o'yinga boshlash uchun:" if user.language == "uz" else "🎮 Qrupunuzda oyuna başlamaq üçün:"
                 add_markup = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text=btn_txt, url=f"https://t.me/{me.username}?startgroup=true")]
+                    [InlineKeyboardButton(text=btn_txt, url=f"https://t.me/{me.username}?startgroup=true")],
+                    [InlineKeyboardButton(text="👥 Asosiy Guruh (@mafia_adu_litsey)", url=settings.MAIN_GROUP_URL)]
                 ])
                 await message.answer(info_txt, reply_markup=add_markup)
             except Exception:

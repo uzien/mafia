@@ -269,4 +269,48 @@ def test_roulette_localization():
     assert "DIAMONDS" in get_prize_label(prize_jackpot, "en")
     assert "ELMAS" in get_prize_label(prize_jackpot, "tr")
 
+@pytest.mark.asyncio
+async def test_clan_crud_and_methods():
+    from database.database import async_session_maker, init_db
+    from database.crud import (
+        get_or_create_user,
+        create_clan,
+        get_clan,
+        get_clan_members_count,
+        deposit_to_clan,
+        get_top_clans,
+        leave_clan
+    )
+
+    await init_db()
+    async with async_session_maker() as session:
+        u1 = await get_or_create_user(session, 112233, "clan_boss", "Boss")
+        u1.coins = 1000
+        await session.commit()
+
+        # Create clan
+        clan = await create_clan(session, u1.id, "Test Mafia", "TM")
+        assert clan is not None
+        assert clan.tag == "TM"
+
+        # Check members count
+        cnt = await get_clan_members_count(session, clan.id)
+        assert cnt == 1
+
+        # Deposit
+        dep = await deposit_to_clan(session, u1.id, 200)
+        assert dep is True
+        assert clan.treasury == 200
+        assert clan.rating == 20
+
+        # Top clans
+        top = await get_top_clans(session)
+        assert len(top) >= 1
+        assert any(c.id == clan.id for c in top)
+
+        # Leave clan
+        left = await leave_clan(session, u1.id)
+        assert left is True
+        assert u1.clan_id is None
+
 

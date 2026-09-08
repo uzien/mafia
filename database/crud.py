@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
-from sqlalchemy import desc, select, update
+from sqlalchemy import desc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Clan, GroupChat, InventoryItem, Tournament, TournamentParticipant, User
 
@@ -146,6 +146,37 @@ async def deposit_to_clan(session: AsyncSession, user_id: int, amount: int) -> b
     clan.rating += (amount // 10)  # 1 rating point per 10 coins
     await session.commit()
     return True
+
+async def get_clan_members_count(session: AsyncSession, clan_id: int) -> int:
+    stmt = select(func.count(User.id)).where(User.clan_id == clan_id)
+    res = await session.execute(stmt)
+    return res.scalar() or 0
+
+async def leave_clan(session: AsyncSession, user_id: int) -> bool:
+    user = await session.get(User, user_id)
+    if not user or not user.clan_id:
+        return False
+    clan_id = user.clan_id
+    user.clan_id = None
+    
+    # Check if clan has remaining members
+    stmt = select(User).where(User.clan_id == clan_id)
+    res = await session.execute(stmt)
+    remaining_members = list(res.scalars().all())
+    
+    clan = await session.get(Clan, clan_id)
+    if clan:
+        if not remaining_members:
+            await session.delete(clan)
+        elif clan.leader_id == user_id:
+            clan.leader_id = remaining_members[0].id
+    await session.commit()
+    return True
+
+async def get_top_clans(session: AsyncSession, limit: int = 10) -> List[Clan]:
+    stmt = select(Clan).order_by(desc(Clan.rating), desc(Clan.treasury)).limit(limit)
+    res = await session.execute(stmt)
+    return list(res.scalars().all())
 
 async def get_all_user_ids(session: AsyncSession) -> List[int]:
     stmt = select(User.id)
