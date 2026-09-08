@@ -28,7 +28,7 @@ import os
 from aiohttp import web
 
 async def health_check(request):
-    return web.Response(text="Mafia Baku Black Telegram Bot is alive and running!", content_type="text/plain")
+    return web.Response(text="Mafia Litsey Telegram Bot is alive and running!", content_type="text/plain")
 
 async def start_web_server(port: int) -> web.AppRunner:
     app = web.Application()
@@ -103,7 +103,7 @@ async def main():
     dp.include_router(admin_router)
     dp.include_router(roulette_router)
 
-    logger.info("Starting Mafia Baku Black Telegram Bot polling...")
+    logger.info(f"Starting {settings.BOT_NAME} (@{settings.BOT_USERNAME}) polling...")
     try:
         await setup_bot_commands(bot)
         await bot.delete_webhook(drop_pending_updates=True)

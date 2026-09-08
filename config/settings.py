@@ -1,9 +1,33 @@
-from typing import List
+from typing import Any, List
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     BOT_TOKEN: str = "YOUR_TELEGRAM_BOT_TOKEN_HERE"
-    ADMIN_IDS: List[int] = []
+    BOT_NAME: str = "Mafia Litsey Bot"
+    BOT_USERNAME: str = "Mafia_litsey_bot"
+    ADMIN_IDS_RAW: Any = Field(default=[], validation_alias="ADMIN_IDS")
+
+    @property
+    def ADMIN_IDS(self) -> List[int]:
+        v = self.ADMIN_IDS_RAW
+        if isinstance(v, int):
+            return [v]
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return [int(x) for x in json.loads(v)]
+                except Exception:
+                    pass
+            parts = [p.strip() for p in v.split(",") if p.strip()]
+            return [int(p) for p in parts if p.isdigit() or (p.startswith("-") and p[1:].isdigit())]
+        if isinstance(v, (list, set, tuple)):
+            return [int(x) for x in v]
+        return []
     
     # Database
     DB_URL: str = "sqlite+aiosqlite:///mafia_bot.db"

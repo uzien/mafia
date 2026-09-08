@@ -1,6 +1,6 @@
 {
-  "welcome": "👋 Salom, <b>{name}</b>!\n\n🕶 <b>Mafia Baku Black Bot</b>ga xush kelibsiz!\n\nUshbu bot guruhlaringizda mashhur Mafiya o'yinini eng yuqori darajada, qulay tugmalar, tungi sukunat, turnirlar va qiziqarli rollar bilan tashkil qiladi.\n\n🎮 <b>O'yinni boshlash uchun:</b> Meni guruhingizga qo'shing va <code>/game</code> buyrug'ini yuboring!\n\n💡 Buyruqlar haqida batafsil ma'lumot: /help",
-  "help": "📖 <b>Mafia Baku Black — Buyruqlar Ro'yxati:</b>\n\n<b>Guruh Buyruqlari:</b>\n• <code>/game</code> yoki <code>/oyun</code> — Yangi o'yin xonasini ochish\n• <code>/start</code> — O'yinni muddatidan oldin boshlash (yetarli o'yinchi yig'ilganda)\n• <code>/stop</code> — O'yinni bekor qilish\n• <code>/setlang</code> — Guruh tilini o'zgartirish\n\n<b>Shaxsiy Buyruqlar:</b>\n• <code>/profile</code> — Shaxsiy profil va balans\n• <code>/shop</code> — Do'kon (Rol kartalari, unvonlar, chiptalar)\n• <code>/daily</code> — Kunlik bepul tanga bonusi\n• <code>/top</code> — Eng kuchli o'yinchilar reytingi\n• <code>/clan</code> — Mafiya oilasi (Klan) boshqaruvi\n• <code>/tournament</code> — Turnirlar va sovrinlar\n• <code>/lang</code> — Tilni tanlash",
+  "welcome": "👋 Salom, <b>{name}</b>!\n\n🕶 <b>Mafia Litsey Bot</b>ga xush kelibsiz!\n\nUshbu bot guruhlaringizda mashhur Mafiya o'yinini eng yuqori darajada, qulay tugmalar, tungi sukunat, turnirlar va qiziqarli rollar bilan tashkil qiladi.\n\n🎮 <b>O'yinni boshlash uchun:</b> Meni guruhingizga qo'shing va <code>/game</code> buyrug'ini yuboring!\n\n💡 Buyruqlar haqida batafsil ma'lumot: /help",
+  "help": "📖 <b>Mafia Litsey — Buyruqlar Ro'yxati:</b>\n\n<b>Guruh Buyruqlari:</b>\n• <code>/game</code> yoki <code>/oyun</code> — Yangi o'yin xonasini ochish\n• <code>/start</code> — O'yinni muddatidan oldin boshlash (yetarli o'yinchi yig'ilganda)\n• <code>/stop</code> — O'yinni bekor qilish\n• <code>/setlang</code> — Guruh tilini o'zgartirish\n\n<b>Shaxsiy Buyruqlar:</b>\n• <code>/profile</code> — Shaxsiy profil va balans\n• <code>/shop</code> — Do'kon (Rol kartalari, unvonlar, chiptalar)\n• <code>/daily</code> — Kunlik bepul tanga bonusi\n• <code>/top</code> — Eng kuchli o'yinchilar reytingi\n• <code>/clan</code> — Mafiya oilasi (Klan) boshqaruvi\n• <code>/tournament</code> — Turnirlar va sovrinlar\n• <code>/lang</code> — Tilni tanlash",
   "choose_lang": "🌐 Zəhmət olmasa dilinizi seçin / Please select your language / Tilni tanlang:",
   "lang_changed": "✅ Til muvaffaqiyatli o'zgartirildi: <b>{lang_name}</b>",
   
@@ -82,7 +82,7 @@
   "daily_bonus_success": "🎁 Tabriklaymiz! Kunlik bonus sifatida <b>+{amount} Tanga</b> oldingiz! Ertaga yana keling.",
   "daily_bonus_already": "⏳ Siz bugungi bonusingizni olib bo'ldingiz. Keyingi bonus uchun kuting: <b>{hours} soat</b>.",
   
-  "shop_title": "🛒 <b>Mafia Baku Black Do'koni</b>\nBalansingiz: <b>{coins} Tanga</b> | <b>{diamonds} Olmos</b>\n\nMavjud narsalar:",
+  "shop_title": "🛒 <b>Mafia Litsey Do'koni</b>\nBalansingiz: <b>{coins} Tanga</b> | <b>{diamonds} Olmos</b>\n\nMavjud narsalar:",
   "item_don_card": "👑 Don Kartasi (Don bo'lish ehtimoli +40%) — 300 Tanga",
   "item_det_card": "🕵️ Komissar Kartasi (+40% ehtimol) — 300 Tanga",
   "item_doc_card": "💉 Shifokor Kartasi (+40% ehtimol) — 250 Tanga",
@@ -94,7 +94,7 @@
   "clan_info": "🛡 <b>Mafiya Klani: {clan_name}</b>\n👑 Klan Rahbari: <b>{leader}</b>\n👥 A'zolar: <b>{members_count}/20</b>\n🏦 Klan Xazinasi: <b>{treasury} Tanga</b>\n🏆 Klan Reytingi: <b>{rating} Ball</b>",
   "clan_created": "🎉 Tabriklaymiz! <b>{clan_name}</b> klani muvaffaqiyatli tashkil etildi!",
   
-  "tournament_title": "🏆 <b>Baku Black Mafiya Turniri: {t_name}</b>\n💰 Sovrin Jamg'armasi: <b>{prize_pool} Olmos</b>\n👥 Ro'yxatdan o'tganlar: <b>{registered}/{max_participants}</b>\n🎫 Qatnashish narxi: <b>{entry_fee} Tanga</b>\n\nQatnashish uchun quyidagi tugmani bosing!",
+  "tournament_title": "🏆 <b>Mafia Litsey Turniri: {t_name}</b>\n💰 Sovrin Jamg'armasi: <b>{prize_pool} Olmos</b>\n👥 Ro'yxatdan o'tganlar: <b>{registered}/{max_participants}</b>\n🎫 Qatnashish narxi: <b>{entry_fee} Tanga</b>\n\nQatnashish uchun quyidagi tugmani bosing!",
   "btn_register_tournament": "🎫 Ro'yxatdan O'tish",
   "tournament_registered": "✅ Siz turnirga muvaffaqiyatli ro'yxatdan o'tdingiz!"
 }

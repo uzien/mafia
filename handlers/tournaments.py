@@ -19,7 +19,7 @@ async def cmd_tournament(message: Message):
             # Seed a default tournament if none exists
             t = await create_tournament(
                 session=session,
-                name="Baku Black Cup 2026",
+                name="Litsey Mafia Cup 2026",
                 entry_fee=150,
                 prize_pool=100,
                 max_participants=16

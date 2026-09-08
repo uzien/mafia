@@ -1,6 +1,6 @@
 {
-  "welcome": "👋 Merhaba, <b>{name}</b>!\n\n🕶 <b>Mafia Baku Black Bot</b>'a hoş geldiniz!\n\nBu bot gruplarınızda efsanevi Mafya oyununu en üst seviyede; interaktif butonlar, gece sessizliği, turnuvalar, mağaza ve zengin rollerle yönetir.\n\n🎮 <b>Oyunu başlatmak için:</b> Beni grubunuza ekleyin ve <code>/game</code> yazın!\n\n💡 Komut listesi için: /help",
-  "help": "📖 <b>Mafia Baku Black — Komut Listesi:</b>\n\n<b>Grup Komutları:</b>\n• <code>/game</code> veya <code>/oyun</code> — Yeni oyun lobisi aç\n• <code>/start</code> — Oyunu erken başlat (yeterli oyuncu olduğunda)\n• <code>/stop</code> — Oyunu iptal et\n• <code>/setlang</code> — Grup dilini değiştir\n\n<b>Özel Komutlar:</b>\n• <code>/profile</code> — İstatistik ve bakiye\n• <code>/shop</code> — Mağaza (Rol kartları, unvanlar, biletler)\n• <code>/daily</code> — Günlük ücretsiz altın ödülü\n• <code>/top</code> — Liderlik tablosu\n• <code>/clan</code> — Mafya Ailesi (Klan) yönetimi\n• <code>/tournament</code> — Turnuvalar ve kupalar\n• <code>/lang</code> — Dil seçimi",
+  "welcome": "👋 Merhaba, <b>{name}</b>!\n\n🕶 <b>Mafia Litsey Bot</b>'a hoş geldiniz!\n\nBu bot gruplarınızda efsanevi Mafya oyununu en üst seviyede; interaktif butonlar, gece sessizliği, turnuvalar, mağaza ve zengin rollerle yönetir.\n\n🎮 <b>Oyunu başlatmak için:</b> Beni grubunuza ekleyin ve <code>/game</code> yazın!\n\n💡 Komut listesi için: /help",
+  "help": "📖 <b>Mafia Litsey — Komut Listesi:</b>\n\n<b>Grup Komutları:</b>\n• <code>/game</code> veya <code>/oyun</code> — Yeni oyun lobisi aç\n• <code>/start</code> — Oyunu erken başlat (yeterli oyuncu olduğunda)\n• <code>/stop</code> — Oyunu iptal et\n• <code>/setlang</code> — Grup dilini değiştir\n\n<b>Özel Komutlar:</b>\n• <code>/profile</code> — İstatistik ve bakiye\n• <code>/shop</code> — Mağaza (Rol kartları, unvanlar, biletler)\n• <code>/daily</code> — Günlük ücretsiz altın ödülü\n• <code>/top</code> — Liderlik tablosu\n• <code>/clan</code> — Mafya Ailesi (Klan) yönetimi\n• <code>/tournament</code> — Turnuvalar ve kupalar\n• <code>/lang</code> — Dil seçimi",
   "choose_lang": "🌐 Lütfen dilinizi seçin / Zəhmət olmasa dilinizi seçin / Tilni tanlang:",
   "lang_changed": "✅ Dil başarıyla değiştirildi: <b>{lang_name}</b>",
   
@@ -82,7 +82,7 @@
   "daily_bonus_success": "🎁 Tebrikler! Günlük bonus olarak <b>+{amount} Altın</b> kazandınız! Yarın tekrar gelin.",
   "daily_bonus_already": "⏳ Bugünkü bonusunuzu zaten aldınız. Sıradaki bonus için: <b>{hours} saat</b>.",
   
-  "shop_title": "🛒 <b>Mafia Baku Black Mağazası</b>\nBakiye: <b>{coins} Altın</b> | <b>{diamonds} Elmas</b>\n\nMevcut Eşyalar:",
+  "shop_title": "🛒 <b>Mafia Litsey Mağazası</b>\nBakiye: <b>{coins} Altın</b> | <b>{diamonds} Elmas</b>\n\nMevcut Eşyalar:",
   "item_don_card": "👑 Don Kartı (Don olma şansı +%40) — 300 Altın",
   "item_det_card": "🕵️ Komiser Kartı (+%40 şans) — 300 Altın",
   "item_doc_card": "💉 Doktor Kartı (+%40 şans) — 250 Altın",
@@ -94,7 +94,7 @@
   "clan_info": "🛡 <b>Mafya Klanı: {clan_name}</b>\n👑 Lider: <b>{leader}</b>\n👥 Üyeler: <b>{members_count}/20</b>\n🏦 Klan Kasası: <b>{treasury} Altın</b>\n🏆 Klan Puanı: <b>{rating} Puan</b>",
   "clan_created": "🎉 Tebrikler! <b>{clan_name}</b> klanı kuruldu!",
   
-  "tournament_title": "🏆 <b>Baku Black Mafya Turnuvası: {t_name}</b>\n💰 Ödül Havuzu: <b>{prize_pool} Elmas</b>\n👥 Kayıtlı Oyuncular: <b>{registered}/{max_participants}</b>\n🎫 Giriş Ücreti: <b>{entry_fee} Altın</b>\n\nKayıt olmak için aşağıdaki butona basın!",
+  "tournament_title": "🏆 <b>Mafia Litsey Turnuvası: {t_name}</b>\n💰 Ödül Havuzu: <b>{prize_pool} Elmas</b>\n👥 Kayıtlı Oyuncular: <b>{registered}/{max_participants}</b>\n🎫 Giriş Ücreti: <b>{entry_fee} Altın</b>\n\nKayıt olmak için aşağıdaki butona basın!",
   "btn_register_tournament": "🎫 Kayıt Ol",
   "tournament_registered": "✅ Turnuvaya başarıyla kaydoldunuz!"
 }

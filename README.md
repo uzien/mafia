@@ -1,6 +1,6 @@
-# 🕶 Mafia Baku Black Telegram Bot (Pro Multi-Language Edition)
+# 🕶 Mafia Litsey Bot (`@Mafia_litsey_bot`)
 
-A high-performance, asynchronous Telegram Mafia game bot modeled after **@MafiaBakuBlack1Bot** and regional Mafia favorites. Built with **Python 3.12+**, **aiogram 3.x**, and **SQLAlchemy 2.0**.
+A high-performance, asynchronous Telegram Mafia game bot (**Mafia Litsey Bot**, username `@Mafia_litsey_bot`), inspired by regional Mafia favorites. Built with **Python 3.12+**, **aiogram 3.x**, and **SQLAlchemy 2.0**.
 
 ---
 

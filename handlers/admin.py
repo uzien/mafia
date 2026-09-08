@@ -18,7 +18,7 @@ async def cmd_admin(message: Message):
     async with async_session_maker() as session:
         user_ids = await get_all_user_ids(session)
     await message.answer(
-        f"👑 <b>Mafia Baku Black Superadmin Panel</b>\n\n"
+        f"👑 <b>Mafia Litsey Superadmin Panel</b>\n\n"
         f"👥 Total Registered Users: <b>{len(user_ids)}</b>\n\n"
         f"<b>Admin Commands:</b>\n"
         f"• <code>/broadcast &lt;message&gt;</code> — Send global message\n"

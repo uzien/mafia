@@ -1,6 +1,6 @@
 {
-  "welcome": "👋 Привет, <b>{name}</b>!\n\n🕶 Добро пожаловать в <b>Mafia Baku Black Bot</b>!\n\nЭтот бот проводит легендарную игру Мафия в группах на высшем уровне: интерактивные кнопки, тишина ночью, турниры, магазин и богатый набор ролей.\n\n🎮 <b>Чтобы начать игру:</b> Добавьте меня в группу и отправьте <code>/game</code>!\n\n💡 Список команд: /help",
-  "help": "📖 <b>Mafia Baku Black — Список команд:</b>\n\n<b>Команды группы:</b>\n• <code>/game</code> или <code>/oyun</code> — Открыть игровую комнату\n• <code>/start</code> — Запустить игру досрочно (при наличии игроков)\n• <code>/stop</code> — Отменить игру\n• <code>/setlang</code> — Сменить язык группы\n\n<b>Личные команды:</b>\n• <code>/profile</code> — Статистика и баланс\n• <code>/shop</code> — Магазин (Карты ролей, титулы, билеты)\n• <code>/daily</code> — Ежедневный бонус монет\n• <code>/top</code> — Рейтинг лучших игроков\n• <code>/clan</code> — Управление мафиозной семьей (Кланом)\n• <code>/tournament</code> — Турниры и кубки\n• <code>/lang</code> — Смена языка",
+  "welcome": "👋 Привет, <b>{name}</b>!\n\n🕶 Добро пожаловать в <b>Mafia Litsey Bot</b>!\n\nЭтот бот проводит легендарную игру Мафия в группах на высшем уровне: интерактивные кнопки, тишина ночью, турниры, магазин и богатый набор ролей.\n\n🎮 <b>Чтобы начать игру:</b> Добавьте меня в группу и отправьте <code>/game</code>!\n\n💡 Список команд: /help",
+  "help": "📖 <b>Mafia Litsey — Список команд:</b>\n\n<b>Команды группы:</b>\n• <code>/game</code> или <code>/oyun</code> — Открыть игровую комнату\n• <code>/start</code> — Запустить игру досрочно (при наличии игроков)\n• <code>/stop</code> — Отменить игру\n• <code>/setlang</code> — Сменить язык группы\n\n<b>Личные команды:</b>\n• <code>/profile</code> — Статистика и баланс\n• <code>/shop</code> — Магазин (Карты ролей, титулы, билеты)\n• <code>/daily</code> — Ежедневный бонус монет\n• <code>/top</code> — Рейтинг лучших игроков\n• <code>/clan</code> — Управление мафиозной семьей (Кланом)\n• <code>/tournament</code> — Турниры и кубки\n• <code>/lang</code> — Смена языка",
   "choose_lang": "🌐 Zəhmət olmasa dilinizi seçin / Please select your language / Tilni tanlang / Выберите язык:",
   "lang_changed": "✅ Язык успешно изменен: <b>{lang_name}</b>",
   
@@ -82,7 +82,7 @@
   "daily_bonus_success": "🎁 Поздравляем! Вы получили ежедневный бонус <b>+{amount} монет</b>! Приходите завтра.",
   "daily_bonus_already": "⏳ Вы уже получили бонус сегодня. Следующий будет доступен через: <b>{hours} ч.</b>",
   
-  "shop_title": "🛒 <b>Магазин Mafia Baku Black</b>\nБаланс: <b>{coins} Монет</b> | <b>{diamonds} Алмазов</b>\n\nТовары в наличии:",
+  "shop_title": "🛒 <b>Магазин Mafia Litsey</b>\nБаланс: <b>{coins} Монет</b> | <b>{diamonds} Алмазов</b>\n\nТовары в наличии:",
   "item_don_card": "👑 Карта Дона (+40% шанс стать Доном) — 300 Монет",
   "item_det_card": "🕵️ Карта Комиссара (+40% шанс) — 300 Монет",
   "item_doc_card": "💉 Карта Доктора (+40% шанс) — 250 Монет",
@@ -94,7 +94,7 @@
   "clan_info": "🛡 <b>Клан Мафии: {clan_name}</b>\n👑 Глава: <b>{leader}</b>\n👥 Участники: <b>{members_count}/20</b>\n🏦 Казна: <b>{treasury} Монет</b>\n🏆 Рейтинг: <b>{rating} Очков</b>",
   "clan_created": "🎉 Поздравляем! Клан <b>{clan_name}</b> успешно основан!",
   
-  "tournament_title": "🏆 <b>Турнир Mafia Baku Black: {t_name}</b>\n💰 Призовой фонд: <b>{prize_pool} Алмазов</b>\n👥 Зарегистрировано: <b>{registered}/{max_participants}</b>\n🎫 Входной билет: <b>{entry_fee} Монет</b>\n\nНажмите кнопку ниже для регистрации!",
+  "tournament_title": "🏆 <b>Турнир Mafia Litsey: {t_name}</b>\n💰 Призовой фонд: <b>{prize_pool} Алмазов</b>\n👥 Зарегистрировано: <b>{registered}/{max_participants}</b>\n🎫 Входной билет: <b>{entry_fee} Монет</b>\n\nНажмите кнопку ниже для регистрации!",
   "btn_register_tournament": "🎫 Зарегистрироваться",
   "tournament_registered": "✅ Вы успешно зарегистрировались на турнир!"
 }

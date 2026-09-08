@@ -68,7 +68,7 @@ async def cmd_start(message: Message):
         else:
             group = await get_or_create_group(session, message.chat.id, message.chat.title or "Group")
             await message.answer(
-                f"👋 <b>Mafia Baku Black Bot</b> is active in <b>{group.title}</b>!\nType <code>/game</code> to start a match.",
+                f"👋 <b>{settings.BOT_NAME}</b> is active in <b>{group.title}</b>!\nType <code>/game</code> to start a match.",
                 parse_mode="HTML"
             )
 
@@ -164,7 +164,7 @@ async def cmd_top(message: Message):
         user = await get_or_create_user(session, message.from_user.id)
         top_users = await get_top_players(session, limit=10)
         
-        lines = [f"🏆 <b>Top Mafia Baku Black Players:</b>\n"]
+        lines = [f"🏆 <b>Top Mafia Litsey Players:</b>\n"]
         for idx, u in enumerate(top_users):
             medal = "🥇" if idx == 0 else "🥈" if idx == 1 else "🥉" if idx == 2 else f"{idx+1}."
             lines.append(f"{medal} <b>{u.first_name}</b> — 🏆 {u.wins} Wins | ⭐ Lvl {u.level} | 💰 {u.coins}")

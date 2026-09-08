@@ -32,7 +32,7 @@ async def cmd_roulette(message: Message):
     ])
 
     await message.answer(
-        f"🎰 <b>Mafia Baku Black Bəxt Çarxı (Roulette)</b>\n\n"
+        f"🎰 <b>Mafia Litsey Bəxt Çarxı (Roulette)</b>\n\n"
         f"Balansınız: <b>{user.coins} Qızıl</b> | <b>{user.diamonds} Almaz</b>\n\n"
         f"🎯 <b>Mükafatlar:</b>\n"
         f"• 💰 50 – 250 Qızıl\n"

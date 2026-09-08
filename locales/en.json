@@ -1,6 +1,6 @@
 {
-  "welcome": "👋 Hello, <b>{name}</b>!\n\n🕶 Welcome to <b>Mafia Baku Black Bot</b>!\n\nHost the ultimate Mafia game in your Telegram groups with smooth inline buttons, night auto-muting, tournaments, store, and exciting roles.\n\n🎮 <b>To start playing:</b> Add me to your group and type <code>/game</code>!\n\n💡 Full command list: /help",
-  "help": "📖 <b>Mafia Baku Black — Command List:</b>\n\n<b>Group Commands:</b>\n• <code>/game</code> or <code>/oyun</code> — Open new game room\n• <code>/start</code> — Start game early (with enough players)\n• <code>/stop</code> — Cancel active game\n• <code>/setlang</code> — Change group language\n\n<b>Private Commands:</b>\n• <code>/profile</code> — Stats & balance\n• <code>/shop</code> — In-game store (Role cards, titles, passes)\n• <code>/daily</code> — Free daily coin bonus\n• <code>/top</code> — Leaderboard\n• <code>/clan</code> — Mafia Family (Clan) management\n• <code>/tournament</code> — Tournaments & prize cups\n• <code>/lang</code> — Switch language",
+  "welcome": "👋 Hello, <b>{name}</b>!\n\n🕶 Welcome to <b>Mafia Litsey Bot</b>!\n\nHost the ultimate Mafia game in your Telegram groups with smooth inline buttons, night auto-muting, tournaments, store, and exciting roles.\n\n🎮 <b>To start playing:</b> Add me to your group and type <code>/game</code>!\n\n💡 Full command list: /help",
+  "help": "📖 <b>Mafia Litsey — Command List:</b>\n\n<b>Group Commands:</b>\n• <code>/game</code> or <code>/oyun</code> — Open new game room\n• <code>/start</code> — Start game early (with enough players)\n• <code>/stop</code> — Cancel active game\n• <code>/setlang</code> — Change group language\n\n<b>Private Commands:</b>\n• <code>/profile</code> — Stats & balance\n• <code>/shop</code> — In-game store (Role cards, titles, passes)\n• <code>/daily</code> — Free daily coin bonus\n• <code>/top</code> — Leaderboard\n• <code>/clan</code> — Mafia Family (Clan) management\n• <code>/tournament</code> — Tournaments & prize cups\n• <code>/lang</code> — Switch language",
   "choose_lang": "🌐 Please select your language / Dil seçin / Tilni tanlang:",
   "lang_changed": "✅ Language successfully changed to: <b>{lang_name}</b>",
   
@@ -82,7 +82,7 @@
   "daily_bonus_success": "🎁 Congratulations! You collected your daily bonus of <b>+{amount} Coins</b>! Return tomorrow.",
   "daily_bonus_already": "⏳ You have already claimed today's bonus. Next claim in: <b>{hours} hrs</b>.",
   
-  "shop_title": "🛒 <b>Mafia Baku Black Store</b>\nBalance: <b>{coins} Coins</b> | <b>{diamonds} Diamonds</b>\n\nAvailable items:",
+  "shop_title": "🛒 <b>Mafia Litsey Store</b>\nBalance: <b>{coins} Coins</b> | <b>{diamonds} Diamonds</b>\n\nAvailable items:",
   "item_don_card": "👑 Don Card (+40% chance of Don role) — 300 Coins",
   "item_det_card": "🕵️ Detective Card (+40% chance) — 300 Coins",
   "item_doc_card": "💉 Doctor Card (+40% chance) — 250 Coins",
@@ -94,7 +94,7 @@
   "clan_info": "🛡 <b>Mafia Clan: {clan_name}</b>\n👑 Boss: <b>{leader}</b>\n👥 Members: <b>{members_count}/20</b>\n🏦 Clan Bank: <b>{treasury} Coins</b>\n🏆 Clan Rating: <b>{rating} Pts</b>",
   "clan_created": "🎉 Congratulations! Clan <b>{clan_name}</b> has been founded!",
   
-  "tournament_title": "🏆 <b>Baku Black Tournament: {t_name}</b>\n💰 Prize Pool: <b>{prize_pool} Diamonds</b>\n👥 Registered: <b>{registered}/{max_participants}</b>\n🎫 Entry Fee: <b>{entry_fee} Coins</b>\n\nClick below to enroll!",
+  "tournament_title": "🏆 <b>Mafia Litsey Tournament: {t_name}</b>\n💰 Prize Pool: <b>{prize_pool} Diamonds</b>\n👥 Registered: <b>{registered}/{max_participants}</b>\n🎫 Entry Fee: <b>{entry_fee} Coins</b>\n\nClick below to enroll!",
   "btn_register_tournament": "🎫 Enroll Now",
   "tournament_registered": "✅ You have successfully registered for the tournament!"
 }

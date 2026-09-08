@@ -1,6 +1,6 @@
 {
-  "welcome": "👋 Salam, <b>{name}</b>!\n\n🕶 <b>Mafia Baku Black Bot</b>-a xoş gəlmisiniz!\n\nBu bot qruplarınızda məşhur Mafiya oyununu ən yüksək səviyyədə, interaktiv düymələr, gecə səssizliyi, turnirlər və zəngin rollarla təşkil edir.\n\n🎮 <b>Oyuna başlamaq üçün:</b> Məni qrupunuza əlavə edin və <code>/game</code> yazın!\n\n💡 Əmrlər haqqında ətraflı məlumat üçün: /help",
-  "help": "📖 <b>Mafia Baku Black — Əmrlər Siyahısı:</b>\n\n<b>Qrup Əmrləri:</b>\n• <code>/game</code> və ya <code>/oyun</code> — Yeni oyun otağı açmaq\n• <code>/start</code> — Oyunu vaxtından əvvəl başlatmaq (kifayət qədər oyunçu olduqda)\n• <code>/stop</code> — Oyunu ləğv etmək\n• <code>/setlang</code> — Qrupun dilini dəyişmək\n\n<b>Şəxsi Əmrlər:</b>\n• <code>/profile</code> — Şəxsi statistika və balans\n• <code>/shop</code> — Mağaza (Rol kartları, ləqəblər, biletlər)\n• <code>/daily</code> — Gündəlik pulsuz qızıl bonusu\n• <code>/top</code> — Ən yaxşı oyunçular reytinqi\n• <code>/clan</code> — Mafiya ailəsi (Klan) idarəetməsi\n• <code>/tournament</code> — Turnirlər və kuboklar\n• <code>/lang</code> — Dil seçimi",
+  "welcome": "👋 Salam, <b>{name}</b>!\n\n🕶 <b>Mafia Litsey Bot</b>-a xoş gəlmisiniz!\n\nBu bot qruplarınızda məşhur Mafiya oyununu ən yüksək səviyyədə, interaktiv düymələr, gecə səssizliyi, turnirlər və zəngin rollarla təşkil edir.\n\n🎮 <b>Oyuna başlamaq üçün:</b> Məni qrupunuza əlavə edin və <code>/game</code> yazın!\n\n💡 Əmrlər haqqında ətraflı məlumat üçün: /help",
+  "help": "📖 <b>Mafia Litsey — Əmrlər Siyahısı:</b>\n\n<b>Qrup Əmrləri:</b>\n• <code>/game</code> və ya <code>/oyun</code> — Yeni oyun otağı açmaq\n• <code>/start</code> — Oyunu vaxtından əvvəl başlatmaq (kifayət qədər oyunçu olduqda)\n• <code>/stop</code> — Oyunu ləğv etmək\n• <code>/setlang</code> — Qrupun dilini dəyişmək\n\n<b>Şəxsi Əmrlər:</b>\n• <code>/profile</code> — Şəxsi statistika və balans\n• <code>/shop</code> — Mağaza (Rol kartları, ləqəblər, biletlər)\n• <code>/daily</code> — Gündəlik pulsuz qızıl bonusu\n• <code>/roulette</code> — Bəxt çarxı (Rulet)\n• <code>/top</code> — Ən yaxşı oyunçular reytinqi\n• <code>/clan</code> — Mafiya ailəsi (Klan) idarəetməsi\n• <code>/tournament</code> — Turnirlər və kuboklar\n• <code>/lang</code> — Dil seçimi",
   "choose_lang": "🌐 Zəhmət olmasa dilinizi seçin / Please select your language / Tilni tanlang:",
   "lang_changed": "✅ Dil uğurla dəyişdirildi: <b>{lang_name}</b>",
   
@@ -82,7 +82,7 @@
   "daily_bonus_success": "🎁 Təbriklər! Gündəlik bonus olaraq <b>+{amount} Qızıl</b> qazandınız! Sabah yenə gəlin.",
   "daily_bonus_already": "⏳ Siz artıq bugünkü bonusunuzu almısınız. Növbəti bonus üçün gözləyin: <b>{hours} saat</b>.",
   
-  "shop_title": "🛒 <b>Mafia Baku Black Mağazası</b>\nBalansınız: <b>{coins} Qızıl</b> | <b>{diamonds} Almaz</b>\n\nAlmağınız üçün mövcud əşyalar:",
+  "shop_title": "🛒 <b>Mafia Litsey Mağazası</b>\nBalansınız: <b>{coins} Qızıl</b> | <b>{diamonds} Almaz</b>\n\nAlmağınız üçün mövcud əşyalar:",
   "item_don_card": "👑 Don Kartı (Don olma şansı +40%) — 300 Qızıl",
   "item_det_card": "🕵️ Komissar Kartı (+40% şans) — 300 Qızıl",
   "item_doc_card": "💉 Həkim Kartı (+40% şans) — 250 Qızıl",
@@ -94,7 +94,7 @@
   "clan_info": "🛡 <b>Mafiya Klanı: {clan_name}</b>\n👑 Klan Rəhbəri: <b>{leader}</b>\n👥 Üzvlər: <b>{members_count}/20</b>\n🏦 Klan Xəzinəsi: <b>{treasury} Qızıl</b>\n🏆 Klan Reytinqi: <b>{rating} Xal</b>",
   "clan_created": "🎉 Təbriklər! <b>{clan_name}</b> klanı uğurla yaradıldı!",
   
-  "tournament_title": "🏆 <b>Baku Black Mafiya Turniri: {t_name}</b>\n💰 Mükafat Fondu: <b>{prize_pool} Almaz</b>\n👥 Qeydiyyatdan keçənlər: <b>{registered}/{max_participants}</b>\n🎫 İştirak haqqı: <b>{entry_fee} Qızıl</b>\n\nQeydiyyat üçün aşağıdakı düyməyə basın!",
+  "tournament_title": "🏆 <b>Mafia Litsey Turniri: {t_name}</b>\n💰 Mükafat Fondu: <b>{prize_pool} Almaz</b>\n👥 Qeydiyyatdan keçənlər: <b>{registered}/{max_participants}</b>\n🎫 İştirak haqqı: <b>{entry_fee} Qızıl</b>\n\nQeydiyyat üçün aşağıdakı düyməyə basın!",
   "btn_register_tournament": "🎫 Qeydiyyatdan Keç",
   "tournament_registered": "✅ Siz turnirə uğurla qeydiyyatdan keçdiniz!"
 }
