@@ -7,9 +7,12 @@ A high-performance, asynchronous Telegram Mafia game bot modeled after **@MafiaB
 ## 🌟 Key Features
 
 * **🎭 Rich Role Mechanics:**
-  * **Town (Dinc Sakinlər / Tinch Fuqarolar):** Citizen, Doctor, Detective/Sheriff, Bodyguard, Kamikaze.
+  * **Town (Dinc Sakinlər / Tinch Fuqarolar):** Citizen, Doctor, Detective, Sergeant (apprentice), Sniper (marksman), Bodyguard, Kamikaze.
   * **Mafia (Klan / Mafiozi):** Don (Godfather), Mafioso, Lawyer.
-  * **Neutrals (Təkçilər / Yolg'izlar):** Serial Killer/Maniac, Mistress/Courtesan (Leva/Kamilla).
+  * **Neutrals & Solos:** Serial Killer/Maniac, Mistress (Leva), Jester (Fool/Özünəqəsd - wins if lynched!).
+* **💤 AFK & Inactivity Protection:**
+  * Auto-skips inactive night players.
+  * Auto-eliminates players who miss 2 consecutive daytime votes.
 * **🌐 5 Languages Supported:**
   * 🇦🇿 **Azerbaijani (`az`)** (Authentic Baku Black phrasing)
   * 🇺🇿 **Uzbek (`uz`)** (Complete O'zbekcha translation)
@@ -24,13 +27,17 @@ A high-performance, asynchronous Telegram Mafia game bot modeled after **@MafiaB
   * Dual currency: **Coins (Qızıl / Tanga)** & **Diamonds (Almaz / Olmos)**.
   * **Role Cards**: Increase the probability of obtaining Don, Detective, or Doctor.
   * **Titles & VIP Passes**: Custom prestige ranks displayed on profile cards.
-  * **Daily Rewards**: `/daily` streak bonus with cooldown timer.
+  * **Daily Rewards & Lucky Wheel**: `/daily` streak bonus and `/roulette` wheel.
 * **🏆 Tournaments & Ranked Seasons (Turnirlər):**
   * Automated tournament scheduler and enrollment (`/tournament`).
   * Prize pool accumulation and championship recognition.
 * **🛡 Mafia Families / Clans (Klanlar):**
   * Establish your clan: `/clan create [TAG] [Clan Name]`.
-  * Clan treasury, rating points, and member management.
+  * Clan bank deposits: `/clan deposit [amount]`, rating points, and member management.
+* **👑 Superadmin Panel:**
+  * `/admin`, `/broadcast [text]`, `/addcoins [id] [amount]`, `/adddiamonds [id] [amount]`.
+* **🐘 Dual Database Support:**
+  * Works out of the box with SQLite locally and **PostgreSQL (`asyncpg`)** on Render/Supabase/Neon.
 
 ---
 
@@ -99,11 +106,20 @@ When adding the bot to a group chat, promote it to **Administrator** with the fo
 | `/profile` | View player profile, win rate, coins, diamonds, and signature role |
 | `/shop` | Open the in-game store (Role cards, Titles, VIP passes) |
 | `/daily` | Claim daily coin bonus |
+| `/roulette` | Spin the lucky wheel for Coins and Diamond Jackpots |
 | `/top` | View the global leaderboard |
-| `/clan` | Mafia Family (Clan) management |
+| `/clan` | Mafia Family management (`/clan create`, `/clan deposit`) |
 | `/tournament` | View and register for tournaments |
 | `/lang` | Select your personal language preference |
 | `/help` | Detailed help guide |
+
+### Admin Commands (Bot Owners)
+| Command | Description |
+| :--- | :--- |
+| `/admin` | Open superadmin dashboard overview |
+| `/broadcast <text>` | Send global announcement to all registered players |
+| `/addcoins <user_id> <amount>` | Grant coins to a player |
+| `/adddiamonds <user_id> <amount>` | Grant diamonds to a player |
 
 ---
 

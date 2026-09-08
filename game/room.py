@@ -40,6 +40,8 @@ class GameRoom:
         self.mistress_target: Optional[int] = None
         self.bodyguard_target: Optional[int] = None
         self.lawyer_target: Optional[int] = None
+        self.sniper_target: Optional[int] = None
+        self.jester_won: bool = False
         
         # Day trial votes
         self.day_votes: Dict[int, int] = {}         # voter_id -> target_id
@@ -148,6 +150,7 @@ class GameRoom:
         self.mistress_target = None
         self.bodyguard_target = None
         self.lawyer_target = None
+        self.sniper_target = None
 
         # Reset temporary buffs
         for p in self.alive_players:
@@ -230,6 +233,16 @@ class GameRoom:
                     )
                 except Exception:
                     pass
+            elif p.role == Role.SNIPER and p.sniper_ammo > 0:
+                try:
+                    await bot.send_message(
+                        p.user_id,
+                        i18n.get("night_prompt_sniper", self.lang),
+                        reply_markup=markup,
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
 
     async def _night_timer(self, bot: Bot):
         await asyncio.sleep(settings.NIGHT_DURATION)
@@ -267,7 +280,18 @@ class GameRoom:
         if maniac_player and not maniac_player.is_blocked and self.maniac_target:
             maniac_kill_id = self.maniac_target
 
-        # 5. Resolve casualties
+        # 5. Determine Sniper kill target
+        sniper_kill_id = None
+        sniper_player = next((p for p in self.players.values() if p.role == Role.SNIPER), None)
+        if sniper_player and not sniper_player.is_blocked and self.sniper_target and sniper_player.sniper_ammo > 0:
+            sniper_kill_id = self.sniper_target
+            sniper_player.sniper_ammo -= 1
+            # If shot innocent town member, dies of guilt next morning
+            target_p = self.players.get(sniper_kill_id)
+            if target_p and target_p.team == Team.TOWN:
+                sniper_player.guilt_suicide = True
+
+        # 6. Resolve casualties
         deaths: List[Player] = []
         doctor_saved = False
 
@@ -276,6 +300,8 @@ class GameRoom:
             targets_to_kill.add(mafia_kill_id)
         if maniac_kill_id:
             targets_to_kill.add(maniac_kill_id)
+        if sniper_kill_id:
+            targets_to_kill.add(sniper_kill_id)
 
         for t_id in targets_to_kill:
             if t_id in self.players:
@@ -286,6 +312,23 @@ class GameRoom:
                     victim.is_alive = False
                     deaths.append(victim)
                     await mute_dead_player(bot, self.chat_id, victim.user_id)
+
+        # Check if detective died, promote sergeant!
+        det_died = any(d.role == Role.DETECTIVE for d in deaths)
+        sergeant_promoted = None
+        if det_died:
+            sergeant = next((p for p in self.alive_players if p.role == Role.SERGEANT), None)
+            if sergeant:
+                sergeant.role = Role.DETECTIVE
+                sergeant_promoted = sergeant
+
+        # Check guilt suicide
+        for p in list(self.alive_players):
+            if p.guilt_suicide:
+                p.is_alive = False
+                p.guilt_suicide = False
+                deaths.append(p)
+                await mute_dead_player(bot, self.chat_id, p.user_id)
 
         # Unmute group chat for morning
         await unmute_chat_day(bot, self.chat_id)
@@ -302,6 +345,13 @@ class GameRoom:
                 report += i18n.get("morning_killed", self.lang, victim=d.name, role=role_title) + "\n"
 
         await bot.send_message(self.chat_id, report, parse_mode="HTML")
+
+        if sergeant_promoted:
+            await bot.send_message(
+                self.chat_id,
+                f"🎖 <b>Komissar həlak oldu!</b> Lakin Çavuş <b>{sergeant_promoted.name}</b> onun nişanını qəbul edərək yeni Komissar oldu!",
+                parse_mode="HTML"
+            )
 
         # Check for victory
         winner = self.check_winner()
@@ -395,6 +445,15 @@ class GameRoom:
                     parse_mode="HTML"
                 )
 
+                # Jester win check
+                if lynched.role == Role.JESTER:
+                    self.jester_won = True
+                    await bot.send_message(
+                        self.chat_id,
+                        i18n.get("jester_lynched", self.lang, name=lynched.name),
+                        parse_mode="HTML"
+                    )
+
                 # Kamikaze ability
                 if lynched.role == Role.KAMIKAZE:
                     voters_for_lynch = [v_id for v_id, target in self.day_votes.items() if target == lynched_id and self.players[v_id].is_alive]
@@ -409,6 +468,21 @@ class GameRoom:
                             parse_mode="HTML"
                         )
 
+        # AFK / Inactivity check for alive players who missed voting
+        for p in list(self.alive_players):
+            if p.user_id not in self.day_votes:
+                p.missed_votes += 1
+                if p.missed_votes >= 2:
+                    p.is_alive = False
+                    await mute_dead_player(bot, self.chat_id, p.user_id)
+                    await bot.send_message(
+                        self.chat_id,
+                        f"💤 <b>{p.name}</b> 2 dəfə səsvermədə iştirak etmədiyi üçün AFK olaraq oyundan kənarlaşdırıldı!",
+                        parse_mode="HTML"
+                    )
+            else:
+                p.missed_votes = 0
+
         # Check win condition
         winner = self.check_winner()
         if winner:
@@ -420,6 +494,9 @@ class GameRoom:
         await self.start_night(bot)
 
     def check_winner(self) -> Optional[Team]:
+        if self.jester_won:
+            return Team.JESTER
+
         living = self.alive_players
         mafia_count = sum(1 for p in living if p.team == Team.MAFIA)
         town_count = sum(1 for p in living if p.team == Team.TOWN)
@@ -447,6 +524,8 @@ class GameRoom:
             win_msg = i18n.get("victory_town", self.lang)
         elif winner_team == Team.MAFIA:
             win_msg = i18n.get("victory_mafia", self.lang)
+        elif winner_team == Team.JESTER:
+            win_msg = i18n.get("victory_jester", self.lang)
         else:
             win_msg = i18n.get("victory_maniac", self.lang)
 
@@ -471,7 +550,7 @@ class GameRoom:
         # Distribute database stats and rewards
         async with async_session_maker() as session:
             for p in self.players.values():
-                is_win = (p.team == winner_team) or (winner_team == Team.NEUTRAL and p.role == Role.MANIAC)
+                is_win = (p.team == winner_team) or (winner_team == Team.NEUTRAL and p.role == Role.MANIAC) or (winner_team == Team.JESTER and p.role == Role.JESTER)
                 coins = settings.WIN_COIN_REWARD if is_win else settings.LOSE_COIN_REWARD
                 exp = settings.WIN_EXP_REWARD if is_win else settings.LOSE_EXP_REWARD
                 await add_game_stats(session, p.user_id, is_win, p.role.value, coins, exp)

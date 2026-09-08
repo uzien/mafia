@@ -6,6 +6,8 @@ ROLE_TEAMS: Dict[Role, Team] = {
     Role.CITIZEN: Team.TOWN,
     Role.DOCTOR: Team.TOWN,
     Role.DETECTIVE: Team.TOWN,
+    Role.SERGEANT: Team.TOWN,
+    Role.SNIPER: Team.TOWN,
     Role.BODYGUARD: Team.TOWN,
     Role.KAMIKAZE: Team.TOWN,
     
@@ -14,7 +16,8 @@ ROLE_TEAMS: Dict[Role, Team] = {
     Role.LAWYER: Team.MAFIA,
     
     Role.MANIAC: Team.NEUTRAL,
-    Role.MISTRESS: Team.NEUTRAL
+    Role.MISTRESS: Team.NEUTRAL,
+    Role.JESTER: Team.JESTER
 }
 
 class Player:
@@ -29,6 +32,9 @@ class Player:
         self.protected_by_bodyguard: bool = False
         self.protected_by_lawyer: bool = False
         self.last_healed: bool = False  # Track doctor self-heal limit
+        self.sniper_ammo: int = 1
+        self.missed_votes: int = 0      # AFK detection
+        self.guilt_suicide: bool = False
 
     @property
     def team(self) -> Team:
@@ -49,15 +55,17 @@ def distribute_roles(player_ids: List[int], role_boosts: Dict[int, Role] = None)
     elif count == 6:
         role_pool = [Role.DON, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.CITIZEN, Role.CITIZEN]
     elif count == 7:
-        role_pool = [Role.DON, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.CITIZEN, Role.CITIZEN]
+        role_pool = [Role.DON, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.JESTER, Role.CITIZEN]
     elif count == 8:
-        role_pool = [Role.DON, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.CITIZEN, Role.CITIZEN]
+        role_pool = [Role.DON, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.JESTER, Role.CITIZEN]
     elif count <= 10:
-        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD]
+        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.DOCTOR, Role.SERGEANT, Role.MANIAC, Role.MISTRESS, Role.JESTER, Role.BODYGUARD]
         while len(role_pool) < count:
             role_pool.append(Role.CITIZEN)
-    else:  # 11+
-        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.LAWYER, Role.DETECTIVE, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.KAMIKAZE]
+    elif count == 11:
+        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.DETECTIVE, Role.SERGEANT, Role.SNIPER, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.JESTER]
+    else:  # 12+
+        role_pool = [Role.DON, Role.MAFIA, Role.MAFIA, Role.LAWYER, Role.DETECTIVE, Role.SERGEANT, Role.SNIPER, Role.DOCTOR, Role.MANIAC, Role.MISTRESS, Role.BODYGUARD, Role.KAMIKAZE, Role.JESTER]
         while len(role_pool) < count:
             role_pool.append(Role.CITIZEN)
 

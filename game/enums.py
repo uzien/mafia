@@ -13,15 +13,21 @@ class Role(str, Enum):
     CITIZEN = "citizen"
     DOCTOR = "doctor"
     DETECTIVE = "detective"
-    MAFIA = "mafia"
-    DON = "don"
-    MANIAC = "maniac"
-    MISTRESS = "mistress"
+    SERGEANT = "sergeant"
+    SNIPER = "sniper"
     BODYGUARD = "bodyguard"
     KAMIKAZE = "kamikaze"
+    
+    MAFIA = "mafia"
+    DON = "don"
     LAWYER = "lawyer"
+    
+    MANIAC = "maniac"
+    MISTRESS = "mistress"
+    JESTER = "jester"
 
 class Team(str, Enum):
     TOWN = "town"
     MAFIA = "mafia"
     NEUTRAL = "neutral"
+    JESTER = "jester"

@@ -51,3 +51,20 @@ async def cmd_clan(message: Message):
 
             text = i18n.get("clan_created", user.language, clan_name=f"[{tag}] {name}")
             await message.answer(text, parse_mode="HTML")
+
+        elif action in ["deposit", "yatir"]:
+            if len(args) < 2:
+                return await message.answer("Usage: <code>/clan deposit &lt;amount&gt;</code>", parse_mode="HTML")
+            try:
+                amount = int(args[1])
+                if amount <= 0:
+                    raise ValueError
+            except ValueError:
+                return await message.answer("Invalid deposit amount.", parse_mode="HTML")
+
+            from database.crud import deposit_to_clan
+            success = await deposit_to_clan(session, message.from_user.id, amount)
+            if success:
+                await message.answer(f"✅ <b>+{amount} Qızıl</b> klan xəzinəsinə yatırıldı!", parse_mode="HTML")
+            else:
+                await message.answer("❌ Kifayət qədər qızılınız yoxdur və ya klanda deyilsiniz!", parse_mode="HTML")

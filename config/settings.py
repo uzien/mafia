@@ -7,6 +7,16 @@ class Settings(BaseSettings):
     
     # Database
     DB_URL: str = "sqlite+aiosqlite:///mafia_bot.db"
+    DATABASE_URL: str = ""
+
+    @property
+    def async_db_url(self) -> str:
+        url = self.DATABASE_URL or self.DB_URL
+        if url.startswith("postgres://"):
+            return url.replace("postgres://", "postgresql+asyncpg://", 1)
+        if url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
     
     # Game Settings
     MIN_PLAYERS: int = 4

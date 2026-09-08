@@ -133,3 +133,30 @@ async def get_active_tournaments(session: AsyncSession) -> List[Tournament]:
     stmt = select(Tournament).where(Tournament.status != "completed").order_by(desc(Tournament.created_at))
     result = await session.execute(stmt)
     return list(result.scalars().all())
+
+async def deposit_to_clan(session: AsyncSession, user_id: int, amount: int) -> bool:
+    user = await session.get(User, user_id)
+    if not user or not user.clan_id or user.coins < amount:
+        return False
+    clan = await session.get(Clan, user.clan_id)
+    if not clan:
+        return False
+    user.coins -= amount
+    clan.treasury += amount
+    clan.rating += (amount // 10)  # 1 rating point per 10 coins
+    await session.commit()
+    return True
+
+async def get_all_user_ids(session: AsyncSession) -> List[int]:
+    stmt = select(User.id)
+    res = await session.execute(stmt)
+    return list(res.scalars().all())
+
+async def admin_add_currency(session: AsyncSession, user_id: int, coins: int = 0, diamonds: int = 0) -> bool:
+    user = await session.get(User, user_id)
+    if not user:
+        return False
+    user.coins += coins
+    user.diamonds += diamonds
+    await session.commit()
+    return True

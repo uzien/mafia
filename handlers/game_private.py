@@ -71,3 +71,11 @@ async def cb_night_action(callback: CallbackQuery):
             parse_mode="HTML"
         )
         await callback.answer()
+
+    elif role_str == Role.SNIPER.value:
+        room.sniper_target = target_id
+        await callback.message.edit_text(
+            i18n.get("action_recorded", room.lang, target=target_name),
+            parse_mode="HTML"
+        )
+        await callback.answer()

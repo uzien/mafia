@@ -7,10 +7,12 @@ from aiogram.enums import ParseMode
 from config import settings
 from database.database import init_db
 from handlers import (
+    admin_router,
     clan_router,
     common_router,
     game_group_router,
     game_private_router,
+    roulette_router,
     store_router,
     tournament_router,
 )
@@ -67,6 +69,8 @@ async def main():
     dp.include_router(store_router)
     dp.include_router(clan_router)
     dp.include_router(tournament_router)
+    dp.include_router(admin_router)
+    dp.include_router(roulette_router)
 
     logger.info("Starting Mafia Baku Black Telegram Bot polling...")
     try:
