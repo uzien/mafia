@@ -1,5 +1,7 @@
 import asyncio
-from aiogram import F, Router
+import html
+import logging
+from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 from config import settings
@@ -8,6 +10,22 @@ from database.database import async_session_maker
 from game.enums import GamePhase
 from game.manager import game_manager
 from locales.i18n import i18n
+
+logger = logging.getLogger(__name__)
+
+async def can_manage_game(bot: Bot, chat_id: int, user_id: int, creator_id: int) -> bool:
+    """Checks if a user has management permissions (creator, bot superadmin, or chat admin)."""
+    if user_id == creator_id:
+        return True
+    if user_id in settings.ADMIN_IDS:
+        return True
+    try:
+        member = await bot.get_chat_member(chat_id, user_id)
+        if member.status in ["creator", "administrator"]:
+            return True
+    except Exception as e:
+        logger.debug(f"Could not check chat admin status for {user_id}: {e}")
+    return False
 
 game_group_router = Router()
 
@@ -177,6 +195,14 @@ async def cb_game_extend_time(callback: CallbackQuery):
     if not room or room.phase != GamePhase.LOBBY:
         return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
 
+    allowed = await can_manage_game(callback.bot, callback.message.chat.id, callback.from_user.id, room.creator_id)
+    if not allowed:
+        creator_name = room.creator_name or "O'yin yaratuvchisi"
+        return await callback.answer(
+            f"⚠️ Faqat o'yin yaratuvchisi ({creator_name}) yoki guruh adminlari vaqtni uzaytirishi mumkin!",
+            show_alert=True
+        )
+
     if room.seconds_left >= 300:
         return await callback.answer("⚠️ Maksimal vaqt (5 daqiqa) ga yetdi!", show_alert=True)
 
@@ -193,8 +219,19 @@ async def cb_game_extend_time(callback: CallbackQuery):
 
 @game_group_router.message(Command("extend", "vaqt", "time", "plus30"))
 async def cmd_extend_time(message: Message):
+    if message.chat.type == "private":
+        return
     room = game_manager.get_room(message.chat.id)
     if not room or room.phase != GamePhase.LOBBY:
+        return
+
+    allowed = await can_manage_game(message.bot, message.chat.id, message.from_user.id, room.creator_id)
+    if not allowed:
+        creator_name = html.escape(room.creator_name or "O'yin yaratuvchisi")
+        await message.reply(
+            f"⚠️ Faqat o'yin yaratuvchisi (<b>{creator_name}</b>) yoki guruh adminlari vaqtni uzaytirishi mumkin!",
+            parse_mode="HTML"
+        )
         return
 
     if room.seconds_left >= 300:
@@ -255,20 +292,54 @@ async def cmd_join_group(message: Message):
         except Exception:
             pass
 
-@game_group_router.message(Command("stop"))
+@game_group_router.callback_query(F.data == "game_cancel_lobby")
+async def cb_game_cancel_lobby(callback: CallbackQuery):
+    room = game_manager.get_room(callback.message.chat.id)
+    if not room or room.phase == GamePhase.GAME_OVER:
+        return await callback.answer("⚠️ Faol o'yin mavjud emas.", show_alert=True)
+
+    allowed = await can_manage_game(callback.bot, callback.message.chat.id, callback.from_user.id, room.creator_id)
+    if not allowed:
+        creator_name = room.creator_name or "O'yin yaratuvchisi"
+        return await callback.answer(
+            f"⚠️ Faqat o'yin yaratuvchisi ({creator_name}) yoki guruh adminlari o'yinni bekor qilishi mumkin!",
+            show_alert=True
+        )
+
+    await game_manager.stop_and_remove_room(callback.message.chat.id, callback.bot)
+    try:
+        await callback.message.edit_text(
+            "🛑 <b>O'yin bekor qilindi.</b>\nGuruhdagi barcha cheklovlar olib tashlandi.",
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
+    await callback.answer("🛑 O'yin bekor qilindi!")
+
+@game_group_router.message(Command("stop", "toxtat", "cancel", "bekor"))
 async def cmd_stop(message: Message):
+    if message.chat.type == "private":
+        return
     room = game_manager.get_room(message.chat.id)
     if not room or room.phase == GamePhase.GAME_OVER:
-        await message.answer("⚠️ No active game in this chat.", parse_mode="HTML")
+        await message.answer("⚠️ Bu guruhda hozir faol o'yin mavjud emas.", parse_mode="HTML")
         return
 
-    # Check creator or admin
-    if message.from_user.id != room.creator_id and message.from_user.id not in settings.ADMIN_IDS:
-        await message.answer("⚠️ Only the game creator or an admin can stop the game!", parse_mode="HTML")
+    allowed = await can_manage_game(message.bot, message.chat.id, message.from_user.id, room.creator_id)
+    if not allowed:
+        creator_name = html.escape(room.creator_name or "O'yin yaratuvchisi")
+        await message.answer(
+            f"⚠️ Faqat o'yin yaratuvchisi (<b>{creator_name}</b>) yoki guruh adminlari o'yinni to'xtata oladi!",
+            parse_mode="HTML"
+        )
         return
 
-    game_manager.remove_room(message.chat.id)
-    await message.answer("🛑 <b>Game was forcefully stopped!</b>", parse_mode="HTML")
+    await game_manager.stop_and_remove_room(message.chat.id, message.bot)
+    await message.answer(
+        "🛑 <b>O'yin majburiy to'xtatildi va bekor qilindi!</b>\n"
+        "Guruhdagi barcha o'yinchilarning ovozi va cheklovlari ochildi.",
+        parse_mode="HTML"
+    )
 
 @game_group_router.callback_query(F.data.startswith("vote_"))
 async def cb_day_vote(callback: CallbackQuery):

@@ -17,11 +17,23 @@ class GameManager:
         self.rooms[chat_id] = room
         return room
 
+    async def stop_and_remove_room(self, chat_id: int, bot) -> bool:
+        if chat_id in self.rooms:
+            room = self.rooms[chat_id]
+            await room.stop_game(bot)
+            del self.rooms[chat_id]
+            return True
+        return False
+
     def remove_room(self, chat_id: int):
         if chat_id in self.rooms:
             room = self.rooms[chat_id]
+            room.phase = GamePhase.GAME_OVER
+            room.is_stopped = True
             if room.timer_task and not room.timer_task.done():
                 room.timer_task.cancel()
+            if getattr(room, "last_words_event", None) and not room.last_words_event.is_set():
+                room.last_words_event.set()
             del self.rooms[chat_id]
 
     def find_user_room(self, user_id: int) -> Optional[GameRoom]:

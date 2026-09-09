@@ -56,6 +56,8 @@ class GameRoom:
         self.condemned_player_id: Optional[int] = None
         self.last_words_event: Optional[asyncio.Event] = None
         
+        self.is_stopped: bool = False
+        
         # Add creator automatically
         self.add_player(creator_id, creator_name)
 
@@ -68,6 +70,11 @@ class GameRoom:
     def remove_player(self, user_id: int) -> bool:
         if user_id in self.players:
             del self.players[user_id]
+            # If creator left, assign new creator if any players left
+            if user_id == self.creator_id and self.players:
+                new_creator = next(iter(self.players.values()))
+                self.creator_id = new_creator.user_id
+                self.creator_name = new_creator.name
             return True
         return False
 
@@ -97,6 +104,10 @@ class GameRoom:
                 InlineKeyboardButton(
                     text=i18n.get("btn_extend_time", self.lang),
                     callback_data="game_extend_time"
+                ),
+                InlineKeyboardButton(
+                    text=i18n.get("btn_cancel_game", self.lang),
+                    callback_data="game_cancel_lobby"
                 )
             ]
         ]
@@ -199,6 +210,9 @@ class GameRoom:
 
     async def start_game(self, bot: Bot):
         """Distribute roles and begin night 1."""
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
+
         if self.timer_task and not self.timer_task.done():
             self.timer_task.cancel()
 
@@ -266,11 +280,13 @@ class GameRoom:
             logger.error(f"Error sending game_starting message: {e}")
 
         await asyncio.sleep(3)
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         await self.start_night(bot)
 
     async def broadcast_mafia_chat(self, bot: Bot, sender_id: int, sender_name: str, text: str) -> bool:
         """Relay secret message to other living mafia members during night."""
-        if self.phase != GamePhase.NIGHT:
+        if self.phase != GamePhase.NIGHT or self.is_stopped:
             return False
         sender = self.players.get(sender_id)
         if not sender or not sender.is_alive or sender.team != Team.MAFIA:
@@ -292,6 +308,8 @@ class GameRoom:
 
     async def start_night(self, bot: Bot):
         """Trigger the night phase and collect secret actions via PM."""
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         self.phase = GamePhase.NIGHT
         self.night_announced_roles.clear()
         self.mafia_votes.clear()
@@ -482,11 +500,17 @@ class GameRoom:
         return True
 
     async def _night_timer(self, bot: Bot):
-        await asyncio.sleep(settings.NIGHT_DURATION)
-        await self.resolve_night(bot)
+        try:
+            await asyncio.sleep(settings.NIGHT_DURATION)
+            if self.phase == GamePhase.NIGHT and not self.is_stopped:
+                await self.resolve_night(bot)
+        except asyncio.CancelledError:
+            pass
 
     async def resolve_night(self, bot: Bot):
         """Calculate the outcome of all night actions."""
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         self.phase = GamePhase.MORNING
 
         # 1. Process Mistress block
@@ -709,16 +733,27 @@ class GameRoom:
         await self.start_day(bot)
 
     async def start_day(self, bot: Bot):
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         self.phase = GamePhase.DAY
         await bot.send_message(
             self.chat_id,
             i18n.get("day_discussion", self.lang, seconds=settings.DAY_DURATION),
             parse_mode="HTML"
         )
-        await asyncio.sleep(settings.DAY_DURATION)
-        await self.start_voting(bot)
+        self.timer_task = asyncio.create_task(self._day_timer(bot))
+
+    async def _day_timer(self, bot: Bot):
+        try:
+            await asyncio.sleep(settings.DAY_DURATION)
+            if self.phase == GamePhase.DAY and not self.is_stopped:
+                await self.start_voting(bot)
+        except asyncio.CancelledError:
+            pass
 
     async def start_voting(self, bot: Bot):
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         self.phase = GamePhase.VOTING
         self.day_votes.clear()
 
@@ -739,8 +774,12 @@ class GameRoom:
         self.timer_task = asyncio.create_task(self._voting_timer(bot))
 
     async def _voting_timer(self, bot: Bot):
-        await asyncio.sleep(settings.VOTING_DURATION)
-        await self.resolve_voting(bot)
+        try:
+            await asyncio.sleep(settings.VOTING_DURATION)
+            if self.phase == GamePhase.VOTING and not self.is_stopped:
+                await self.resolve_voting(bot)
+        except asyncio.CancelledError:
+            pass
 
     async def cast_day_vote(self, voter_id: int, target_id: int, bot: Bot) -> bool:
         if self.phase != GamePhase.VOTING or voter_id not in self.players or not self.players[voter_id].is_alive:
@@ -766,8 +805,11 @@ class GameRoom:
         return True
 
     async def resolve_voting(self, bot: Bot):
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         if not self.day_votes:
             await bot.send_message(self.chat_id, i18n.get("vote_tie", self.lang), parse_mode="HTML")
+            await self._finish_voting_phase(bot)
         else:
             vote_counts: Dict[int, int] = {}
             for t_id in self.day_votes.values():
@@ -785,6 +827,8 @@ class GameRoom:
 
     async def start_last_words(self, bot: Bot, lynched_id: int):
         """Allow the condemned suspect a final defense speech before hanging."""
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         self.phase = GamePhase.LAST_WORDS
         self.condemned_player_id = lynched_id
         self.last_words_event = asyncio.Event()
@@ -810,10 +854,15 @@ class GameRoom:
         except asyncio.TimeoutError:
             pass
 
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
+
         await self.execute_lynch(bot, lynched_id)
 
     async def execute_lynch(self, bot: Bot, lynched_id: int):
         """Execute the condemned player and process death effects."""
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         lynched = self.players.get(lynched_id)
         if not lynched or not lynched.is_alive:
             return await self._finish_voting_phase(bot)
@@ -934,6 +983,8 @@ class GameRoom:
         await self._finish_voting_phase(bot)
 
     async def _finish_voting_phase(self, bot: Bot):
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         # AFK / Inactivity check for alive players who missed voting
         for p in list(self.alive_players):
             if p.user_id not in self.day_votes:
@@ -957,6 +1008,8 @@ class GameRoom:
 
         self.round += 1
         await asyncio.sleep(3)
+        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+            return
         await self.start_night(bot)
 
     def check_winner(self) -> Optional[Team]:
@@ -1166,3 +1219,16 @@ class GameRoom:
             await bot.send_message(player.user_id, msg, reply_markup=markup, parse_mode="HTML")
         except Exception as e:
             logger.debug(f"Could not send PM profile summary to {player.user_id}: {e}")
+
+    async def stop_game(self, bot: Bot):
+        """Immediately aborts the game, cancels all timers and background tasks, and restores player permissions."""
+        self.is_stopped = True
+        self.phase = GamePhase.GAME_OVER
+        if self.timer_task and not self.timer_task.done():
+            self.timer_task.cancel()
+        if getattr(self, "last_words_event", None) and not self.last_words_event.is_set():
+            self.last_words_event.set()
+        try:
+            await restore_players(bot, self.chat_id, list(self.players.keys()))
+        except Exception as e:
+            logger.warning(f"Error in stop_game restore_players: {e}")

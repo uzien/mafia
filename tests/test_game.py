@@ -706,3 +706,77 @@ async def test_tournament_standings_and_points_award():
         assert champ.id == 6001
         assert champ.title == "🏆 Litsey Chempioni"
         assert champ.diamonds >= 100
+
+@pytest.mark.asyncio
+async def test_stop_and_remove_room():
+    from unittest.mock import AsyncMock, MagicMock
+    from game.manager import GameManager
+    from game.enums import GamePhase
+    import asyncio
+
+    gm = GameManager()
+    room = gm.create_room(chat_id=-9999, creator_id=1001, creator_name="Boss")
+    room.add_player(1001, "Boss")
+    room.add_player(1002, "Player2")
+    
+    # Simulate a running timer task
+    async def dummy_timer():
+        try:
+            await asyncio.sleep(100)
+        except asyncio.CancelledError:
+            pass
+    room.timer_task = asyncio.create_task(dummy_timer())
+    room.last_words_event = asyncio.Event()
+
+    mock_bot = MagicMock()
+    mock_bot.unban_chat_member = AsyncMock()
+    mock_bot.restrict_chat_member = AsyncMock()
+
+    # Cancel via stop_and_remove_room
+    removed = await gm.stop_and_remove_room(-9999, mock_bot)
+    assert removed is True
+    assert room.is_stopped is True
+    assert room.phase == GamePhase.GAME_OVER
+    await asyncio.sleep(0)  # Yield to event loop for task cancellation to complete
+    assert room.timer_task.cancelled() or room.timer_task.done()
+    assert room.last_words_event.is_set()
+    assert gm.get_room(-9999) is None
+
+@pytest.mark.asyncio
+async def test_can_manage_game_permissions():
+    from unittest.mock import AsyncMock, MagicMock
+    from handlers.game_group import can_manage_game
+    from config import settings
+
+    mock_bot = MagicMock()
+    creator_id = 1111
+    regular_user = 2222
+    chat_admin_user = 3333
+    bot_admin_user = 999999
+    settings.ADMIN_IDS_RAW = [bot_admin_user]
+
+    # 1. Creator should have permission
+    assert await can_manage_game(mock_bot, -1001, creator_id, creator_id) is True
+
+    # 2. Bot superadmin should have permission
+    assert await can_manage_game(mock_bot, -1001, bot_admin_user, creator_id) is True
+
+    # 3. Chat admin should have permission
+    admin_member = MagicMock()
+    admin_member.status = "administrator"
+    mock_bot.get_chat_member = AsyncMock(return_value=admin_member)
+    assert await can_manage_game(mock_bot, -1001, chat_admin_user, creator_id) is True
+
+    # 4. Regular chat member should NOT have permission
+    regular_member = MagicMock()
+    regular_member.status = "member"
+    mock_bot.get_chat_member = AsyncMock(return_value=regular_member)
+    assert await can_manage_game(mock_bot, -1001, regular_user, creator_id) is False
+
+def test_lobby_markup_cancel_button():
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host")
+    markup = room.get_lobby_markup()
+    callback_datas = [btn.callback_data for row in markup.inline_keyboard for btn in row if btn.callback_data]
+    assert "game_cancel_lobby" in callback_datas
+    assert "game_extend_time" in callback_datas
+
