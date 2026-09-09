@@ -113,17 +113,17 @@ class GameRoom:
         buttons = [
             [
                 InlineKeyboardButton(
-                    text=f"🚀 {i18n.get('btn_start_now', self.lang)}",
+                    text=i18n.get("btn_start_now", self.lang),
                     callback_data=f"creator_start_{self.chat_id}"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=f"⏳ {i18n.get('btn_extend_time', self.lang)}",
+                    text=i18n.get("btn_extend_time", self.lang),
                     callback_data=f"creator_extend_{self.chat_id}"
                 ),
                 InlineKeyboardButton(
-                    text=f"🛑 {i18n.get('btn_cancel_game', self.lang)}",
+                    text=i18n.get("btn_cancel_game", self.lang),
                     callback_data=f"creator_cancel_{self.chat_id}"
                 )
             ]
