@@ -132,7 +132,7 @@ ROLE_META = {
         }
     },
     Role.MISTRESS: {
-        "emoji": "💋",
+        "emoji": "💃",
         "phase": {"uz": "Tun (Qobiliyatni bloklash)", "az": "Gecə (Bacarığı bloklamaq)", "ru": "Ночь (Блокировка способности)", "en": "Night (Block ability)", "tr": "Gece (Yetenek engelleme)"},
         "win": {
             "uz": "O'yin oxirigacha omon qolish va tinch aholi bilan g'alaba qozonish.",
@@ -201,7 +201,7 @@ def get_roles_catalog_text(lang: str) -> str:
             "• 💼 <b>Advokat</b> — Mafiyani tekshiruvdan qutqaruvchi\n\n"
             "🔪 <b>Neytral va Yolg'izlar (Neutral):</b>\n"
             "• 🔪 <b>Maniak</b> — Butun shaharni yakson qiluvchi qotil\n"
-            "• 💋 <b>Ma'shuqa</b> — Tunda qobiliyatlarni to'xtatuvchi\n"
+            "• 💃 <b>Ma'shuqa</b> — Tunda qobiliyatlarni to'xtatuvchi\n"
             "• 🃏 <b>Joker (Jester)</b> — O'zini osdirishni xohlovchi daho\n\n"
             "<i>Batafsil ma'lumot olish uchun quyidagi rolni tanlang:</i>"
         )
@@ -214,7 +214,7 @@ def get_roles_catalog_text(lang: str) -> str:
             "🩸 <b>Mafiya (Mafia):</b>\n"
             "• 👑 <b>Don</b>, 🩸 <b>Mafiya</b>, 💼 <b>Vəkil</b>\n\n"
             "🔪 <b>Neytrallar:</b>\n"
-            "• 🔪 <b>Manyaq</b>, 💋 <b>Məşuqə</b>, 🃏 <b>Jester (Təlxək)</b>\n\n"
+            "• 🔪 <b>Manyaq</b>, 💃 <b>Məşuqə</b>, 🃏 <b>Jester (Təlxək)</b>\n\n"
             "<i>Ətraflı məlumat üçün rolu seçin:</i>"
         )
     elif lang == "ru":
@@ -226,7 +226,7 @@ def get_roles_catalog_text(lang: str) -> str:
             "🩸 <b>Мафия:</b>\n"
             "• 👑 <b>Дон</b>, 🩸 <b>Мафия</b>, 💼 <b>Адвокат</b>\n\n"
             "🔪 <b>Нейтральные роли:</b>\n"
-            "• 🔪 <b>Маньяк</b>, 💋 <b>Любовница</b>, 🃏 <b>Шут (Самоубийца)</b>\n\n"
+            "• 🔪 <b>Маньяк</b>, 💃 <b>Любовница</b>, 🃏 <b>Шут (Самоубийца)</b>\n\n"
             "<i>Нажмите на роль ниже, чтобы узнать способности:</i>"
         )
     else:

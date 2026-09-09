@@ -390,7 +390,7 @@ async def test_don_promotion_when_don_lynched():
 def test_updated_role_emojis():
     from handlers.roles import ROLE_META
     assert ROLE_META[Role.CITIZEN]["emoji"] == "👨🏼‍🌾"
-    assert ROLE_META[Role.MISTRESS]["emoji"] == "💋"
+    assert ROLE_META[Role.MISTRESS]["emoji"] == "💃"
     assert ROLE_META[Role.DON]["emoji"] == "👑"
 
 @pytest.mark.asyncio
