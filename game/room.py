@@ -23,14 +23,16 @@ from services.auto_moderator import (
 logger = logging.getLogger(__name__)
 
 class GameRoom:
-    def __init__(self, chat_id: int, creator_id: int, creator_name: str, lang: str = "uz"):
+    def __init__(self, chat_id: int, creator_id: int, creator_name: str, lang: str = "uz", chat_title: str = "Guruh"):
         self.chat_id: int = chat_id
         self.creator_id: int = creator_id
         self.creator_name: str = creator_name
+        self.chat_title: str = chat_title
         self.lang: str = lang
         self.phase: GamePhase = GamePhase.LOBBY
         self.round: int = 1
         self.lobby_message_id: Optional[int] = None
+        self.creator_pm_message_id: Optional[int] = None
         self.current_event: Optional[str] = None
         self.start_time: Optional[datetime] = None
         
@@ -75,6 +77,7 @@ class GameRoom:
                 new_creator = next(iter(self.players.values()))
                 self.creator_id = new_creator.user_id
                 self.creator_name = new_creator.name
+                self.creator_pm_message_id = None
             return True
         return False
 
@@ -83,6 +86,7 @@ class GameRoom:
         return [p for p in self.players.values() if p.is_alive]
 
     def get_lobby_markup(self) -> InlineKeyboardMarkup:
+        """Group lobby markup: only contains Join, Leave, and Open Bot buttons."""
         buttons = [
             [
                 InlineKeyboardButton(
@@ -92,26 +96,98 @@ class GameRoom:
             ],
             [
                 InlineKeyboardButton(
-                    text=i18n.get("btn_start_now", self.lang),
-                    callback_data="game_start_early"
-                ),
-                InlineKeyboardButton(
                     text=i18n.get("btn_leave", self.lang),
                     callback_data="game_leave"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text=i18n.get("btn_extend_time", self.lang),
-                    callback_data="game_extend_time"
                 ),
                 InlineKeyboardButton(
-                    text=i18n.get("btn_cancel_game", self.lang),
-                    callback_data="game_cancel_lobby"
+                    text=i18n.get("btn_open_bot_pm", self.lang),
+                    url=f"https://t.me/{settings.BOT_USERNAME}"
                 )
             ]
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    def get_creator_panel_markup(self) -> InlineKeyboardMarkup:
+        """Control panel markup exclusively for the game creator in PM."""
+        buttons = [
+            [
+                InlineKeyboardButton(
+                    text=f"🚀 {i18n.get('btn_start_now', self.lang)}",
+                    callback_data=f"creator_start_{self.chat_id}"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=f"⏳ {i18n.get('btn_extend_time', self.lang)}",
+                    callback_data=f"creator_extend_{self.chat_id}"
+                ),
+                InlineKeyboardButton(
+                    text=f"🛑 {i18n.get('btn_cancel_game', self.lang)}",
+                    callback_data=f"creator_cancel_{self.chat_id}"
+                )
+            ]
+        ]
+        return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    def get_creator_panel_text(self) -> str:
+        """Detailed status message sent to the creator's private bot chat."""
+        players_rows = []
+        for idx, p in enumerate(self.players.values()):
+            clean_name = html.escape(p.name or "O'yinchi")
+            players_rows.append(f"{idx+1}. {clean_name}")
+        players_str = "\n".join(players_rows) if players_rows else "—"
+        group_name = html.escape(self.chat_title or "Guruh")
+
+        return (
+            f"🎮 <b>O'yin Boshqaruv Paneli (Faqat Yaratuvchi uchun)</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"👥 Guruh: <b>{group_name}</b>\n"
+            f"⏳ Qolgan vaqt: <b>{self.seconds_left} soniya</b>\n"
+            f"👤 O'yinchilar: <b>{len(self.players)}/{settings.MIN_PLAYERS}</b> (Maks: {settings.MAX_PLAYERS})\n\n"
+            f"📋 <b>Ro'yxatdan o'tganlar:</b>\n{players_str}\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"<i>O'yinni boshlash, vaqt uzaytirish yoki bekor qilishni faqat siz shu yerdan boshqarasiz.</i>"
+        )
+
+    async def sync_lobby_messages(self, bot: Bot):
+        """Keep group lobby message and creator PM panel synchronized."""
+        if self.phase != GamePhase.LOBBY or self.is_stopped:
+            return
+
+        # 1. Update group lobby
+        if self.lobby_message_id:
+            try:
+                await bot.edit_message_text(
+                    chat_id=self.chat_id,
+                    message_id=self.lobby_message_id,
+                    text=self.get_lobby_text(),
+                    reply_markup=self.get_lobby_markup(),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.debug(f"Could not edit group lobby message: {e}")
+
+        # 2. Update creator PM panel
+        if self.creator_id:
+            try:
+                if self.creator_pm_message_id:
+                    await bot.edit_message_text(
+                        chat_id=self.creator_id,
+                        message_id=self.creator_pm_message_id,
+                        text=self.get_creator_panel_text(),
+                        reply_markup=self.get_creator_panel_markup(),
+                        parse_mode="HTML"
+                    )
+                else:
+                    pm_msg = await bot.send_message(
+                        self.creator_id,
+                        self.get_creator_panel_text(),
+                        reply_markup=self.get_creator_panel_markup(),
+                        parse_mode="HTML"
+                    )
+                    self.creator_pm_message_id = pm_msg.message_id
+            except Exception as e:
+                logger.debug(f"Could not update creator PM panel: {e}")
 
     def extend_lobby_time(self, seconds: int = 30) -> int:
         """Extend lobby countdown, capped at 300 seconds (5 minutes)."""
@@ -189,18 +265,13 @@ class GameRoom:
         """Lobby countdown before auto-starting."""
         while self.seconds_left > 0:
             await asyncio.sleep(5)
+            if self.is_stopped or self.phase != GamePhase.LOBBY:
+                return
             self.seconds_left -= 5
-            if self.lobby_message_id:
-                try:
-                    await bot.edit_message_text(
-                        chat_id=self.chat_id,
-                        message_id=self.lobby_message_id,
-                        text=self.get_lobby_text(),
-                        reply_markup=self.get_lobby_markup(),
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
+            await self.sync_lobby_messages(bot)
+
+        if self.is_stopped or self.phase != GamePhase.LOBBY:
+            return
 
         if len(self.players) >= settings.MIN_PLAYERS:
             await self.start_game(bot)
@@ -210,7 +281,7 @@ class GameRoom:
 
     async def start_game(self, bot: Bot):
         """Distribute roles and begin night 1."""
-        if self.is_stopped or self.phase == GamePhase.GAME_OVER:
+        if self.is_stopped or self.phase != GamePhase.LOBBY:
             return
 
         if self.timer_task and not self.timer_task.done():
@@ -219,21 +290,29 @@ class GameRoom:
         self.phase = GamePhase.STARTING
         self.start_time = datetime.utcnow()
 
+        # Update creator control panel
+        if self.creator_id and self.creator_pm_message_id:
+            try:
+                await bot.edit_message_text(
+                    chat_id=self.creator_id,
+                    message_id=self.creator_pm_message_id,
+                    text="🎬 <b>O'yin boshlandi!</b> Barcha o'yinchilarga rollar tarqatildi.",
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
+
         # Assign roles
         role_assignments = distribute_roles(list(self.players.keys()))
         for p_id, role in role_assignments.items():
             self.players[p_id].role = role
-            # Send private message with role info
+            # Send private message with role info (WITHOUT early vasiyatnoma button)
             try:
                 desc = i18n.get(f"role_desc.{role.value}", self.lang)
                 role_title = i18n.get(f"roles.{role.value}", self.lang)
-                pm_markup = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text=i18n.get("btn_set_will", self.lang), callback_data=f"set_will_{self.chat_id}")]
-                ])
                 await bot.send_message(
                     p_id,
                     i18n.get("pm_role_assigned", self.lang, role=role_title, description=desc),
-                    reply_markup=pm_markup,
                     parse_mode="HTML"
                 )
             except Exception as e:
@@ -464,7 +543,7 @@ class GameRoom:
                         )
                     except Exception as e:
                         logger.warning(f"Could not send night prompt to {p.user_id}: {e}")
-            elif p.role == Role.CITIZEN:
+            else:
                 try:
                     await bot.send_message(
                         p.user_id,
@@ -477,8 +556,8 @@ class GameRoom:
     def are_all_night_actions_done(self) -> bool:
         """Check if all living roles with required night actions have submitted them."""
         living = self.alive_players
-        mafiosi = [p for p in living if p.team == Team.MAFIA]
-        if mafiosi and not self.mafia_votes:
+        mafiosi = [p for p in living if p.team == Team.MAFIA and not p.is_blocked]
+        if mafiosi and len(self.mafia_votes) < len(mafiosi):
             return False
 
         has_doctor = any(p.role == Role.DOCTOR and not p.is_blocked for p in living)
@@ -526,9 +605,12 @@ class GameRoom:
                 healed_id = self.doctor_target
                 self.players[healed_id].protected_by_doctor = True
 
-        # 3. Determine Mafia kill target
+        # 3. Determine Mafia kill target (Don has priority, otherwise plurality)
         mafia_kill_id = None
-        if self.mafia_votes:
+        don_player = next((p for p in self.alive_players if p.role == Role.DON), None)
+        if don_player and don_player.user_id in self.mafia_votes and not don_player.is_blocked:
+            mafia_kill_id = self.mafia_votes[don_player.user_id]
+        elif self.mafia_votes:
             # Count target with most mafia votes
             vote_counts: Dict[int, int] = {}
             for target in self.mafia_votes.values():
@@ -1018,16 +1100,16 @@ class GameRoom:
 
         living = self.alive_players
         mafia_count = sum(1 for p in living if p.team == Team.MAFIA)
-        town_count = sum(1 for p in living if p.team == Team.TOWN)
+        non_mafia_count = sum(1 for p in living if p.team != Team.MAFIA)
         maniac_count = sum(1 for p in living if p.role == Role.MANIAC)
 
         if mafia_count == 0 and maniac_count == 0:
             return Team.TOWN
 
-        if mafia_count >= (town_count + maniac_count) and maniac_count == 0:
+        if mafia_count >= non_mafia_count and maniac_count == 0:
             return Team.MAFIA
 
-        if maniac_count == 1 and (mafia_count + town_count) <= 1:
+        if maniac_count == 1 and non_mafia_count <= 1:
             return Team.NEUTRAL
 
         if len(living) == 0:

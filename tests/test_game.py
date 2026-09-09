@@ -147,8 +147,8 @@ def test_extend_lobby_time():
     room.seconds_left = 290
     capped = room.extend_lobby_time(30)
     assert capped == 300
-    # Check button presence in markup
-    markup = room.get_lobby_markup()
+    # Check button presence in creator panel markup
+    markup = room.get_creator_panel_markup()
     button_texts = [b.text for row in markup.inline_keyboard for b in row]
     assert any("+30s" in t for t in button_texts)
 
@@ -773,10 +773,98 @@ async def test_can_manage_game_permissions():
     mock_bot.get_chat_member = AsyncMock(return_value=regular_member)
     assert await can_manage_game(mock_bot, -1001, regular_user, creator_id) is False
 
-def test_lobby_markup_cancel_button():
+def test_lobby_markup_and_creator_panel():
     room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host")
-    markup = room.get_lobby_markup()
-    callback_datas = [btn.callback_data for row in markup.inline_keyboard for btn in row if btn.callback_data]
-    assert "game_cancel_lobby" in callback_datas
-    assert "game_extend_time" in callback_datas
+    lobby_markup = room.get_lobby_markup()
+    # Group lobby only contains join, leave, open bot
+    lobby_cbs = [btn.callback_data for row in lobby_markup.inline_keyboard for btn in row if btn.callback_data]
+    lobby_urls = [btn.url for row in lobby_markup.inline_keyboard for btn in row if btn.url]
+    assert "game_leave" in lobby_cbs
+    assert any("start=game_-1001" in url for url in lobby_urls)
+    # Management buttons must NOT be in the group lobby!
+    assert "game_start_early" not in lobby_cbs
+    assert "game_extend_time" not in lobby_cbs
+    assert "game_cancel_lobby" not in lobby_cbs
+
+    # Creator panel markup contains the management buttons in PM
+    panel_markup = room.get_creator_panel_markup()
+    panel_cbs = [btn.callback_data for row in panel_markup.inline_keyboard for btn in row if btn.callback_data]
+    assert "creator_start_-1001" in panel_cbs
+    assert "creator_extend_-1001" in panel_cbs
+    assert "creator_cancel_-1001" in panel_cbs
+
+def test_check_winner_multi_player_with_jester():
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host")
+    for i in range(2, 8):
+        room.add_player(i, f"P{i}")
+
+    # 7 players: 2 Mafia, 2 Town, 1 Jester alive (Maniac and 1 Town dead)
+    room.players[1].role = Role.DON
+    room.players[2].role = Role.MAFIA
+    room.players[3].role = Role.CITIZEN
+    room.players[4].role = Role.DOCTOR
+    room.players[5].role = Role.JESTER
+    room.players[6].role = Role.MANIAC
+    room.players[6].is_alive = False
+    room.players[7].role = Role.CITIZEN
+    room.players[7].is_alive = False
+
+    # 2 Mafia vs 3 living non-mafia (2 Town + 1 Jester)
+    # Mafia should NOT win yet!
+    winner = room.check_winner()
+    assert winner is None
+
+    # If another Town dies, now 2 Mafia vs 2 non-mafia (1 Town + 1 Jester) -> Parity -> Mafia wins
+    room.players[4].is_alive = False
+    winner = room.check_winner()
+    assert winner == Team.MAFIA
+
+def test_are_all_night_actions_done_multiple_mafia():
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host")
+    for i in range(2, 7):
+        room.add_player(i, f"P{i}")
+
+    # 6 players: Don (1), Mafia (2), Detective (3), Doctor (4), Citizen (5, 6)
+    room.players[1].role = Role.DON
+    room.players[2].role = Role.MAFIA
+    room.players[3].role = Role.DETECTIVE
+    room.players[4].role = Role.DOCTOR
+    room.players[5].role = Role.CITIZEN
+    room.players[6].role = Role.CITIZEN
+
+    # Doctor and Detective make actions
+    room.doctor_target = 5
+    room.detective_target = 2
+
+    # Only DON votes, Mafia hasn't voted yet
+    room.mafia_votes[1] = 5
+    assert room.are_all_night_actions_done() is False
+
+    # Now MAFIA also votes -> All living mafiosi have voted
+    room.mafia_votes[2] = 5
+    assert room.are_all_night_actions_done() is True
+
+@pytest.mark.asyncio
+async def test_start_game_no_early_will_button():
+    from unittest.mock import AsyncMock, MagicMock
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Host")
+    for i in range(2, 6):
+        room.add_player(i, f"P{i}")
+
+    mock_bot = MagicMock()
+    mock_bot.send_message = AsyncMock()
+    mock_bot.set_chat_permissions = AsyncMock()
+    mock_bot.edit_message_text = AsyncMock()
+
+    await room.start_game(mock_bot)
+
+    # Inspect all PM calls to players to verify reply_markup has no btn_set_will
+    for call in mock_bot.send_message.call_args_list:
+        reply_markup = call.kwargs.get("reply_markup")
+        if reply_markup:
+            for row in reply_markup.inline_keyboard:
+                for btn in row:
+                    if btn.callback_data:
+                        assert not btn.callback_data.startswith("set_will_")
+
 

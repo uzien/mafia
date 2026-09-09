@@ -10,6 +10,63 @@ from locales.i18n import i18n
 
 game_private_router = Router()
 
+@game_private_router.callback_query(F.data.startswith("creator_start_"))
+async def cb_creator_start(callback: CallbackQuery):
+    chat_id = int(callback.data.split("_")[-1])
+    room = game_manager.get_room(chat_id)
+    if not room or room.phase != GamePhase.LOBBY:
+        return await callback.answer("⚠️ Bu o'yin allaqachon boshlangan yoki yakunlangan.", show_alert=True)
+
+    if callback.from_user.id != room.creator_id:
+        return await callback.answer("⚠️ Faqat o'yin yaratuvchisi o'yinni boshlashi mumkin!", show_alert=True)
+
+    from config import settings
+    if len(room.players) < settings.MIN_PLAYERS:
+        return await callback.answer(
+            f"⚠️ Kamida {settings.MIN_PLAYERS} ta o'yinchi kerak! (Hozir: {len(room.players)}/{settings.MIN_PLAYERS})",
+            show_alert=True
+        )
+
+    await callback.answer("🚀 O'yin boshlanmoqda...")
+    try:
+        await room.start_game(callback.bot)
+    except Exception as e:
+        await callback.message.answer(f"⚠️ O'yinni boshlashda xatolik: {e}")
+
+@game_private_router.callback_query(F.data.startswith("creator_extend_"))
+async def cb_creator_extend(callback: CallbackQuery):
+    chat_id = int(callback.data.split("_")[-1])
+    room = game_manager.get_room(chat_id)
+    if not room or room.phase != GamePhase.LOBBY:
+        return await callback.answer("⚠️ Faol o'yin xonasi topilmadi.", show_alert=True)
+
+    if callback.from_user.id != room.creator_id:
+        return await callback.answer("⚠️ Faqat o'yin yaratuvchisi vaqtni uzaytira oladi!", show_alert=True)
+
+    if room.seconds_left >= 300:
+        return await callback.answer("⚠️ Maksimal vaqt chegarasiga (5 daqiqa) yetildi!", show_alert=True)
+
+    new_time = room.extend_lobby_time(30)
+    await room.sync_lobby_messages(callback.bot)
+    await callback.answer(f"⏳ +30s qo'shildi ({new_time}s)")
+
+@game_private_router.callback_query(F.data.startswith("creator_cancel_"))
+async def cb_creator_cancel(callback: CallbackQuery):
+    chat_id = int(callback.data.split("_")[-1])
+    room = game_manager.get_room(chat_id)
+    if not room or room.phase == GamePhase.GAME_OVER:
+        return await callback.answer("⚠️ Faol o'yin mavjud emas.", show_alert=True)
+
+    if callback.from_user.id != room.creator_id:
+        return await callback.answer("⚠️ Faqat o'yin yaratuvchisi o'yinni bekor qila oladi!", show_alert=True)
+
+    await game_manager.stop_and_remove_room(chat_id, callback.bot)
+    try:
+        await callback.message.edit_text("🛑 <b>O'yin bekor qilindi.</b>", parse_mode="HTML")
+    except Exception:
+        pass
+    await callback.answer("🛑 O'yin bekor qilindi!")
+
 @game_private_router.callback_query(F.data.startswith("set_will_"))
 async def cb_set_will(callback: CallbackQuery):
     chat_id = int(callback.data.split("_")[-1])

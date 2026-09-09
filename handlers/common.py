@@ -140,17 +140,7 @@ async def cmd_start(message: Message, command: CommandObject = None):
                         if room and room.phase == GamePhase.LOBBY:
                             added = room.add_player(user.id, user.first_name, user.username)
                             if added:
-                                if room.lobby_message_id:
-                                    try:
-                                        await message.bot.edit_message_text(
-                                            chat_id=room.chat_id,
-                                            message_id=room.lobby_message_id,
-                                            text=room.get_lobby_text(),
-                                            reply_markup=room.get_lobby_markup(),
-                                            parse_mode="HTML"
-                                        )
-                                    except Exception:
-                                        pass
+                                await room.sync_lobby_messages(message.bot)
                                 return await message.answer(
                                     f"✅ <b>Siz o'yinga muvaffaqiyatli qo'shildingiz!</b>\n\nIltimos, guruhga qayting va o'yin boshlanishini kuting.",
                                     parse_mode="HTML"

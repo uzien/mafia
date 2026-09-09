@@ -51,7 +51,8 @@ async def cmd_game(message: Message):
         chat_id=chat_id,
         creator_id=message.from_user.id,
         creator_name=message.from_user.first_name,
-        lang=lang
+        lang=lang,
+        chat_title=message.chat.title or "Guruh"
     )
 
     msg = await message.answer(
@@ -60,6 +61,19 @@ async def cmd_game(message: Message):
         parse_mode="HTML"
     )
     room.lobby_message_id = msg.message_id
+
+    # Send control panel to game creator in PM
+    try:
+        pm_msg = await message.bot.send_message(
+            chat_id=room.creator_id,
+            text=room.get_creator_panel_text(),
+            reply_markup=room.get_creator_panel_markup(),
+            parse_mode="HTML"
+        )
+        room.creator_pm_message_id = pm_msg.message_id
+    except Exception as e:
+        logger.debug(f"Could not send creator panel in PM: {e}")
+
     room.timer_task = asyncio.create_task(room.start_countdown(message.bot))
 
 @game_group_router.callback_query(F.data == "game_join")
@@ -89,14 +103,7 @@ async def cb_game_join(callback: CallbackQuery):
     if not success:
         return await callback.answer("⚠️ O'yinga qo'shilish imkoni bo'lmadi (xona to'lgan).", show_alert=True)
 
-    try:
-        await callback.message.edit_text(
-            room.get_lobby_text(),
-            reply_markup=room.get_lobby_markup(),
-            parse_mode="HTML"
-        )
-    except Exception:
-        pass
+    await room.sync_lobby_messages(callback.bot)
     await callback.answer(f"✅ O'yinga qo'shildingiz! ({len(room.players)}/{settings.MIN_PLAYERS})")
 
 @game_group_router.callback_query(F.data == "game_leave")
@@ -118,10 +125,11 @@ async def cb_game_leave(callback: CallbackQuery):
         next_id = next(iter(room.players.keys()))
         room.creator_id = next_id
         room.creator_name = room.players[next_id].name
+        room.creator_pm_message_id = None
 
     # If no players left, cancel room
     if not room.players:
-        game_manager.remove_room(room.chat_id)
+        await game_manager.stop_and_remove_room(room.chat_id, callback.bot)
         try:
             await callback.message.edit_text(
                 "🛑 <b>Barcha o'yinchilar chiqib ketganligi sababli o'yin bekor qilindi.</b>",
@@ -131,14 +139,7 @@ async def cb_game_leave(callback: CallbackQuery):
             pass
         return await callback.answer("🚪 Siz o'yindan chiqdingiz.")
 
-    try:
-        await callback.message.edit_text(
-            room.get_lobby_text(),
-            reply_markup=room.get_lobby_markup(),
-            parse_mode="HTML"
-        )
-    except Exception:
-        pass
+    await room.sync_lobby_messages(callback.bot)
     await callback.answer("🚪 Siz o'yindan chiqdingiz.")
 
 @game_group_router.callback_query(F.data == "game_start_early")
@@ -148,9 +149,10 @@ async def cb_game_start_early(callback: CallbackQuery):
         return await callback.answer("⚠️ Faol o'yin xonasi mavjud emas.", show_alert=True)
 
     user_id = callback.from_user.id
-    is_allowed = (user_id in room.players) or (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
+    is_allowed = (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
     if not is_allowed:
-        return await callback.answer("⚠️ O'yinni boshlash uchun avval o'yinga qo'shiling!", show_alert=True)
+        creator_name = room.creator_name or "O'yin yaratuvchisi"
+        return await callback.answer(f"⚠️ Faqat o'yin yaratuvchisi ({creator_name}) o'yinni boshlashi mumkin!", show_alert=True)
 
     if len(room.players) < settings.MIN_PLAYERS:
         return await callback.answer(
@@ -174,9 +176,10 @@ async def cmd_start_game_group(message: Message):
         return
 
     user_id = message.from_user.id
-    is_allowed = (user_id in room.players) or (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
+    is_allowed = (user_id == room.creator_id) or (user_id in settings.ADMIN_IDS)
     if not is_allowed:
-        await message.reply("⚠️ O'yinni boshlash uchun avval o'yinga qo'shiling!")
+        creator_name = html.escape(room.creator_name or "O'yin yaratuvchisi")
+        await message.reply(f"⚠️ Faqat o'yin yaratuvchisi (<b>{creator_name}</b>) o'yinni boshlashi mumkin!", parse_mode="HTML")
         return
 
     if len(room.players) < settings.MIN_PLAYERS:
@@ -195,11 +198,11 @@ async def cb_game_extend_time(callback: CallbackQuery):
     if not room or room.phase != GamePhase.LOBBY:
         return await callback.answer(i18n.get("not_in_game", settings.DEFAULT_LANGUAGE), show_alert=True)
 
-    allowed = await can_manage_game(callback.bot, callback.message.chat.id, callback.from_user.id, room.creator_id)
-    if not allowed:
+    is_allowed = (callback.from_user.id == room.creator_id) or (callback.from_user.id in settings.ADMIN_IDS)
+    if not is_allowed:
         creator_name = room.creator_name or "O'yin yaratuvchisi"
         return await callback.answer(
-            f"⚠️ Faqat o'yin yaratuvchisi ({creator_name}) yoki guruh adminlari vaqtni uzaytirishi mumkin!",
+            f"⚠️ Faqat o'yin yaratuvchisi ({creator_name}) vaqtni uzaytirishi mumkin!",
             show_alert=True
         )
 
@@ -207,14 +210,7 @@ async def cb_game_extend_time(callback: CallbackQuery):
         return await callback.answer("⚠️ Maksimal vaqt (5 daqiqa) ga yetdi!", show_alert=True)
 
     new_time = room.extend_lobby_time(30)
-    try:
-        await callback.message.edit_text(
-            room.get_lobby_text(),
-            reply_markup=room.get_lobby_markup(),
-            parse_mode="HTML"
-        )
-    except Exception:
-        pass
+    await room.sync_lobby_messages(callback.bot)
     await callback.answer(f"⏳ +30s ({new_time}s)", show_alert=False)
 
 @game_group_router.message(Command("extend", "vaqt", "time", "plus30"))
@@ -225,11 +221,11 @@ async def cmd_extend_time(message: Message):
     if not room or room.phase != GamePhase.LOBBY:
         return
 
-    allowed = await can_manage_game(message.bot, message.chat.id, message.from_user.id, room.creator_id)
-    if not allowed:
+    is_allowed = (message.from_user.id == room.creator_id) or (message.from_user.id in settings.ADMIN_IDS)
+    if not is_allowed:
         creator_name = html.escape(room.creator_name or "O'yin yaratuvchisi")
         await message.reply(
-            f"⚠️ Faqat o'yin yaratuvchisi (<b>{creator_name}</b>) yoki guruh adminlari vaqtni uzaytirishi mumkin!",
+            f"⚠️ Faqat o'yin yaratuvchisi (<b>{creator_name}</b>) vaqtni uzaytirishi mumkin!",
             parse_mode="HTML"
         )
         return
@@ -239,17 +235,7 @@ async def cmd_extend_time(message: Message):
         return
 
     new_time = room.extend_lobby_time(30)
-    if room.lobby_message_id:
-        try:
-            await message.bot.edit_message_text(
-                chat_id=room.chat_id,
-                message_id=room.lobby_message_id,
-                text=room.get_lobby_text(),
-                reply_markup=room.get_lobby_markup(),
-                parse_mode="HTML"
-            )
-        except Exception:
-            pass
+    await room.sync_lobby_messages(message.bot)
     await message.reply(i18n.get("time_extended", room.lang, seconds=new_time), parse_mode="HTML")
 
 @game_group_router.callback_query(F.data.startswith("check_role_"))
@@ -280,17 +266,8 @@ async def cmd_join_group(message: Message):
     async with async_session_maker() as session:
         await get_or_create_user(session, user.id, user.username, user.first_name)
     success = room.add_player(user.id, user.first_name, user.username)
-    if success and room.lobby_message_id:
-        try:
-            await message.bot.edit_message_text(
-                chat_id=room.chat_id,
-                message_id=room.lobby_message_id,
-                text=room.get_lobby_text(),
-                reply_markup=room.get_lobby_markup(),
-                parse_mode="HTML"
-            )
-        except Exception:
-            pass
+    if success:
+        await room.sync_lobby_messages(message.bot)
 
 @game_group_router.callback_query(F.data == "game_cancel_lobby")
 async def cb_game_cancel_lobby(callback: CallbackQuery):
