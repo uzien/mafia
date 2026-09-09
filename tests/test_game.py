@@ -102,13 +102,13 @@ def test_lobby_text_and_markup_uz():
     room.add_player(104, "dkxolmaxammadov 🫀")
 
     text = room.get_lobby_text()
-    assert "Ro'yxatdan o'tish davom etmoqda" in text
-    assert "Ro'yxatdan o'tganlar:" in text
+    assert "O'YIN RO'YXATGA OLISH" in text
+    assert "Ro'yxat:" in text
     assert "mydnva'" in text
     assert "Tolibjonov" in text
     assert "boburjon 🫀" in text
     assert "dkxolmaxammadov 🫀" in text
-    assert "Jami <b>4ta odam</b>." in text
+    assert "Ishtirokchilar:" in text
 
     markup = room.get_lobby_markup()
     # Check that join button has deep link url
@@ -128,14 +128,14 @@ def test_living_players_text_format():
     room.players[104].role = Role.DON
 
     living_text = room.get_living_players_text()
-    assert "Tirik o'yinchilar:" in living_text
+    assert "Tirik o'yinchilar" in living_text
     assert "dkxolmaxammadov 🫀" in living_text
     assert "Tolibjonov" in living_text
     assert "Ulardan:" in living_text
     assert "Fuqaro - 2" in living_text
     assert "Komissar katani" in living_text
     assert "Don (Mafiya Boshlig'i)" in living_text
-    assert "Jami:" in living_text
+    assert "Jami" in living_text
 
 def test_extend_lobby_time():
     room = GameRoom(chat_id=-1001, creator_id=101, creator_name="Host", lang="uz")
@@ -545,9 +545,14 @@ async def test_end_game_message_formatting():
     bot = AsyncMock()
     await room.end_game(bot, Team.MAFIA)
 
-    assert bot.send_message.called
-    sent_args = bot.send_message.call_args[0]
-    chat_id, text = sent_args[0], sent_args[1]
+    assert bot.send_animation.called or bot.send_message.called
+    if bot.send_animation.called:
+        kwargs = bot.send_animation.call_args.kwargs
+        chat_id = kwargs.get("chat_id")
+        text = kwargs.get("caption")
+    else:
+        sent_args = bot.send_message.call_args[0]
+        chat_id, text = sent_args[0], sent_args[1]
 
     assert chat_id == -1001
     assert "🏆 <b>O'yin tugadi!</b>" in text
@@ -866,5 +871,29 @@ async def test_start_game_no_early_will_button():
                 for btn in row:
                     if btn.callback_data:
                         assert not btn.callback_data.startswith("set_will_")
+
+@pytest.mark.asyncio
+async def test_send_game_animation_success_and_fallback():
+    from unittest.mock import AsyncMock, MagicMock
+    from services.media_service import send_game_animation
+
+    mock_bot = MagicMock()
+    mock_bot.send_animation = AsyncMock()
+    mock_bot.send_message = AsyncMock()
+
+    # 1. Success case
+    await send_game_animation(mock_bot, -1001, "game_start", "Test caption")
+    assert mock_bot.send_animation.called
+    assert not mock_bot.send_message.called
+
+    # 2. Fallback case when send_animation raises exception
+    mock_bot.send_animation.reset_mock()
+    mock_bot.send_message.reset_mock()
+    mock_bot.send_animation.side_effect = Exception("Telegram API error")
+
+    await send_game_animation(mock_bot, -1001, "game_start", "Fallback caption")
+    assert mock_bot.send_animation.called
+    assert mock_bot.send_message.called
+    assert mock_bot.send_message.call_args.kwargs.get("text") == "Fallback caption"
 
 

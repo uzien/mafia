@@ -19,6 +19,7 @@ from services.auto_moderator import (
     restore_players,
     unmute_chat_day,
 )
+from services.media_service import send_game_animation
 
 logger = logging.getLogger(__name__)
 
@@ -341,7 +342,7 @@ class GameRoom:
         except Exception as e:
             logger.warning(f"Error checking fake documents or clan: {e}")
 
-        # Send group message: O'yin boshlandi! with "Sizning rolingiz" button
+        # Send group message: O'yin boshlandi! with animated banner & "Sizning rolingiz" button
         role_markup = InlineKeyboardMarkup(inline_keyboard=[
             [
                 InlineKeyboardButton(text=i18n.get("btn_check_role", self.lang), callback_data=f"check_role_{self.chat_id}"),
@@ -349,11 +350,12 @@ class GameRoom:
             ]
         ])
         try:
-            await bot.send_message(
-                self.chat_id,
-                i18n.get("game_starting", self.lang),
-                reply_markup=role_markup,
-                parse_mode="HTML"
+            await send_game_animation(
+                bot=bot,
+                chat_id=self.chat_id,
+                animation_key="game_start",
+                caption=i18n.get("game_starting", self.lang),
+                reply_markup=role_markup
             )
         except Exception as e:
             logger.error(f"Error sending game_starting message: {e}")
@@ -419,17 +421,18 @@ class GameRoom:
         self.current_event = random.choices(events, weights=[0.55, 0.15, 0.15, 0.15], k=1)[0]
         event_banner = i18n.get(self.current_event, self.lang)
 
-        # Message 1: Night banner with event and 'Bot-ga o'tish' button
+        # Message 1: Night banner with event, animation and 'Bot-ga o'tish' button
         night_markup = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=i18n.get("btn_open_bot", self.lang), url=f"https://t.me/{settings.BOT_USERNAME}")]
         ])
         night_title = i18n.get("night_started", self.lang, round=self.round)
         try:
-            await bot.send_message(
-                self.chat_id,
-                f"{night_title}\n\n{event_banner}",
-                reply_markup=night_markup,
-                parse_mode="HTML"
+            await send_game_animation(
+                bot=bot,
+                chat_id=self.chat_id,
+                animation_key="night_start",
+                caption=f"{night_title}\n\n{event_banner}",
+                reply_markup=night_markup
             )
         except Exception as e:
             logger.error(f"Error sending night banner: {e}")
@@ -736,15 +739,21 @@ class GameRoom:
                 except Exception:
                     pass
 
-        # Unmute group chat for morning
+        # Unmute group chat safely
         await unmute_chat_day(bot, self.chat_id)
 
-        # 1. Morning greeting
-        await bot.send_message(
-            self.chat_id,
-            i18n.get("morning_report_title", self.lang, round=self.round),
-            parse_mode="HTML"
-        )
+        # 1. Morning greeting with animated visual (murder vs peaceful)
+        morning_anim_key = "morning_murder" if deaths else "morning_peaceful"
+        morning_text = i18n.get("morning_report_title", self.lang, round=self.round)
+        try:
+            await send_game_animation(
+                bot=bot,
+                chat_id=self.chat_id,
+                animation_key=morning_anim_key,
+                caption=morning_text
+            )
+        except Exception as e:
+            logger.error(f"Error sending morning report animation: {e}")
 
         # 2. Intermediate events (Doctor shield used or deaths)
         if doctor_saved:
@@ -846,12 +855,16 @@ class GameRoom:
         ]
         markup = InlineKeyboardMarkup(inline_keyboard=voting_buttons)
 
-        await bot.send_message(
-            self.chat_id,
-            i18n.get("voting_started", self.lang, seconds=settings.VOTING_DURATION),
-            reply_markup=markup,
-            parse_mode="HTML"
-        )
+        try:
+            await send_game_animation(
+                bot=bot,
+                chat_id=self.chat_id,
+                animation_key="court_trial",
+                caption=i18n.get("voting_started", self.lang, seconds=settings.VOTING_DURATION),
+                reply_markup=markup
+            )
+        except Exception as e:
+            logger.error(f"Error sending court trial animation: {e}")
 
         self.timer_task = asyncio.create_task(self._voting_timer(bot))
 
@@ -974,11 +987,15 @@ class GameRoom:
         role_title = i18n.get(f"roles.{lynched.role.value}", self.lang)
         lynched_name = html.escape(lynched.name or "O'yinchi")
 
-        await bot.send_message(
-            self.chat_id,
-            i18n.get("player_lynched", self.lang, name=lynched_name, user_id=lynched.user_id, role=role_title),
-            parse_mode="HTML"
-        )
+        try:
+            await send_game_animation(
+                bot=bot,
+                chat_id=self.chat_id,
+                animation_key="execution",
+                caption=i18n.get("player_lynched", self.lang, name=lynched_name, user_id=lynched.user_id, role=role_title)
+            )
+        except Exception as e:
+            logger.error(f"Error sending execution animation: {e}")
 
         if getattr(lynched, "last_will", None):
             clean_will = html.escape(lynched.last_will)
@@ -1168,7 +1185,27 @@ class GameRoom:
             f"💰 Har bir g'olib: <b>+{settings.WIN_COIN_REWARD} Tanga</b> | <b>+{settings.WIN_EXP_REWARD} EXP</b>"
         ])
         full_msg = "\n".join(lines)
-        await bot.send_message(self.chat_id, full_msg, parse_mode="HTML")
+
+        # Select victory animation based on winning team
+        if winner_team == Team.MAFIA:
+            victory_anim = "victory_mafia"
+        elif winner_team == Team.NEUTRAL:
+            victory_anim = "victory_maniac"
+        elif winner_team == Team.JESTER:
+            victory_anim = "victory_jester"
+        else:
+            victory_anim = "victory_town"
+
+        try:
+            await send_game_animation(
+                bot=bot,
+                chat_id=self.chat_id,
+                animation_key=victory_anim,
+                caption=full_msg
+            )
+        except Exception as e:
+            logger.error(f"Error sending victory animation: {e}")
+            await bot.send_message(self.chat_id, full_msg, parse_mode="HTML")
 
         # Distribute database stats and rewards, and send PM profile summary
         clan_rewards_announced = []
