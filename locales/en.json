@@ -85,7 +85,10 @@
   
   "day_discussion": "🗣 <b>DAYTIME DISCUSSION COMMENCED!</b>\n━━━━━━━━━━━━━━━━━━━━\nShare suspicions, uncover deceit, and protect the town.\n⏳ <b>Discussion duration:</b> <b>{seconds} seconds</b>",
   "voting_started": "⚖️ <b>TOWN COURT HAS COMMENCED!</b>\n━━━━━━━━━━━━━━━━━━━━\n🏛 <i>Citizens gather at the town square to deliver justice.</i>\n\n❓ <b>Who should be cast out (lynched)?</b>\nSelect the suspect and cast your vote below.\n\n⏳ <b>Voting window:</b> <b>{seconds} seconds</b>\n━━━━━━━━━━━━━━━━━━━━",
+  "btn_skip_vote": "🕊 Skip vote (Pardon all)",
   "vote_cast": "🗳 <b>{voter}</b> voted against <b>{target}</b>!",
+  "vote_cast_skip": "🗳 <b>{voter}</b> voted to skip execution!",
+  "vote_skipped_result": "🕊 <b>Town court adjourned:</b> Majority voted to pardon everyone today!",
   "last_words_prompt": "⚖️ <b>Court Verdict:</b> The city voted and found <a href=\"tg://user?id={user_id}\">{name}</a> guilty!\n\n🎙 <b>Last Words Defense:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, you have <b>{seconds} seconds</b> to defend yourself or deliver your final statement!",
   "btn_skip_last_words": "⚰️ Ready (Skip wait)",
   "player_lynched": "⚰️ <b>COURT SENTENCE EXECUTED!</b>\n━━━━━━━━━━━━━━━━━━━━\n<a href=\"tg://user?id={user_id}\">{name}</a> was hanged at the town square.\n🎭 Role was: <b>{role}</b>.",

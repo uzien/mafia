@@ -331,10 +331,13 @@ async def cb_day_vote(callback: CallbackQuery):
     voter_id = callback.from_user.id
     success = await room.cast_day_vote(voter_id, target_id, callback.bot)
     if success:
-        target_name = room.players[target_id].name if target_id in room.players else "Target"
-        await callback.answer(f"✅ Voted for {target_name}!")
+        if target_id == 0:
+            await callback.answer("🕊 Hech kimni osmaslik uchun ovoz berdingiz!")
+        else:
+            target_name = room.players[target_id].name if target_id in room.players else "Target"
+            await callback.answer(f"✅ {target_name} uchun ovoz berildi!")
     else:
-        await callback.answer("Could not cast vote (are you dead or not playing?)", show_alert=True)
+        await callback.answer("Ovoz berib bo'lmadi (siz o'yinda emassiz yoki tirik emassiz).", show_alert=True)
 
 @game_group_router.callback_query(F.data.startswith("skip_last_words_"))
 async def cb_skip_last_words(callback: CallbackQuery):
@@ -353,3 +356,38 @@ async def cb_skip_last_words(callback: CallbackQuery):
     if room.last_words_event and not room.last_words_event.is_set():
         room.last_words_event.set()
         await callback.answer("⚰️ Tayyor deb belgilandi!", show_alert=False)
+
+@game_group_router.message(F.chat.type.in_(["group", "supergroup"]))
+async def cleanup_group_messages(message: Message):
+    """
+    Auto-deletes messages sent in group during sensitive/silent game phases:
+    NIGHT, STARTING, and LAST_WORDS (except the condemned speaker).
+    Admin stop commands like /stop are preserved.
+    """
+    if not message.from_user or message.from_user.is_bot:
+        return
+
+    room = game_manager.get_room(message.chat.id)
+    if not room or room.phase in [GamePhase.LOBBY, GamePhase.DAY, GamePhase.GAME_OVER]:
+        return
+
+    # If night phase or game starting: strictly delete all messages
+    if room.phase in [GamePhase.NIGHT, GamePhase.STARTING]:
+        # Preserve /stop or /cancel commands for authorized managers
+        if message.text and any(message.text.strip().lower().startswith(c) for c in ["/stop", "/cancel", "/toxtat", "/bekor"]):
+            return
+        try:
+            await message.delete()
+        except Exception:
+            pass
+
+    # If last words speech phase: only the condemned suspect may speak
+    elif room.phase == GamePhase.LAST_WORDS:
+        if message.from_user.id == room.condemned_player_id:
+            return  # Allow final defense speech
+        if message.text and any(message.text.strip().lower().startswith(c) for c in ["/stop", "/cancel", "/toxtat", "/bekor"]):
+            return
+        try:
+            await message.delete()
+        except Exception:
+            pass

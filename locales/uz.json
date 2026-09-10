@@ -85,7 +85,10 @@
   
   "day_discussion": "🗣 <b>MUHOKAMA VAQTI BOSHLANDI!</b>\n━━━━━━━━━━━━━━━━━━━━\nGumonlaringizni bildiring, dalillarni keltiring va shaharni jinoyatchilardan asrang.\n⏳ <b>Muhokama davomiyligi:</b> <b>{seconds} soniya</b>",
   "voting_started": "⚖️ <b>SHAHAR SUDI BOSHLANDI!</b>\n━━━━━━━━━━━━━━━━━━━━\n🏛 <i>Shahar aholisi adolat o'rnatish uchun maydonga to'plandi.</i>\n\n❓ <b>Kimni shahardan haydashingiz (linch qilishingiz) kerak?</b>\nGumonlanuvchini tanlab, quyidagi tugmalar orqali ovoz bering.\n\n⏳ <b>Ovoz berish vaqti:</b> <b>{seconds} soniya</b>\n━━━━━━━━━━━━━━━━━━━━",
+  "btn_skip_vote": "🕊 Hech kimni osmaslik",
   "vote_cast": "🗳 <b>{voter}</b> o'yinchisi <b>{target}</b> uchun ovoz berdi!",
+  "vote_cast_skip": "🗳 <b>{voter}</b> hech kimni osmaslik uchun ovoz berdi!",
+  "vote_skipped_result": "🕊 <b>Shahar sudi yakunlandi:</b> Ko'pchilik hech kimni osmaslikka qaror qildi. Bugun dor bo'sh qoldi!",
   "last_words_prompt": "⚖️ <b>Sud hukmi:</b> Shahar aholisi ovoz berish orqali <a href=\"tg://user?id={user_id}\">{name}</a>ni aybdor deb topdi!\n\n🎙 <b>O'limdan oldingi so'nggi so'z:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, o'zingizni oqlash yoki so'nggi vapingizni aytish uchun <b>{seconds} soniya</b> vaqtingiz bor!",
   "btn_skip_last_words": "⚰️ Tayyorman (Tezlashtirish)",
   "player_lynched": "⚰️ <b>SUD HUKMI IJRO ETILDI!</b>\n━━━━━━━━━━━━━━━━━━━━\n<a href=\"tg://user?id={user_id}\">{name}</a> dorga osildi (linch qilindi).\n🎭 Uning roli: <b>{role}</b> edi.",

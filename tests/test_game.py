@@ -896,4 +896,68 @@ async def test_send_game_animation_success_and_fallback():
     assert mock_bot.send_message.called
     assert mock_bot.send_message.call_args.kwargs.get("text") == "Fallback caption"
 
+@pytest.mark.asyncio
+async def test_cast_day_vote_skip_and_resolve():
+    from unittest.mock import AsyncMock, MagicMock
+    room = GameRoom(chat_id=-1001, creator_id=1, creator_name="Player1")
+    room.add_player(2, "Player2")
+    room.add_player(3, "Player3")
+    room.phase = GamePhase.VOTING
+
+    mock_bot = MagicMock()
+    mock_bot.send_message = AsyncMock()
+
+    # Player 1 votes for Player 2
+    await room.cast_day_vote(1, 2, mock_bot)
+    assert room.day_votes[1] == 2
+
+    # Player 2 & 3 vote to SKIP (0)
+    await room.cast_day_vote(2, 0, mock_bot)
+    assert room.day_votes[2] == 0
+    await room.cast_day_vote(3, 0, mock_bot)
+    assert room.day_votes[3] == 0
+
+    # Resolve voting: Skip has 2 votes, Player 2 has 1 vote -> Skip wins
+    await room.resolve_voting(mock_bot)
+    # Check that vote_skipped_result was sent, nobody lynched (condemned_player_id is None)
+    assert room.condemned_player_id is None
+    all_msgs = [
+        call.args[1] if len(call.args) > 1 else call.kwargs.get("text", "")
+        for call in mock_bot.send_message.call_args_list
+    ]
+    assert any("hech kimni osmaslikka" in m.lower() or "hech kim jazolanmadi" in m.lower() for m in all_msgs)
+
+@pytest.mark.asyncio
+async def test_cleanup_group_messages_during_night():
+    from unittest.mock import AsyncMock, MagicMock
+    from handlers.game_group import cleanup_group_messages
+    from game.manager import game_manager
+
+    room = game_manager.create_room(chat_id=-2001, creator_id=1, creator_name="Host")
+    room.phase = GamePhase.NIGHT
+
+    # 1. Normal user text sent during night -> MUST be deleted
+    mock_msg = MagicMock()
+    mock_msg.chat.id = -2001
+    mock_msg.chat.type = "supergroup"
+    mock_msg.from_user.id = 999
+    mock_msg.from_user.is_bot = False
+    mock_msg.text = "Hello everyone, who is mafia?"
+    mock_msg.delete = AsyncMock()
+
+    await cleanup_group_messages(mock_msg)
+    assert mock_msg.delete.called
+
+    # 2. Admin /stop command during night -> MUST NOT be deleted
+    mock_stop_msg = MagicMock()
+    mock_stop_msg.chat.id = -2001
+    mock_stop_msg.chat.type = "supergroup"
+    mock_stop_msg.from_user.id = 1
+    mock_stop_msg.from_user.is_bot = False
+    mock_stop_msg.text = "/stop"
+    mock_stop_msg.delete = AsyncMock()
+
+    await cleanup_group_messages(mock_stop_msg)
+    assert not mock_stop_msg.delete.called
+
 

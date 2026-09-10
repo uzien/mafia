@@ -85,7 +85,10 @@
   
   "day_discussion": "🗣 <b>GÜNDÜZ MÜZAKİRƏSİ BAŞLADI!</b>\n━━━━━━━━━━━━━━━━━━━━\nŞübhələrinizi bildirin, dəlilləri təqdim edin və şəhəri qoruyun.\n⏳ <b>Müzakirə müddəti:</b> <b>{seconds} saniyə</b>",
   "voting_started": "⚖️ <b>ŞƏHƏR MƏHKƏMƏSİ BAŞLADI!</b>\n━━━━━━━━━━━━━━━━━━━━\n🏛 <i>Şəhər sakinləri ədaləti bərpa etmək üçün meydana toplandı.</i>\n\n❓ <b>Kimi şəhərdən qovmaq (linç etmək) istəyirsiniz?</b>\nŞübhəlini seçin və aşağıdakı düymələr ilə səs verin.\n\n⏳ <b>Səsvermə vaxtı:</b> <b>{seconds} saniyə</b>\n━━━━━━━━━━━━━━━━━━━━",
+  "btn_skip_vote": "🕊 Heç kimi asmamaq",
   "vote_cast": "🗳 <b>{voter}</b> oyunçusu <b>{target}</b> üçün səs verdi!",
+  "vote_cast_skip": "🗳 <b>{voter}</b> heç kimi asmamaq üçün səs verdi!",
+  "vote_skipped_result": "🕊 <b>Şəhər məhkəməsi yekunlaşdı:</b> Əksəriyyət heç kimi asmamağa qərar verdi!",
   "last_words_prompt": "⚖️ <b>Məhkəmə qərarı:</b> Şəhər sakinləri <a href=\"tg://user?id={user_id}\">{name}</a>ni təqsirkar bildi!\n\n🎙 <b>Ölümdən əvvəlki son söz:</b>\n<a href=\"tg://user?id={user_id}\">{name}</a>, özünüzü müdafiə etmək üçün <b>{seconds} saniyə</b> vaxtınız var!",
   "btn_skip_last_words": "⚰️ Hazıram (Tezləşdir)",
   "player_lynched": "⚰️ <b>MƏHKƏMƏ HÖKMÜ İCRA OLUNDU!</b>\n━━━━━━━━━━━━━━━━━━━━\n<a href=\"tg://user?id={user_id}\">{name}</a> şəhər meydanında asıldı (linç edildi).\n🎭 Rolu: <b>{role}</b> idi.",

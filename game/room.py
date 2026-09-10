@@ -853,6 +853,10 @@ class GameRoom:
             [InlineKeyboardButton(text=f"🗳 {p.name}", callback_data=f"vote_{self.chat_id}_{p.user_id}")]
             for p in living
         ]
+        # Add 'Skip / Hech kimni osmaslik' button
+        voting_buttons.append([
+            InlineKeyboardButton(text=i18n.get("btn_skip_vote", self.lang), callback_data=f"vote_{self.chat_id}_0")
+        ])
         markup = InlineKeyboardMarkup(inline_keyboard=voting_buttons)
 
         try:
@@ -879,18 +883,26 @@ class GameRoom:
     async def cast_day_vote(self, voter_id: int, target_id: int, bot: Bot) -> bool:
         if self.phase != GamePhase.VOTING or voter_id not in self.players or not self.players[voter_id].is_alive:
             return False
-        if target_id not in self.players or not self.players[target_id].is_alive:
+        # target_id == 0 means "Skip / Hech kimni osmaslik"
+        if target_id != 0 and (target_id not in self.players or not self.players[target_id].is_alive):
             return False
 
         self.day_votes[voter_id] = target_id
         voter = self.players[voter_id]
-        target = self.players[target_id]
 
-        await bot.send_message(
-            self.chat_id,
-            i18n.get("vote_cast", self.lang, voter=voter.name, target=target.name),
-            parse_mode="HTML"
-        )
+        if target_id == 0:
+            await bot.send_message(
+                self.chat_id,
+                i18n.get("vote_cast_skip", self.lang, voter=voter.name),
+                parse_mode="HTML"
+            )
+        else:
+            target = self.players[target_id]
+            await bot.send_message(
+                self.chat_id,
+                i18n.get("vote_cast", self.lang, voter=voter.name, target=target.name),
+                parse_mode="HTML"
+            )
 
         # If everyone voted, finish voting early
         if len(self.day_votes) >= len(self.alive_players):
@@ -914,7 +926,12 @@ class GameRoom:
             suspects = [t_id for t_id, cnt in vote_counts.items() if cnt == max_votes]
 
             if len(suspects) > 1:
+                # If there's a tie, nobody is lynched
                 await bot.send_message(self.chat_id, i18n.get("vote_tie", self.lang), parse_mode="HTML")
+                await self._finish_voting_phase(bot)
+            elif suspects[0] == 0:
+                # Majority voted to Skip / Hech kimni osmaslik
+                await bot.send_message(self.chat_id, i18n.get("vote_skipped_result", self.lang), parse_mode="HTML")
                 await self._finish_voting_phase(bot)
             else:
                 lynched_id = suspects[0]
